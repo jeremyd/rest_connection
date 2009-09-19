@@ -1,0 +1,7 @@
+RestConnection is a library designed to facilitate Restful connections to APIs using Basic auth and more.  However!  If you've done any API work you know that every API is different.  The goal of RestConnection is to be as lean as possible and a EXAMPLE of how to use Net::HTTP in a restful way.  Right now RestConnection uses JSON and Basic Auth, this is easy to change or expand on and it's written to give more control to the user of the library (You).
+
+My hope is to include 'helper resources' for common API endpoints while maintaining a somewhat universal 'Connection' class that can be easily understood and modified to suit any Restful API needs.  These resources will have a similar usage to ActiveResource. 
+
+The first API we will be supporting is the RightScale API.  
+
+I welcome any contributions or suggestions.  Thanks!
