@@ -1,7 +1,6 @@
 require 'rubygems'
 require 'rest_connection'
 require 'trollop'
-require File.join(File.dirname(__FILE__), '..', 'lib', 'rightscale_api_resources')
 
 opts = Trollop::options do
   opt :deployment, "deployment nickname", :type => :string, :required => true
