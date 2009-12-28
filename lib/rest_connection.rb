@@ -18,6 +18,8 @@ require 'rubygems'
 require 'json'
 require 'yaml'
 require 'cgi'
+require 'rightscale_api_base'
+require 'rightscale_api_resources'
 
 module RestConnection
   class Connection
@@ -26,10 +28,12 @@ module RestConnection
     # settings loaded from yaml include :common_headers
     # :user, :pass, and :api_url
     # you can override them using the settings accessor
-    def initialize(config_yaml = File.join(File.dirname(__FILE__), "../config", "rest_api_config.yaml"))
+    def initialize(config_yaml = File.join(File.expand_path("~"), ".rest_connection", "rest_api_config.yaml"))
       if File.exists?(config_yaml)
         @settings = YAML::load(IO.read(config_yaml))
       else
+        logger("\nWARNING:  no api config found in #{config_yaml}")
+        logger("INFO:  see rest_connection/config/rest_api_config.yaml for example config")
         @settings = {}
       end
     end

@@ -13,8 +13,6 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-require File.join(File.dirname(__FILE__), 'rest_connection')
-
 module RightScale
   module Api
     class Base

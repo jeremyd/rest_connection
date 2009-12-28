@@ -13,8 +13,6 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-require File.join(File.dirname(__FILE__), 'rightscale_api_base')
-
 class Deployment < RightScale::Api::Base
   def self.resource_plural_name
     "deployments"
@@ -62,7 +60,7 @@ class Server < RightScale::Api::Base
   def audit_link
     # proof of concept for now
     server_id = self.href.split(/\//).last
-    "https://moo.rightscale.com/servers/#{server_id}#audit_entries"
+    "https://my.rightscale.com/servers/#{server_id}#audit_entries"
   end
 
   def start
@@ -92,6 +90,11 @@ class Server < RightScale::Api::Base
   def set_input(name, value)
     serv_href = URI.parse(self.href)
     connection.put(serv_href.path, :server => {:parameters => {name.to_sym => value} })
+  end
+
+  def set_template(href)
+    serv_href = URI.parse(self.href)
+    connection.put(serv_href.path, :server => {:server_template_href => href})
   end
 end
 
