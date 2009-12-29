@@ -17,11 +17,14 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     "README",
+     "Rakefile",
      "VERSION",
      "config/rest_api_config.yaml.sample",
+     "examples/set_deployment_template_href.rb",
      "lib/rest_connection.rb",
      "lib/rightscale_api_base.rb",
-     "lib/rightscale_api_resources.rb"
+     "lib/rightscale_api_resources.rb",
+     "rest_connection.gemspec"
   ]
   s.homepage = %q{http://github.com/jeremyd/rest_connection}
   s.rdoc_options = ["--charset=UTF-8"]
@@ -29,6 +32,7 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.5}
   s.summary = %q{lib for restful connections to the rightscale api}
   s.test_files = [
+    "examples/relaunch_deployment.rb",
      "examples/set_deployment_template_href.rb"
   ]
 
