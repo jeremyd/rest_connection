@@ -3,7 +3,6 @@ require 'rubygems'
 require 'trollop'
 require 'rest_connection'
 require 'net/ssh'
-require 'ruby-debug'
 
 opts = Trollop::options do
   opt :deployment, "deployment nickname", :type => :string, :required => true
