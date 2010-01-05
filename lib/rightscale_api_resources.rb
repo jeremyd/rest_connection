@@ -26,11 +26,11 @@ class Deployment < RightScale::Api::Base
     return server_list
   end
 
+
   def servers
     # this populates extra information about the servers
     servers_no_reload.each do |s|
       s.reload
-      s.settings
     end
   end
     
@@ -108,6 +108,13 @@ class Server < RightScale::Api::Base
   def settings
     serv_href = URI.parse(self.href)
     @params.merge! connection.get(serv_href.path + "/settings")
+  end
+
+  # special reload (overrides api_base), so that we can reload settings as well
+  def reload
+    uri = URI.parse(self.href)
+    @params = connection.get(uri.path)
+    settings
   end
 end
 

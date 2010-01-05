@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rest_connection}
-  s.version = "0.0.0"
+  s.version = "0.0.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Deininger"]
-  s.date = %q{2009-12-28}
+  s.date = %q{2010-01-05}
   s.description = %q{provides rest_connection}
   s.email = %q{jeremy@rubyonlinux.org}
   s.extra_rdoc_files = [
@@ -20,6 +20,9 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "config/rest_api_config.yaml.sample",
+     "examples/dev_setup.rb",
+     "examples/relaunch_deployment.rb",
+     "examples/run_ebs_sequence.rb",
      "examples/set_deployment_template_href.rb",
      "lib/rest_connection.rb",
      "lib/rightscale_api_base.rb",
@@ -32,7 +35,12 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.5}
   s.summary = %q{lib for restful connections to the rightscale api}
   s.test_files = [
-    "examples/relaunch_deployment.rb",
+    "examples/dev_setup.rb",
+     "examples/relaunch_deployment.rb",
+     "examples/right_scale_ec2_instances_api_test.rb",
+     "examples/run_ebs_sequence.backup.rb",
+     "examples/run_ebs_sequence.rb",
+     "examples/run_ebs_terminate.rb",
      "examples/set_deployment_template_href.rb"
   ]
 
