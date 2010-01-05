@@ -14,8 +14,6 @@ deployment = Deployment.find_by_nickname_speed(opts[:deployment]).first
 servers = deployment.servers
 servers = servers.select { |s| s.nickname =~ /#{opts[:only]}/ } if opts[:only]
 servers.each do |s|
-  # force the server to populate it's state
-  s.reload
   # send stop
   s.stop
 end

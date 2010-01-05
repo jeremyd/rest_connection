@@ -73,11 +73,22 @@ module RightScale
         return a
       end
 
+      # the following two methods are used to access the @params hash in a friendly way
       def method_missing(method_name, *args)
         if @params[method_name.to_s]
           return @params[method_name.to_s] 
-        else
+        elsif @params[method_name.to_s.gsub(/_/,'-')]
+          return @params[method_name.to_s.gsub(/_/,'-')]
+        else  
           raise "called unknown method #{method_name} with #{args.inspect}"
+        end
+      end
+
+      def [](name)
+        if @params[name]
+          return @params[name]
+        else
+          return nil
         end
       end
 

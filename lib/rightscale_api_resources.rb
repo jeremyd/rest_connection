@@ -18,12 +18,20 @@ class Deployment < RightScale::Api::Base
     "deployments"
   end
 
-  def servers
+  def servers_no_reload
     server_list = []
     @params['servers'].each do |s|
       server_list << Server.new(s)
     end
     return server_list
+  end
+
+  def servers
+    # this populates extra information about the servers
+    servers_no_reload.each do |s|
+      s.reload
+      s.settings
+    end
   end
     
 end
@@ -95,6 +103,11 @@ class Server < RightScale::Api::Base
   def set_template(href)
     serv_href = URI.parse(self.href)
     connection.put(serv_href.path, :server => {:server_template_href => href})
+  end
+
+  def settings
+    serv_href = URI.parse(self.href)
+    @params.merge! connection.get(serv_href.path + "/settings")
   end
 end
 
