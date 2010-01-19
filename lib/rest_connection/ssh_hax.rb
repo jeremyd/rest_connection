@@ -21,7 +21,7 @@ module SshHax
     tail_command ="tail -f -n1 /var/log/messages"
     expect = /RightLink.*RS> ([completed|failed]+: < #{recipe} >)/
 
-    Net::SSH.start(host_dns, 'root', :keys => ['']) do |ssh|
+    Net::SSH.start(host_dns, 'root', :keys => [ssh_key]) do |ssh|
       cmd_channel = ssh.open_channel do |ch1|
         exec_helper("rs_run_recipe -n '#{recipe}'", ch1)
       end
