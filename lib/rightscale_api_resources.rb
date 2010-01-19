@@ -125,6 +125,15 @@ class RightScript < RightScale::Api::Base
     "right_scripts"
   end
 
+  def self.from_yaml(yaml)
+    scripts = []
+    x = YAML.load(yaml)
+    x.keys.each do |script|
+      scripts << self.new('href' => "right_scripts/#{script}", 'name' => x[script].ivars['name'])
+    end
+    scripts  
+  end
+
   def self.from_instance_info(file = "/var/spool/ec2/rs_cache/info.yml")
     scripts = []
     if File.exists?(file)
