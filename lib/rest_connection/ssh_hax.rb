@@ -72,6 +72,7 @@ module SshHax
   end
 
   def spot_check(command, ssh_key="~/.ssh/publish-test", host_dns=self.dns_name, &block)
+    puts "SSHing to #{host_dns} using key #{ssh_key}"
     Net::SSH.start(host_dns, 'root', :keys => [ssh_key]) do |ssh|
       result = ssh.exec!(command)
       yield result
