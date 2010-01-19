@@ -12,6 +12,7 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
+require 'rest_connection/ssh_hax'
 
 class Deployment < RightScale::Api::Base
   def self.resource_plural_name
@@ -25,7 +26,6 @@ class Deployment < RightScale::Api::Base
     end
     return server_list
   end
-
 
   def servers
     # this populates extra information about the servers
@@ -49,6 +49,8 @@ class Status < RightScale::Api::Base
 end
 
 class Server < RightScale::Api::Base
+  include SshHax
+
   def self.resource_plural_name
     "servers"
   end
