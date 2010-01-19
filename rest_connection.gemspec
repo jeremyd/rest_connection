@@ -40,7 +40,6 @@ Gem::Specification.new do |s|
   s.summary = %q{lib for restful connections to the rightscale api}
   s.test_files = [
     "examples/dev_setup.rb",
-     "examples/dev_setup2.rb",
      "examples/relaunch_deployment.rb",
      "examples/right_scale_ec2_instances_api_test.rb",
      "examples/run_ebs_sequence.rb",
