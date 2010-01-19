@@ -35,12 +35,9 @@ servers.each do |s|
   s.wait_for_state('operational')
 end  
 
-servers[0].run_recipe("db_mysql::do_restore")
-servers[0].run_recipe("db_mysql::setup_admin_privileges")
-servers[0].run_recipe("db_mysql::do_backup")
-servers[0].run_recipe("db_mysql::do_tag_as_master")
+servers[0].run_recipe("db_mysql::do_restore_and_become_master")
 
-sleep(2)
+sleep(10)
 
 servers[1].run_recipe("db_mysql::do_init_slave")
 servers[1].run_recipe("db_mysql::do_promote_to_master")
