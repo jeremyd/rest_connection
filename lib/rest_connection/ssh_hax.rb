@@ -15,6 +15,8 @@
 
 # This is a helper to run_recipes, until api support is ready for checking result of recipe run.
 
+require 'net/ssh'
+
 module SshHax
   def run_recipe(recipe, ssh_key='~/.ssh/publish-test', host_dns=self.dns_name, continue=false)
     result = nil
