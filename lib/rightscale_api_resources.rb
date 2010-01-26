@@ -67,6 +67,17 @@ class Server < RightScale::Api::Base
     end
   end
 
+  def wait_for_operational_with_dns
+    wait_for_state("operational")
+    while(1)
+      connection.logger "waiting for dns-name for #{self.nickname}"
+      break if self['dns-name'] && !self['dns-name'].empty?
+      self.reload
+      sleep 2
+    end
+    connection.logger "got DNS: #{self['dns-name']}"
+  end
+
   def audit_link
     # proof of concept for now
     server_id = self.href.split(/\//).last
