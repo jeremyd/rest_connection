@@ -81,6 +81,41 @@ module SshHax
     end
   end 
 
+  # returns true or false based on command success
+  def spot_check_command?(command, ssh_key="~/.ssh/publish-test", host_dns=self.dns_name)
+    results = spot_check_command(command, ssh_key, host_dns)
+    return results[:status] == 0
+  end
+
+
+  # returns hash of exit_status and output from command
+  def spot_check_command(command, ssh_key="~/.ssh/publish-test", host_dns=self.dns_name)
+    puts "SSHing to #{host_dns} using key #{ssh_key}"
+    status = nil
+    output = ""
+    Net::SSH.start(host_dns, 'root', :keys => [ssh_key]) do |ssh|
+      cmd_channel = ssh.open_channel do |ch1|
+        ch1.on_request('exit-status') do |ch, data|
+          status = data.read_long
+        end
+        STDOUT.puts "Running: #{command}"
+        ch1.exec(command) do |ch2, success|
+          unless success
+            output = "ERROR: SSH cmd failed to exec"
+            status = 1
+          end
+          ch2.on_data do |ch, data|
+            output += data
+          end
+          ch2.on_extended_data do |ch, type, data|
+            output += data
+          end
+        end
+      end
+    end
+    return {:status => status, :output => output}
+  end 
+
 end
 
 
