@@ -7,3 +7,5 @@ Jeweler::Tasks.new do |gemspec|
   gemspec.homepage = "http://github.com/jeremyd/rest_connection"
   gemspec.authors = ["Jeremy Deininger"]
 end
+Jeweler::GemcutterTasks.new
+
