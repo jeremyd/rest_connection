@@ -16,15 +16,7 @@ servers = deployment.servers_no_reload
 servers = servers.select { |s| s.nickname =~ /#{opts[:only]}/ } if opts[:only]
 
 servers.each do |s|
-  while(1)
-    puts "waiting for dns-name for #{s.nickname}"
-    break if s['dns-name'] && !s['dns-name'].empty?
-    s.reload
-    sleep 2
-  end
-  puts "DNS: #{s['dns-name']}"
-
-  s.wait_for_state('operational')
+  s.wait_for_operational_with_dns
   
   Net::SSH.start(s.dns_name, 'root', :keys => ['~/.ssh/publish-test']) do |ssh|
     puts "setting up devmode: dropbox::install && devmode::setup_cookbooks"

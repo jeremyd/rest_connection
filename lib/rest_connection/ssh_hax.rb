@@ -19,35 +19,54 @@ require 'net/ssh'
 
 module SshHax
   def run_recipe(recipe, ssh_key='~/.ssh/publish-test', host_dns=self.dns_name, continue=false)
+    status = nil
     result = nil
+    output = ""
     tail_command ="tail -f -n1 /var/log/messages"
     expect = /RightLink.*RS> ([completed|failed]+: < #{recipe} >)/
-
+    run_this = "rs_run_recipe -n '#{recipe}'"
     Net::SSH.start(host_dns, 'root', :keys => [ssh_key]) do |ssh|
       cmd_channel = ssh.open_channel do |ch1|
-        exec_helper("rs_run_recipe -n '#{recipe}'", ch1)
+        ch1.on_request('exit-status') do |ch, data|
+          status = data.read_long
+        end
+        ch1.exec(run_this) do |ch2, success|
+          unless success
+            output = "ERROR: SSH cmd failed to exec"
+            status = 1
+          end
+          ch2.on_data do |ch, data|
+            output += data
+          end
+          ch2.on_extended_data do |ch, type, data|
+            output += data
+          end
+
+        end
       end
-      log_channel = ssh.open_channel do |ch|
-        ch.exec tail_command do |ch, success|
+      log_channel = ssh.open_channel do |ch2|
+        ch2.exec tail_command do |ch, success|
           raise "could not execute command" unless success
           # "on_data" is called when the process writes something to stdout
           ch.on_data do |c, data|
-            STDOUT.print data
+            output += data
+            STDOUT.write "."
+            STDOUT.flush
             if data =~ expect
-              STDOUT.puts "FOUND EXPECTED DATA, closing channel"
               result = $1
+              STDOUT.puts result
             end
           end
           # "on_extended_data" is called when the process writes something to stderr
           ch.on_extended_data do |c, type, data|
-            STDERR.print data
+            #STDERR.print data
           end
           ch.on_close do 
-            STDOUT.puts "closed channel" 
+            #STDOUT.puts "closed channel" 
           end
           ch.on_process do |c|
             if result
-              STDOUT.puts "attempting close"
+              #STDOUT.puts "attempting close"
               ch.close
               ssh.exec("killall tail")
             end
@@ -57,20 +76,9 @@ module SshHax
       cmd_channel.wait
       log_channel.wait
     end
-    raise "FATAL: halting execution, script #{result}" if result.include?('failed') && continue == false
-    return result
-  end
-
-# this is a blocking call that will return the exit status of the command
-  def exec_helper(command, chan, continue=false)
-    STDOUT.puts "Running: #{command}"
-    STDOUT.puts chan.exec(command)
-    chan.wait
-    status = chan.exec('echo "$?"')
-    chan.wait
-    ex = status.to_i
-    raise "FATAL: could not run #{command}" if ex != 0 && continue == false
-    ex
+    success = result.include?('completed')
+    STDOUT.puts "Converge failed. See server audit: #{self.audit_link}" unless success
+    return {:status => success, :output => output}
   end
 
   def spot_check(command, ssh_key="~/.ssh/publish-test", host_dns=self.dns_name, &block)

@@ -45,7 +45,7 @@ module RightScale
 
       def reload
         uri = URI.parse(self.href)
-        @params = connection.get(uri.path)
+        @params ? @params.merge!(connection.get(uri.path)) : @params = connection.get(uri.path)
       end
 
       def self.find(href)
