@@ -18,8 +18,8 @@ require 'rubygems'
 require 'json'
 require 'yaml'
 require 'cgi'
-require 'rightscale_api_base'
-require 'rightscale_api_resources'
+require 'rest_connection/rightscale_api_base'
+require 'rest_connection/rightscale_api_resources'
 
 module RestConnection
   class Connection
