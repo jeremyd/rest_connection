@@ -60,7 +60,7 @@ class Server < RightScale::Api::Base
     connection.logger("#{nickname} is #{self.state}")
     while(1)
       return true if state == st
-      raise "FATAL error, this server is stranded and needs to be operational: #{nickname}" if state.include?('stranded')
+      raise "FATAL error, this server is stranded and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('stranded')
       sleep 5
       connection.logger("waiting for server #{nickname} to go #{st}, state is #{state}")
       reload
@@ -72,7 +72,7 @@ class Server < RightScale::Api::Base
     while(1)
       connection.logger "waiting for dns-name for #{self.nickname}"
       break if self['dns-name'] && !self['dns-name'].empty?
-      self.reload
+      self.settings
       sleep 2
     end
     connection.logger "got DNS: #{self['dns-name']}"
@@ -124,11 +124,11 @@ class Server < RightScale::Api::Base
   end
 
   # special reload (overrides api_base), so that we can reload settings as well
-  def reload
-    uri = URI.parse(self.href)
-    @params = connection.get(uri.path)
-    settings
-  end
+  #def reload
+  #  uri = URI.parse(self.href)
+  #  @params = connection.get(uri.path)
+  #  settings
+  #end
 end
 
 class RightScript < RightScale::Api::Base
