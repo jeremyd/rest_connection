@@ -113,6 +113,11 @@ class Server < RightScale::Api::Base
     connection.put(serv_href.path, :server => {:parameters => {name.to_sym => value} })
   end
 
+  def self.create(opts)
+    location = connection.post("servers", :server => opts)
+    Server.new('href' => location)
+  end
+
   def set_template(href)
     serv_href = URI.parse(self.href)
     connection.put(serv_href.path, :server => {:server_template_href => href})
