@@ -50,6 +50,7 @@ end
 
 class Server < RightScale::Api::Base
   include SshHax
+  include RightScaleMonkey::Connection
 
   def self.resource_plural_name
     "servers"
@@ -128,12 +129,18 @@ class Server < RightScale::Api::Base
     @params.merge! connection.get(serv_href.path + "/settings")
   end
 
-  # special reload (overrides api_base), so that we can reload settings as well
-  #def reload
-  #  uri = URI.parse(self.href)
-  #  @params = connection.get(uri.path)
-  #  settings
-  #end
+  def relaunch
+    wind_monkey
+    server_id = self.href.split(/\//).last
+    base_url = URI.parse(self.href)
+    base_url.path = "/servers/#{server_id}"
+    s = agent.get(base_url.to_s)
+    relaunch = s.links.detect {|d| d.to_s == "Relaunch"}
+    prelaunch_page = @@agent.get(relaunch.href)
+    launch_form = prelaunch_page.forms[2]
+    launch_form.radiobuttons_with(:name => 'launch_immediately').first.check
+    agent.submit(launch_form, launch_form.buttons.first)
+  end
 end
 
 class RightScript < RightScale::Api::Base
