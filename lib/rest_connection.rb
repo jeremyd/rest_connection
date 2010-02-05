@@ -23,11 +23,18 @@ require 'rest_connection/rightscale_api_resources'
 
 module RestConnection
   class Connection
+    # Settings is a hash of options for customizing the connection.
+    # settings.merge! {
+    # :common_headers => { "X_CUSTOM_HEADER" => "BLAH" },
+    # :api_url =>
+    # :user =>
+    # :pass =>
     attr_accessor :settings
 
-    # settings loaded from yaml include :common_headers
-    # :user, :pass, and :api_url
-    # you can override them using the settings accessor
+    # RestConnection api settings configuration file:
+    # Settings are loaded from a yaml configuration file in users home directory.
+    # Copy the example config from the gemhome/config/rest_api_config.yaml.sample to ~/.rest_connection/rest_api_config.yaml
+    #
     def initialize(config_yaml = File.join(File.expand_path("~"), ".rest_connection", "rest_api_config.yaml"))
       if File.exists?(config_yaml)
         @settings = YAML::load(IO.read(config_yaml))
@@ -38,7 +45,16 @@ module RestConnection
       end
     end
 
-    def rest_connect(options = {}, &block)
+    # Main HTTP connection loop. Common settings are set here, then we yield(BASE_URI, OPTIONAL_HEADERS) to other methods for each type of HTTP request: GET, PUT, POST, DELETE
+    # 
+    # The block must return a Net::HTTP Request. You have a chance to taylor the request inside the block that you pass by modifying the url and headers.
+    #
+    # rest_connect do |base_uri, headers|
+    #   headers.merge! {:my_header => "blah"}
+    #   Net::HTTP::Get.new(base_uri, headers)
+    # end
+    #   
+    def rest_connect(&block)
       uri = URI.parse(@settings[:api_url])
       http = Net::HTTP.new(uri.host, uri.port)
       if uri.scheme == 'https'
@@ -56,8 +72,10 @@ module RestConnection
       end
     end
 
-    # expects href="servers" for example
-    # -or- begins with a slash for absolute path ie: "/api/acct/x/servers"
+    # connection.get("/root/login", :test_header => "x", :test_header2 => "y")
+    # href = "/api/base_new" if this begins with a slash then the url will be used as absolute path.
+    # href = "servers" this will be concat'd on to the api_url from the settings
+    # additional_parameters = Hash or String of parameters to pass to HTTP::Get
     def get(href, additional_parameters = "")
       rest_connect do |base_uri,headers|
         href = "#{base_uri}/#{href}" unless begins_with_slash(href)
@@ -65,9 +83,12 @@ module RestConnection
         Net::HTTP::Get.new(new_path, headers)
       end
     end
-
-    # expects href="servers" for example
-    # -or- begins with a slash for absolute path ie: "/api/acct/x/servers"
+    
+    # connection.post(server_url + "/start")
+    #
+    # href = "/api/base_new" if this begins with a slash then the url will be used as absolute path.
+    # href = "servers" this will be concat'd on to the api_url from the settings
+    # additional_parameters = Hash or String of parameters to pass to HTTP::Post
     def post(href, additional_parameters = {})
       rest_connect do |base_uri, headers|
         href = "#{base_uri}/#{href}" unless begins_with_slash(href)
@@ -81,6 +102,11 @@ module RestConnection
       end
     end
 
+    # connection.put(server_url + "/start")
+    #
+    # href = "/api/base" if this begins with a slash then the url will be used as absolute path.
+    # href = "servers" this will be concat'd on to the api_url from the settings
+    # additional_parameters = Hash or String of parameters to pass to HTTP::Put
     def put(href, additional_parameters = {})
       rest_connect do |base_uri, headers|
         href = "#{base_uri}/#{href}" unless begins_with_slash(href)
@@ -92,6 +118,11 @@ module RestConnection
       end
     end
 
+    # connection.delete(server_url)
+    #
+    # href = "/api/base_new" if this begins with a slash then the url will be used as absolute path.
+    # href = "servers" this will be concat'd on to the api_url from the settings
+    # additional_parameters = Hash or String of parameters to pass to HTTP::Delete
     def delete(href, additional_parameters = {})
       rest_connect do |base_uri, headers|
         href = "#{base_uri}/#{href}" unless begins_with_slash(href)
@@ -103,6 +134,10 @@ module RestConnection
       end
     end
 
+    # handle_response
+    # res = HTTP response 
+    #
+    # decoding and post processing goes here. This is where you may need some customization if you want to handle the response differently (or not at all!).  Luckily it's easy to modify based on this handler.
     def handle_response(res)
       if res.code.to_i == 201
         return res['Location']
@@ -129,10 +164,12 @@ module RestConnection
       STDERR.puts(message)
     end
 
+    # used by requestify to build parameters strings
     def name_with_prefix(prefix, name)
       prefix ? "#{prefix}[#{name}]" : name.to_s
     end
 
+    # recursive method builds CGI escaped strings from Hashes, Arrays and strings of parameters.
     def requestify(parameters, prefix=nil)
       if Hash === parameters
         return nil if parameters.empty?
