@@ -50,11 +50,8 @@ module SshHax
           # "on_data" is called when the process writes something to stdout
           ch.on_data do |c, data|
             output += data
-            STDOUT.write "."
-            STDOUT.flush
             if data =~ expect
               result = $1
-              STDOUT.puts result
             end
           end
           # "on_extended_data" is called when the process writes something to stderr
@@ -62,11 +59,9 @@ module SshHax
             #STDERR.print data
           end
           ch.on_close do 
-            #STDOUT.puts "closed channel" 
           end
           ch.on_process do |c|
             if result
-              #STDOUT.puts "attempting close"
               ch.close
               ssh.exec("killall tail")
             end
@@ -77,12 +72,13 @@ module SshHax
       log_channel.wait
     end
     success = result.include?('completed')
-    STDOUT.puts "Converge failed. See server audit: #{self.audit_link}" unless success
+    connection.logger output
+    connection.logger "Converge failed. See server audit: #{self.audit_link}" unless success
     return {:status => success, :output => output}
   end
 
   def spot_check(command, ssh_key="~/.ssh/publish-test", host_dns=self.dns_name, &block)
-    puts "SSHing to #{host_dns} using key #{ssh_key}"
+    connection.logger "SSHing to #{host_dns} using key #{ssh_key}"
     Net::SSH.start(host_dns, 'root', :keys => [ssh_key]) do |ssh|
       result = ssh.exec!(command)
       yield result
@@ -98,7 +94,7 @@ module SshHax
 
   # returns hash of exit_status and output from command
   def spot_check_command(command, ssh_key="~/.ssh/publish-test", host_dns=self.dns_name)
-    puts "SSHing to #{host_dns} using key #{ssh_key}"
+    connection.logger "SSHing to #{host_dns} using key #{ssh_key}"
     status = nil
     output = ""
     Net::SSH.start(host_dns, 'root', :keys => [ssh_key]) do |ssh|
@@ -106,7 +102,7 @@ module SshHax
         ch1.on_request('exit-status') do |ch, data|
           status = data.read_long
         end
-        STDOUT.puts "Running: #{command}"
+        output += "Running: #{command}\n"
         ch1.exec(command) do |ch2, success|
           unless success
             output = "ERROR: SSH cmd failed to exec"
@@ -121,6 +117,7 @@ module SshHax
         end
       end
     end
+    connection.logger output
     return {:status => status, :output => output}
   end 
 

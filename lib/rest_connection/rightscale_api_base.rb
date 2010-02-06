@@ -13,9 +13,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
+require 'rest_connection/mechanize_help'
+
 module RightScale
   module Api
     class Base
+      include MechanizeHelper::Connection
+      # The params hash of attributes for direct manipulation
       attr_accessor :params
 
       def self.connection()

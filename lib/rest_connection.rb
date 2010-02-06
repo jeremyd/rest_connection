@@ -20,6 +20,7 @@ require 'yaml'
 require 'cgi'
 require 'rest_connection/rightscale_api_base'
 require 'rest_connection/rightscale_api_resources'
+require 'logger'
 
 module RestConnection
   class Connection
@@ -36,6 +37,7 @@ module RestConnection
     # Copy the example config from the gemhome/config/rest_api_config.yaml.sample to ~/.rest_connection/rest_api_config.yaml
     #
     def initialize(config_yaml = File.join(File.expand_path("~"), ".rest_connection", "rest_api_config.yaml"))
+      @@logger = nil
       if File.exists?(config_yaml)
         @settings = YAML::load(IO.read(config_yaml))
       else
@@ -161,7 +163,22 @@ module RestConnection
     end
 
     def logger(message)
-      STDERR.puts(message)
+      init_message = "Initializing Logging using "
+      if @@logger.nil?
+        if @settings[:log_file]
+          @@logger = Logger.new(@settings[:log_file])
+          init_message += @settings[:log_file]
+        elsif ENV['REST_CONNECTION_LOG']
+          @@logger = Logger.new(ENV['REST_CONNECTION_LOG'])
+          init_message += ENV['REST_CONNECTION_LOG']
+        else @settings[:log_file]
+          @@logger = Logger.new(STDOUT)
+          init_message += "STDOUT"
+        end
+        STDOUT.puts init_message
+      end
+
+      @@logger.info(message)
     end
 
     # used by requestify to build parameters strings

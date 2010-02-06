@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Deininger"]
-  s.date = %q{2010-02-02}
+  s.date = %q{2010-02-05}
   s.description = %q{provides rest_connection}
   s.email = %q{jeremy@rubyonlinux.org}
   s.extra_rdoc_files = [
@@ -30,6 +30,7 @@ Gem::Specification.new do |s|
      "examples/run_php_chef_sequence.rb",
      "examples/set_deployment_template_href.rb",
      "lib/rest_connection.rb",
+     "lib/rest_connection/mechanize_help.rb",
      "lib/rest_connection/rightscale_api_base.rb",
      "lib/rest_connection/rightscale_api_resources.rb",
      "lib/rest_connection/ssh_hax.rb",

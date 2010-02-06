@@ -13,10 +13,16 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 require 'rest_connection/ssh_hax'
+require 'rest_connection/mechanize_help'
 
 class Deployment < RightScale::Api::Base
   def self.resource_plural_name
     "deployments"
+  end
+
+  def set_input(name, value)
+    deploy_href = URI.parse(self.href)
+    connection.put(deploy_href.path, :deployment => {:parameters => {name => value} })
   end
 
   def servers_no_reload
@@ -50,7 +56,6 @@ end
 
 class Server < RightScale::Api::Base
   include SshHax
-  include RightScaleMonkey::Connection
 
   def self.resource_plural_name
     "servers"
@@ -130,16 +135,20 @@ class Server < RightScale::Api::Base
   end
 
   def relaunch
-    wind_monkey
-    server_id = self.href.split(/\//).last
-    base_url = URI.parse(self.href)
-    base_url.path = "/servers/#{server_id}"
-    s = agent.get(base_url.to_s)
-    relaunch = s.links.detect {|d| d.to_s == "Relaunch"}
-    prelaunch_page = @@agent.get(relaunch.href)
-    launch_form = prelaunch_page.forms[2]
-    launch_form.radiobuttons_with(:name => 'launch_immediately').first.check
-    agent.submit(launch_form, launch_form.buttons.first)
+    unless state == "stopped"
+      wind_monkey
+      server_id = self.href.split(/\//).last
+      base_url = URI.parse(self.href)
+      base_url.path = "/servers/#{server_id}"
+      s = agent.get(base_url.to_s)
+      relaunch = s.links.detect {|d| d.to_s == "Relaunch"}
+      prelaunch_page = agent.get(relaunch.href)
+      launch_form = prelaunch_page.forms[2]
+      launch_form.radiobuttons_with(:name => 'launch_immediately').first.check
+      agent.submit(launch_form, launch_form.buttons.first)
+    else
+      connection.logger("WARNING: detected server is #{self.state}, skipping relaunch")
+    end
   end
 end
 
