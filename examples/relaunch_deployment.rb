@@ -20,18 +20,18 @@ servers = deployment.servers_no_reload
 servers = servers.select { |s| s.nickname =~ /#{opts[:only]}/ } if opts[:only]
 servers.each do |s|
   # send stop
-  s.stop
+  s.relaunch
 end
 
 # wait for termination
-servers.each do |s|
-  s.wait_for_state('stopped')
-end
+#servers.each do |s|
+#  s.wait_for_state('stopped')
+#end
 
 # relaunch
-servers.each do |s|
-  s.start
-end
+#servers.each do |s|
+#  s.start
+#end
 
 #if opts[:growl]
 #  require 'ruby-growl'
