@@ -2,5 +2,6 @@
 :pass: myUltraSecurePasswordz
 :user: myUserEmail@MyMailDomain.com
 :api_url: https://my.rightscale.com/api/acct/00000000
+:ssh_key: ~/.ssh/my-server-key
 :common_headers: 
   X_API_VERSION: "1.0"
