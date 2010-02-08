@@ -2,7 +2,7 @@ require 'mechanize'
 require 'logger'
 require 'uri'
 
-module MechanizeHelper
+module Mechanize
   module Connection
 
     # creates/returns global mechanize agent

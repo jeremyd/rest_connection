@@ -13,7 +13,6 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 require 'rest_connection/ssh_hax'
-require 'rest_connection/mechanize_help'
 
 class Deployment < RightScale::Api::Base
   def self.resource_plural_name

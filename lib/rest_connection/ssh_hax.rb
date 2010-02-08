@@ -19,6 +19,7 @@ require 'net/ssh'
 
 module SshHax
   def run_recipe(recipe, ssh_key='~/.ssh/publish-test', host_dns=self.dns_name, continue=false)
+    ssh_key = connection.settings[:ssh_key] if connection.settings[:ssh_key]
     status = nil
     result = nil
     output = ""
@@ -78,6 +79,7 @@ module SshHax
   end
 
   def spot_check(command, ssh_key="~/.ssh/publish-test", host_dns=self.dns_name, &block)
+    ssh_key = connection.settings[:ssh_key] if connection.settings[:ssh_key]
     connection.logger "SSHing to #{host_dns} using key #{ssh_key}"
     Net::SSH.start(host_dns, 'root', :keys => [ssh_key]) do |ssh|
       result = ssh.exec!(command)
@@ -87,6 +89,7 @@ module SshHax
 
   # returns true or false based on command success
   def spot_check_command?(command, ssh_key="~/.ssh/publish-test", host_dns=self.dns_name)
+    ssh_key = connection.settings[:ssh_key] if connection.settings[:ssh_key]
     results = spot_check_command(command, ssh_key, host_dns)
     return results[:status] == 0
   end
@@ -94,6 +97,7 @@ module SshHax
 
   # returns hash of exit_status and output from command
   def spot_check_command(command, ssh_key="~/.ssh/publish-test", host_dns=self.dns_name)
+    ssh_key = connection.settings[:ssh_key] if connection.settings[:ssh_key]
     connection.logger "SSHing to #{host_dns} using key #{ssh_key}"
     status = nil
     output = ""
