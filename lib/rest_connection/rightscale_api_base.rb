@@ -18,7 +18,7 @@ require 'rest_connection/mechanize_connection'
 module RightScale
   module Api
     class Base
-      include Mechanize::Connection
+      include MechanizeConnection::Connection
       # The params hash of attributes for direct manipulation
       attr_accessor :params
 
