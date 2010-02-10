@@ -139,13 +139,13 @@ class Server < RightScale::Api::Base
       server_id = self.href.split(/\//).last
       base_url = URI.parse(self.href)
       base_url.path = "/servers/#{server_id}"
-      agent.get(base_url.to_s) do |s|
-        relaunch = s.links.detect {|d| d.to_s == "Relaunch"}
-      end
-      agent.get(relaunch.href) do |prelaunch_page|
-        launch_form = prelaunch_page.forms[2]
-        launch_form.radiobuttons_with(:name => 'launch_immediately').first.check
-      end.submit(launch_form, launch_form.buttons.first)
+
+      s = agent.get(base_url.to_s)
+      relaunch = s.links.detect {|d| d.to_s == "Relaunch"}
+      prelaunch_page = agent.get(relaunch.href)
+      launch_form = prelaunch_page.forms[2]
+      launch_form.radiobuttons_with(:name => 'launch_immediately').first.check
+      agent.submit(launch_form, launch_form.buttons.first)
     else
       connection.logger("WARNING: detected server is #{self.state}, skipping relaunch")
     end
