@@ -30,12 +30,12 @@ module MechanizeConnection
         # Login
         base_url = URI.parse(connection.settings[:api_url])
         base_url.path = "/sessions/new"
-        
-        login_page = agent.get(base_url)
-        login_form = login_page.forms.first
-        login_form.email = connection.settings[:user]
-        login_form.password = connection.settings[:pass]
-        agent.submit(login_form, login_form.buttons.first)
+        pushbtn = nil 
+        agent.get(base_url) do |login_page|
+          login_page.forms.first.email = connection.settings[:user]
+          login_page.forms.first.password = connection.settings[:pass]
+          pushbtn = login_page.forms.first.buttons.first
+        end.submit(login_form, pushbtn)
       end
     end
   end
