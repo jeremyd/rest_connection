@@ -14,6 +14,7 @@
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
 require 'rest_connection/mechanize_connection'
+require 'activesupport'
 
 module RightScale
   module Api
@@ -31,6 +32,14 @@ module RightScale
 
       def initialize(params = {})
         @params = params
+      end
+
+      def self.resource_plural_name
+        self.to_s.underscore.pluralize
+      end 
+
+      def self.resource_singluar_name
+        self.to_s.underscore
       end
 
       def self.find_all
@@ -61,6 +70,11 @@ module RightScale
         self.new(connection.get(self.resource_plural_name + "/#{id}"))
       end
 
+      def self.create(opts)
+        location = connection.post(self.resource_plural_name, self.resource_singluar_name.to_sym => opts)
+        self.new('href' => location)
+      end
+
 # filter is only implemented on some api endpoints
       def self.find_by_nickname_speed(nickname)
         self.find_with_filter('nickname' => nickname)
@@ -75,6 +89,11 @@ module RightScale
           a << self.new(object)
         end
         return a
+      end
+
+      def destroy
+        my_href = URI.parse(self.href)
+        connection.delete(my_href.path)
       end
 
       # the following two methods are used to access the @params hash in a friendly way

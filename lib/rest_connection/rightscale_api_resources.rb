@@ -15,10 +15,6 @@
 require 'rest_connection/ssh_hax'
 
 class Deployment < RightScale::Api::Base
-  def self.resource_plural_name
-    "deployments"
-  end
-
   def set_input(name, value)
     deploy_href = URI.parse(self.href)
     connection.put(deploy_href.path, :deployment => {:parameters => {name => value} })
@@ -41,6 +37,13 @@ class Deployment < RightScale::Api::Base
     
 end
 
+class ServerTemplate < RightScale::Api::Base
+  def executables
+    my_href = URI.parse(self.href)
+    @params.merge! connection.get(my_href.path + "/executables")
+  end
+end
+
 class Status < RightScale::Api::Base
   def wait_for_completed(audit_link = "no audit link available")
     while(1)
@@ -55,11 +58,6 @@ end
 
 class Server < RightScale::Api::Base
   include SshHax
-
-  def self.resource_plural_name
-    "servers"
-  end
-
   def wait_for_state(st)
     reload
     connection.logger("#{nickname} is #{self.state}")
@@ -153,10 +151,6 @@ class Server < RightScale::Api::Base
 end
 
 class RightScript < RightScale::Api::Base
-  def self.resource_plural_name
-    "right_scripts"
-  end
-
   def self.from_yaml(yaml)
     scripts = []
     x = YAML.load(yaml)
