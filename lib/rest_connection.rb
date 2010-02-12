@@ -18,8 +18,8 @@ require 'rubygems'
 require 'json'
 require 'yaml'
 require 'cgi'
-require 'rest_connection/rightscale_api_base'
-require 'rest_connection/rightscale_api_resources'
+require 'rest_connection/rightscale/rightscale_api_base'
+require 'rest_connection/rightscale/rightscale_api_resources'
 require 'logger'
 
 module RestConnection
@@ -35,14 +35,18 @@ module RestConnection
     # RestConnection api settings configuration file:
     # Settings are loaded from a yaml configuration file in users home directory.
     # Copy the example config from the gemhome/config/rest_api_config.yaml.sample to ~/.rest_connection/rest_api_config.yaml
+    # OR to /etc/rest_connection/rest_api_config.yaml
     #
     def initialize(config_yaml = File.join(File.expand_path("~"), ".rest_connection", "rest_api_config.yaml"))
       @@logger = nil
+      etc_config = File.join("#{File::SEPARATOR}etc", "rest_connection", "rest_api_config.yaml")
       if File.exists?(config_yaml)
         @settings = YAML::load(IO.read(config_yaml))
+      elsif File.exists?(etc_config)
+        @settings = YAML::load(IO.read(etc_config))
       else
-        logger("\nWARNING:  no api config found in #{config_yaml}")
-        logger("INFO:  see rest_connection/config/rest_api_config.yaml for example config")
+        logger("\nWARNING:  you must setup config file rest_api_config.yaml in #{config_yaml} or #{etc_config}")
+        logger("WARNING:  see GEM_HOME/rest_connection/config/rest_api_config.yaml for example config")
         @settings = {}
       end
     end

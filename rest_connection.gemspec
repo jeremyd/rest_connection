@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Deininger"]
-  s.date = %q{2010-02-09}
+  s.date = %q{2010-02-12}
   s.description = %q{provides rest_connection}
   s.email = %q{jeremy@rubyonlinux.org}
   s.extra_rdoc_files = [
@@ -31,8 +31,15 @@ Gem::Specification.new do |s|
      "examples/set_deployment_template_href.rb",
      "lib/rest_connection.rb",
      "lib/rest_connection/mechanize_connection.rb",
-     "lib/rest_connection/rightscale_api_base.rb",
-     "lib/rest_connection/rightscale_api_resources.rb",
+     "lib/rest_connection/rightscale/deployment.rb",
+     "lib/rest_connection/rightscale/executable.rb",
+     "lib/rest_connection/rightscale/instance.rb",
+     "lib/rest_connection/rightscale/right_script.rb",
+     "lib/rest_connection/rightscale/rightscale_api_base.rb",
+     "lib/rest_connection/rightscale/rightscale_api_resources.rb",
+     "lib/rest_connection/rightscale/server.rb",
+     "lib/rest_connection/rightscale/server_template.rb",
+     "lib/rest_connection/rightscale/status.rb",
      "lib/rest_connection/ssh_hax.rb",
      "rest_connection.gemspec"
   ]
@@ -42,7 +49,9 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.5}
   s.summary = %q{lib for restful connections to the rightscale api}
   s.test_files = [
-    "examples/dev_setup.rb",
+    "examples/console.rb",
+     "examples/dev_setup.rb",
+     "examples/mysql_dev_rollback.rb",
      "examples/relaunch_deployment.rb",
      "examples/restart_instance_agent.rb",
      "examples/right_scale_ec2_instances_api_test.rb",
@@ -58,9 +67,15 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
+      s.add_runtime_dependency(%q<mechanize>, [">= 0.9.3"])
+      s.add_runtime_dependency(%q<activesupport>, [">= 0"])
     else
+      s.add_dependency(%q<mechanize>, [">= 0.9.3"])
+      s.add_dependency(%q<activesupport>, [">= 0"])
     end
   else
+    s.add_dependency(%q<mechanize>, [">= 0.9.3"])
+    s.add_dependency(%q<activesupport>, [">= 0"])
   end
 end
 

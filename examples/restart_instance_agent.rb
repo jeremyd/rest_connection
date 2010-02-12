@@ -7,6 +7,7 @@ require 'net/ssh'
 opts = Trollop::options do
   opt :deployment, "deployment nickname", :type => :string, :required => true
   opt :only, "regex string matching the nickname of the servers you want to relaunch. This excludes servers that do not match\nExample --only ubuntu", :type => :string, :required => false
+  opt :hard, "hard reset, uninstalls right_resources premium gem (for code update), and restarts the instance agent", :type => :bool, :required => false
 end
 
 # find all servers in the deployment (the fast way)
@@ -16,10 +17,13 @@ servers = servers.select { |s| s.nickname =~ /#{opts[:only]}/ } if opts[:only]
 
 servers.each do |s|
   s.wait_for_operational_with_dns
-  s.spot_check("gem uninstall right_resources_premium") do |result|
-    puts result
+  if opts[:hard]
+    s.spot_check("gem uninstall right_resources_premium") do |result|
+      puts result
+    end
+    s.spot_check("monit restart instance") do |result|
+      puts result
+    end
   end
-  s.spot_check("monit restart instance") do |result|
-    puts result
-  end
+  s.run_recipe("database_test::dev_pristine_restore")
 end

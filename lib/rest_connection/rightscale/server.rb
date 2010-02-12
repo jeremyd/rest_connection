@@ -12,49 +12,8 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
+
 require 'rest_connection/ssh_hax'
-
-class Deployment < RightScale::Api::Base
-  def set_input(name, value)
-    deploy_href = URI.parse(self.href)
-    connection.put(deploy_href.path, :deployment => {:parameters => {name => value} })
-  end
-
-  def servers_no_reload
-    server_list = []
-    @params['servers'].each do |s|
-      server_list << Server.new(s)
-    end
-    return server_list
-  end
-
-  def servers
-    # this populates extra information about the servers
-    servers_no_reload.each do |s|
-      s.reload
-    end
-  end
-    
-end
-
-class ServerTemplate < RightScale::Api::Base
-  def executables
-    my_href = URI.parse(self.href)
-    @params.merge! connection.get(my_href.path + "/executables")
-  end
-end
-
-class Status < RightScale::Api::Base
-  def wait_for_completed(audit_link = "no audit link available")
-    while(1)
-      reload
-      return true if self.state == "completed"
-      raise "FATAL error, script failed\nSee Audit: #{audit_link}" if self.state == 'failed'
-      sleep 5
-      connection.logger("querying status of right_script.. got: #{self.state}")
-    end
-  end
-end
 
 class Server < RightScale::Api::Base
   include SshHax
@@ -131,6 +90,16 @@ class Server < RightScale::Api::Base
     @params.merge! connection.get(serv_href.path + "/settings")
   end
 
+  def monitors
+    serv_href = URI.parse(self.href)
+    @params.merge! connection.get(serv_href.path + "/monitors")
+  end
+
+  def reboot
+    serv_href = URI.parse(self.href)
+    connection.post(serv_href.path + "/reboot") 
+  end
+
   def relaunch
     unless state == "stopped"
       wind_monkey
@@ -150,29 +119,3 @@ class Server < RightScale::Api::Base
   end
 end
 
-class RightScript < RightScale::Api::Base
-  def self.from_yaml(yaml)
-    scripts = []
-    x = YAML.load(yaml)
-    x.keys.each do |script|
-      scripts << self.new('href' => "right_scripts/#{script}", 'name' => x[script].ivars['name'])
-    end
-    scripts  
-  end
-
-  def self.from_instance_info(file = "/var/spool/ec2/rs_cache/info.yml")
-    scripts = []
-    if File.exists?(file)
-      x = YAML.load(IO.read(file))
-    elsif File.exists?(File.join(File.dirname(__FILE__),'info.yml'))
-      x = YAML.load(IO.read(File.join(File.dirname(__FILE__),'info.yml')))
-    else
-      return nil
-    end
-    x.keys.each do |script|
-      scripts << self.new('href' => "right_scripts/#{script}", 'name' => x[script].ivars['name'])
-    end
-    scripts  
-  end
-
-end
