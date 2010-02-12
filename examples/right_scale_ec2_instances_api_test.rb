@@ -1,34 +1,7 @@
 require 'rubygems'
+require 'rest_connection'
 require 'spec'
-require File.join(File.dirname(__FILE__), 'lib', 'right_scale_api_client')
 require '/var/spool/ec2/user-data'
-
-class Instance < RightScale::ApiClient::Base
-
-  #def create_ebs_volume_from_snap(snap_aws_id)
-  #  connection.post('create_ebs_volume.js', :aws_id => snap_aws_id )
-  #end 
-
-  def attach_ebs_volume(params)
-    connection.put('attach_ebs_volume.js', params)
-  end
-
-  def create_ebs_snapshot(params)
-    connection.post('create_ebs_snapshot.js', params)
-  end
-
-  def detach_ebs_volume(params)
-    connection.put('detach_ebs_volume.js', params)
-  end
-
-  def delete_ebs_volume(params)
-    connection.delete('delete_ebs_volume.js', params)
-  end
-
-  def create_ebs_volume(params)
-    connection.post('create_ebs_volume.js', params)
-  end
-end
 
 describe Instance, "run this from an ec2_instance" do
   before(:all) do

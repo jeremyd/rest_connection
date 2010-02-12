@@ -13,13 +13,24 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-# This is a helper to run_recipes, until api support is ready for checking result of recipe run.
 
 require 'net/ssh'
 
+# This is a mixin module run_recipes until api support is ready for checking result of recipe run.
+# The mixin typically used from Server#run_recipe
 module SshHax
-  def run_recipe(recipe, ssh_key='~/.ssh/publish-test', host_dns=self.dns_name, continue=false)
-    ssh_key = connection.settings[:ssh_key] if connection.settings[:ssh_key]
+  # recipe can be either a String, or an Executable
+  # host_dns is optional and will default to objects self.dns_name
+  def run_recipe(recipe, host_dns=self.dns_name)
+    if recipe.is_a?(Executable)
+      recipe = recipe.recipe
+    end
+    # legacy used this key by default
+    if connection.settings[:ssh_key]
+      ssh_key = connection.settings[:ssh_key] 
+    else
+      ssh_key='~/.ssh/publish-test'
+    end
     status = nil
     result = nil
     output = ""
