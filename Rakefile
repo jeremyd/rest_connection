@@ -1,3 +1,4 @@
+require 'rubygems'
 require 'jeweler'
 Jeweler::Tasks.new do |gemspec|
   gemspec.name = "rest_connection"
