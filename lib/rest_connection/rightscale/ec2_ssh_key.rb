@@ -13,12 +13,5 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-require 'rest_connection/rightscale/executable'
-require 'rest_connection/rightscale/server'
-require 'rest_connection/rightscale/deployment'
-require 'rest_connection/rightscale/status'
-require 'rest_connection/rightscale/server_template'
-require 'rest_connection/rightscale/right_script'
-require 'rest_connection/rightscale/instance'
-require 'rest_connection/rightscale/ec2_security_group'
-require 'rest_connection/rightscale/ec2_ssh_key'
+class Ec2SshKey < RightScale::Api::Base
+end

@@ -42,6 +42,14 @@ module RightScale
         self.to_s.underscore
       end
 
+      # matches using result of block match expression
+      # ex: Server.find_by(:nickname) { |n| n =~ /production/ }
+      def self.find_by(attrib, &block)
+        self.find_all.select do |s| 
+          yield(s[attrib.to_s])
+        end
+      end
+
       def self.find_all
         a = Array.new
         connection.get(self.resource_plural_name).each do |object|
@@ -51,9 +59,8 @@ module RightScale
       end
 
       def self.find_by_nickname(nickname)
-        self.find_all.select do |s| 
-          s.nickname == nickname
-        end
+        connection.logger("DEPRICATION WARNING: use of find_by_nickname is depricated, please use find_by(:nickname) { |n| n == '#{nickname}' } ")
+        self.find_by(:nickname) { |n| n == nickname }
       end
 
       def reload
@@ -61,13 +68,34 @@ module RightScale
         @params ? @params.merge!(connection.get(uri.path)) : @params = connection.get(uri.path)
       end
 
-      def self.find(href)
-        uri = URI.parse(href)
-        self.new(connection.get(uri.path))
+      # the argument can be 
+      # 1) takes href (URI), 
+      # 2) or id (Integer)
+      # 3) or symbol :all
+      def self.find(href, &block)
+        if href.is_a?(Integer)
+          return self.new(connection.get(self.resource_plural_name + "/#{href}"))
+        elsif href.is_a?(Symbol)
+          results = self.find_all
+          if block_given?
+            results = results.select { |s| yield(s) }
+          end
+          if href == :all
+            return results
+          elsif href == :first
+            return results.first
+          elsif href == :last 
+            return results.last
+          end
+        elsif uri = URI.parse(href)
+          return self.new(connection.get(uri.path))
+        end
+        nil
       end
 
       def self.find_by_id(id)
-        self.new(connection.get(self.resource_plural_name + "/#{id}"))
+        connection.logger("DEPRICATION WARNING: use of find_by_id is depricated, please use find(id) ")
+        self.find(id)
       end
 
       def self.create(opts)
