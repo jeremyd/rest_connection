@@ -100,7 +100,9 @@ module RightScale
 
       def self.create(opts)
         location = connection.post(self.resource_plural_name, self.resource_singluar_name.to_sym => opts)
-        self.new('href' => location)
+        newrecord = self.new('href' => location)
+        newrecord.reload
+        newrecord
       end
 
 # filter is only implemented on some api endpoints
