@@ -17,6 +17,16 @@ require 'rest_connection/ssh_hax'
 
 class Server < RightScale::Api::Base
   include SshHax
+  def self.create(opts)
+    create_options = Hash.new
+    create_options[self.resource_singluar_name.to_sym] = opts
+    create_options["cloud_id"] = opts[:cloud_id] if opts[:cloud_id]
+    location = connection.post(self.resource_plural_name,create_options)    
+    newrecord = self.new('href' => location)
+    newrecord.reload
+    newrecord
+  end
+
   def wait_for_state(st)
     reload
     connection.logger("#{nickname} is #{self.state}")
