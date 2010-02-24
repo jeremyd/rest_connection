@@ -14,4 +14,8 @@
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
 class Tag < RightScale::Api::Base
+
+  def self.search(resource_name, tags)
+    result = connection.get("/tags/search", :resource_type => resource_name.to_s, :tags => tags )
+  end
 end
