@@ -32,6 +32,14 @@ module RightScale
 
       def initialize(params = {})
         @params = params
+        enforce_strings_as_keys
+      end
+
+      # just trying to be consistant with our internal @params storage, always using string keys to store.
+      def enforce_strings_as_keys
+        @params.each do |key, value|
+          key = key.to_s unless key.is_a?(String)
+        end
       end
 
       def self.resource_plural_name
@@ -40,6 +48,19 @@ module RightScale
 
       def self.resource_singluar_name
         self.to_s.underscore
+      end
+
+      def resource_plural_name
+        self.class.to_s.underscore.pluralize
+      end
+
+      def resource_singular_name
+        self.class.to_s.underscore
+      end
+
+      def save
+        uri = URI.parse(self.href)
+        connection.put(uri.path, resource_singular_name.to_sym => @params)
       end
 
       # matches using result of block match expression
@@ -128,10 +149,11 @@ module RightScale
 
       # the following two methods are used to access the @params hash in a friendly way
       def method_missing(method_name, *args)
-        if @params[method_name.to_s]
-          return @params[method_name.to_s] 
-        elsif @params[method_name.to_s.gsub(/_/,'-')]
-          return @params[method_name.to_s.gsub(/_/,'-')]
+        mn = method_name.to_s
+        assignment = mn.gsub!(/=/,"")
+        if @params[mn]
+          @params[mn] = args[0] if assignment
+          return @params[mn] 
         else  
           raise "called unknown method #{method_name} with #{args.inspect}"
         end

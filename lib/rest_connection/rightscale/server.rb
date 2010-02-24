@@ -73,12 +73,16 @@ class Server < RightScale::Api::Base
       connection.logger("WARNING: was in #{self.state} so skiping stop call")
     end
   end
-  
-  def run_script(script)
+
+  # This method takes a RightScript or Executable, and optional run time parameters in an options hash.
+  def run_script(script,opts=nil)
     serv_href = URI.parse(self.href)
-    location = connection.post(serv_href.path + '/run_script', :right_script => script.href)
+    script_options = Hash.new
+    script_options[:right_script] = script.href
+    script_options[:server] = {:parameters => opts} unless opts.nil?
+    location = connection.post(serv_href.path + '/run_script', script_options)
     Status.new('href' => location)
-  end
+  end 
 
   def set_input(name, value)
     serv_href = URI.parse(self.href)
@@ -95,9 +99,14 @@ class Server < RightScale::Api::Base
     @params.merge! connection.get(serv_href.path + "/settings")
   end
 
-  def monitors
+  def get_sketchy_data
     serv_href = URI.parse(self.href)
-    @params.merge! connection.get(serv_href.path + "/monitors")
+    @params.merge! connection.get(serv_href.path + "/get_sketchy_data")
+  end
+
+  def monitoring
+    serv_href = URI.parse(self.href)
+    @params.merge! connection.get(serv_href.path + "/monitoring")
   end
 
   def reboot
