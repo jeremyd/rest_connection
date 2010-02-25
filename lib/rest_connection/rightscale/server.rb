@@ -78,8 +78,9 @@ class Server < RightScale::Api::Base
   def run_script(script,opts=nil)
     serv_href = URI.parse(self.href)
     script_options = Hash.new
-    script_options[:right_script] = script.href
-    script_options[:server] = {:parameters => opts} unless opts.nil?
+    script_options[:server] = Hash.new
+    script_options[:server][:right_script_href] = script.href
+    script_options[:server][:parameters] = opts unless opts.nil?
     location = connection.post(serv_href.path + '/run_script', script_options)
     Status.new('href' => location)
   end 

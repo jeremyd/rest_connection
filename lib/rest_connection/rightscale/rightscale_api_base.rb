@@ -32,14 +32,6 @@ module RightScale
 
       def initialize(params = {})
         @params = params
-        enforce_strings_as_keys
-      end
-
-      # just trying to be consistant with our internal @params storage, always using string keys to store.
-      def enforce_strings_as_keys
-        @params.each do |key, value|
-          key = key.to_s unless key.is_a?(String)
-        end
       end
 
       def self.resource_plural_name
@@ -92,7 +84,7 @@ module RightScale
       # the argument can be 
       # 1) takes href (URI), 
       # 2) or id (Integer)
-      # 3) or symbol :all
+      # 3) or symbol :all, :first, :last
       def self.find(href, &block)
         if href.is_a?(Integer)
           return self.new(connection.get(self.resource_plural_name + "/#{href}"))
@@ -151,19 +143,26 @@ module RightScale
       def method_missing(method_name, *args)
         mn = method_name.to_s
         assignment = mn.gsub!(/=/,"")
+        mn_dash = mn.gsub(/_/,"-")
         if @params[mn]
           @params[mn] = args[0] if assignment
           return @params[mn] 
+        elsif @params[mn_dash]
+          @params[mn_dash] = args[0] if assignment
+          return @params[mn_dash] 
         else  
           raise "called unknown method #{method_name} with #{args.inspect}"
         end
       end
 
       def [](name)
-        if @params[name]
-          return @params[name]
-        else
-          return nil
+        try_these = [name, name.gsub(/_/,'-'), name.to_sym]
+        try_these.each do |t|
+          if @params[t]
+            return @params[name]
+          else
+            return nil
+          end
         end
       end
 
