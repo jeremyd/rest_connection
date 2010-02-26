@@ -13,15 +13,21 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-require 'rest_connection/rightscale/executable'
-require 'rest_connection/rightscale/server'
-require 'rest_connection/rightscale/deployment'
-require 'rest_connection/rightscale/status'
-require 'rest_connection/rightscale/server_template'
-require 'rest_connection/rightscale/right_script'
-require 'rest_connection/rightscale/instance'
-require 'rest_connection/rightscale/ec2_security_group'
-require 'rest_connection/rightscale/ec2_ssh_key'
-require 'rest_connection/rightscale/multi_cloud_image'
-require 'rest_connection/rightscale/tag'
-require 'rest_connection/rightscale/event'
+# Example:
+# a = Ec2ServerArray.new(:href => "https://validhref")
+# st = ServerTemplate.new(:href => "https://validhref")
+# st.executables.find(:nickname
+# a.run_script_on_all(
+
+class Ec2ServerArray < RightScale::Api::Base
+  def run_script_on_all(script, server_template_hrefs, inputs=nil)
+     serv_href = URI.parse(self.href)
+     options = Hash.new
+     options[:ec2_server_array] = Hash.new 
+     options[:ec2_server_array][:right_script_href] = self.href
+     options[:ec2_server_array][:parameters] = inputs unless inputs.nil?
+     options[:ec2_server_array][:server_template_hrefs] = server_template_hrefs
+     connection.post(serv_href.path, options)
+  end
+end
+

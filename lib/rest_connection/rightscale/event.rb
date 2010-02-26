@@ -13,15 +13,19 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-require 'rest_connection/rightscale/executable'
-require 'rest_connection/rightscale/server'
-require 'rest_connection/rightscale/deployment'
-require 'rest_connection/rightscale/status'
-require 'rest_connection/rightscale/server_template'
-require 'rest_connection/rightscale/right_script'
-require 'rest_connection/rightscale/instance'
-require 'rest_connection/rightscale/ec2_security_group'
-require 'rest_connection/rightscale/ec2_ssh_key'
-require 'rest_connection/rightscale/multi_cloud_image'
-require 'rest_connection/rightscale/tag'
-require 'rest_connection/rightscale/event'
+require 'rest_connection/mechanize_connection'
+require 'ruby-debug'
+
+class Event
+  include MechanizeConnection::Connection
+
+   def get_events_feed
+      wind_monkey
+      raise "FATAL: you must set settings[:events_feed_url] to a valid rightscale feed url+feed_token to use the events feed." unless connection.settings[:events_feed_url]
+      url = connection.settings[:events_feed_url]  
+      agent.get(url)
+      debugger
+      puts "wootywoot"
+    end
+
+end
