@@ -14,7 +14,7 @@
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
 require 'rest_connection/mechanize_connection'
-require 'activesupport'
+require 'active_support'
 
 module RightScale
   module Api
