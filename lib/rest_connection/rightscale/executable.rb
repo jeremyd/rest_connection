@@ -13,14 +13,14 @@ class Executable < RightScale::Api::Base
   #      }
 
   def recipe?
-    if self["recipe"].nil? && right_script['href']
+    if self["recipe"] == nil # && right_script['href']
       return false
     end
     true
   end
 
   def right_script?
-    if self["recipe"].nil? && right_script['href']
+    if self["recipe"] == nil # && right_script['href']
       return true
     end
     false
