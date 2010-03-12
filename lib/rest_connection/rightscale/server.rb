@@ -115,22 +115,36 @@ class Server < RightScale::Api::Base
     connection.post(serv_href.path + "/reboot") 
   end
 
-  def relaunch
-    unless state == "stopped"
-      wind_monkey
-      server_id = self.href.split(/\//).last
-      base_url = URI.parse(self.href)
-      base_url.path = "/servers/#{server_id}"
-
-      s = agent.get(base_url.to_s)
-      relaunch = s.links.detect {|d| d.to_s == "Relaunch"}
-      prelaunch_page = agent.get(relaunch.href)
-      launch_form = prelaunch_page.forms[2]
-      launch_form.radiobuttons_with(:name => 'launch_immediately').first.check
-      agent.submit(launch_form, launch_form.buttons.first)
-    else
-      connection.logger("WARNING: detected server is #{self.state}, skipping relaunch")
-    end
+  def events
+    my_events = Event.new
+    id = self.href.split(/\//).last
+    my_events.filter_by(:server_id, id)
   end
+
+  def relaunch
+    self.stop
+    self.wait_for_state("stopped")
+    self.start  
+  end
+
+#  DOES NOT WORK: fragile web scraping
+#  def relaunch
+#    unless state == "stopped"
+#      wind_monkey
+#      server_id = self.href.split(/\//).last
+#      base_url = URI.parse(self.href)
+#      base_url.path = "/servers/#{server_id}"
+#
+#      s = agent.get(base_url.to_s)
+#      relaunch = s.links.detect {|d| d.to_s == "Relaunch"}
+#      prelaunch_page = agent.get(relaunch.href)
+#      debugger
+#      launch_form = prelaunch_page.forms[2]
+#      launch_form.radiobuttons_with(:name => 'launch_immediately').first.check
+#      agent.submit(launch_form, launch_form.buttons.first)
+#    else
+#      connection.logger("WARNING: detected server is #{self.state}, skipping relaunch")
+#    end
+#  end
 end
 

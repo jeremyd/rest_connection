@@ -14,18 +14,47 @@
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
 require 'rest_connection/mechanize_connection'
-require 'ruby-debug'
 
-class Event
+class Event < RightScale::Api::Base
   include MechanizeConnection::Connection
+  
+  attr_accessor :cache
 
-   def get_events_feed
-      wind_monkey
-      raise "FATAL: you must set settings[:events_feed_url] to a valid rightscale feed url+feed_token to use the events feed." unless connection.settings[:events_feed_url]
-      url = connection.settings[:events_feed_url]  
-      agent.get(url)
-      debugger
-      puts "wootywoot"
+  def initialize
+    get_events    
+    self
+  end
+
+  def filter_by(search, tag)
+    if search == :server_id
+      view = @cache.select do |k,v| 
+        v =~ /servers%2F#{tag}\"/
+      end
+    elsif search == :acct_id
+# TODO: regex for acct id
+    elsif search == :server_nickname
+      # the server nickname (subject) is in the key of the events hash
+      view = events.select { |e| e.keys.include?(tag) }
     end
+    view
+  end
+
+  def get_events
+    raise "FATAL: you must set settings[:events_feed_url] to a valid rightscale feed url+feed_token to use the events feed." unless connection.settings[:events_feed_url]
+    url = connection.settings[:events_feed_url]  
+    feed = agent.get(url)
+    doc = Nokogiri::XML(feed.body)
+    entries = doc.search("entry")
+    events = {}
+    entries.each do |e|
+      events[e.search("title").children.text] = e.search("content").text
+      #events[e.search("title").children.text] = e.search("link").to_s
+    end
+
+    # might work for json?
+    #feed = agent.get("https://my.rightscale.com/user_notifications/update_events", {"X-Requested-With" => "XMLHttpRequest"})
+    
+    @cache = events
+  end
 
 end
