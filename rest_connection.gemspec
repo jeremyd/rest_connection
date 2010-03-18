@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Deininger"]
-  s.date = %q{2010-03-12}
+  s.date = %q{2010-03-18}
   s.description = %q{provides rest_connection}
   s.email = %q{jeremy@rubyonlinux.org}
   s.extra_rdoc_files = [
@@ -31,12 +31,10 @@ Gem::Specification.new do |s|
      "examples/run_php_chef_sequence.rb",
      "examples/set_deployment_template_href.rb",
      "lib/rest_connection.rb",
-     "lib/rest_connection/mechanize_connection.rb",
      "lib/rest_connection/rightscale/deployment.rb",
      "lib/rest_connection/rightscale/ec2_security_group.rb",
      "lib/rest_connection/rightscale/ec2_server_array.rb",
      "lib/rest_connection/rightscale/ec2_ssh_key.rb",
-     "lib/rest_connection/rightscale/event.rb",
      "lib/rest_connection/rightscale/executable.rb",
      "lib/rest_connection/rightscale/instance.rb",
      "lib/rest_connection/rightscale/multi_cloud_image.rb",
@@ -74,14 +72,11 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<mechanize>, [">= 0.9.3"])
       s.add_runtime_dependency(%q<activesupport>, [">= 0"])
     else
-      s.add_dependency(%q<mechanize>, [">= 0.9.3"])
       s.add_dependency(%q<activesupport>, [">= 0"])
     end
   else
-    s.add_dependency(%q<mechanize>, [">= 0.9.3"])
     s.add_dependency(%q<activesupport>, [">= 0"])
   end
 end
