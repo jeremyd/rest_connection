@@ -19,17 +19,27 @@ require 'net/ssh'
 # This is a mixin module run_recipes until api support is ready for checking result of recipe run.
 # The mixin typically used from Server#run_recipe
 module SshHax
+
+  def ssh_key_config(item)
+    if item.is_a?(Array)
+      ssh_keys = item
+    elsif item.is_a?(String)
+      ssh_keys = [item]
+    elsif k = connection.settings[:ssh_key]
+      ssh_keys = [k]
+    elsif kk = connection.settings[:ssh_keys]
+      ssh_keys = kk
+    else
+      ssh_keys = nil
+    end
+    ssh_keys
+  end
+
   # recipe can be either a String, or an Executable
   # host_dns is optional and will default to objects self.dns_name
-  def run_recipe(recipe, host_dns=self.dns_name)
+  def run_recipe(recipe, ssh_key=nil, host_dns=self.dns_name)
     if recipe.is_a?(Executable)
       recipe = recipe.recipe
-    end
-    # legacy used this key by default
-    if connection.settings[:ssh_key]
-      ssh_key = connection.settings[:ssh_key] 
-    else
-      ssh_key='~/.ssh/publish-test'
     end
     status = nil
     result = nil
@@ -37,7 +47,7 @@ module SshHax
     tail_command ="tail -f -n1 /var/log/messages"
     expect = /RightLink.*RS> ([completed|failed]+: < #{recipe} >)/
     run_this = "rs_run_recipe -n '#{recipe}'"
-    Net::SSH.start(host_dns, 'root', :keys => [ssh_key]) do |ssh|
+    Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key)) do |ssh|
       cmd_channel = ssh.open_channel do |ch1|
         ch1.on_request('exit-status') do |ch, data|
           status = data.read_long
@@ -89,30 +99,27 @@ module SshHax
     return {:status => success, :output => output}
   end
 
-  def spot_check(command, ssh_key="~/.ssh/publish-test", host_dns=self.dns_name, &block)
-    ssh_key = connection.settings[:ssh_key] if connection.settings[:ssh_key]
-    connection.logger "SSHing to #{host_dns} using key #{ssh_key}"
-    Net::SSH.start(host_dns, 'root', :keys => [ssh_key]) do |ssh|
+  def spot_check(command, ssh_key=nil, host_dns=self.dns_name, &block)
+    connection.logger "SSHing to #{host_dns}"
+    Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key)) do |ssh|
       result = ssh.exec!(command)
       yield result
     end
   end 
 
   # returns true or false based on command success
-  def spot_check_command?(command, ssh_key="~/.ssh/publish-test", host_dns=self.dns_name)
-    ssh_key = connection.settings[:ssh_key] if connection.settings[:ssh_key]
+  def spot_check_command?(command, ssh_key=nil, host_dns=self.dns_name)
     results = spot_check_command(command, ssh_key, host_dns)
     return results[:status] == 0
   end
 
 
   # returns hash of exit_status and output from command
-  def spot_check_command(command, ssh_key="~/.ssh/publish-test", host_dns=self.dns_name)
-    ssh_key = connection.settings[:ssh_key] if connection.settings[:ssh_key]
+  def spot_check_command(command, ssh_key=nil, host_dns=self.dns_name)
     connection.logger "SSHing to #{host_dns} using key #{ssh_key}"
     status = nil
     output = ""
-    Net::SSH.start(host_dns, 'root', :keys => [ssh_key]) do |ssh|
+    Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key)) do |ssh|
       cmd_channel = ssh.open_channel do |ch1|
         ch1.on_request('exit-status') do |ch, data|
           status = data.read_long
