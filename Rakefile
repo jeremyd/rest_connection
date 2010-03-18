@@ -8,6 +8,7 @@ Jeweler::Tasks.new do |gemspec|
   gemspec.homepage = "http://github.com/jeremyd/rest_connection"
   gemspec.authors = ["Jeremy Deininger"]
   gemspec.add_dependency('activesupport')
+  gemspec.add_dependency('net-ssh')
 end
 Jeweler::GemcutterTasks.new
 
