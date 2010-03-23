@@ -148,8 +148,11 @@ module RightScale
         elsif @params[mn_dash]
           @params[mn_dash] = args[0] if assignment
           return @params[mn_dash] 
+        elsif @params[mn.to_sym]
+          return @params[mn.to_sym]
         else  
-          raise "called unknown method #{method_name} with #{args.inspect}"
+          return nil
+          #raise "called unknown method #{method_name} with #{args.inspect}"
         end
       end
 
