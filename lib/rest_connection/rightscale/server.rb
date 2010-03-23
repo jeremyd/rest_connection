@@ -75,15 +75,16 @@ class Server < RightScale::Api::Base
   end
 
   # This method takes a RightScript or Executable, and optional run time parameters in an options hash.
-#  def run_script(script,opts=nil)
-#    serv_href = URI.parse(self.href)
-#    script_options = Hash.new
-#    script_options[:server] = Hash.new
-#    script_options[:server][:right_script_href] = script.href
-#    script_options[:server][:parameters] = opts unless opts.nil?
-#    location = connection.post(serv_href.path + '/run_script', script_options)
-#    Status.new('href' => location)
-#  end 
+  # This should be used with v4 images only.
+  def run_script(script,opts=nil)
+    serv_href = URI.parse(self.href)
+    script_options = Hash.new
+    script_options[:server] = Hash.new
+    script_options[:server][:right_script_href] = script.href
+    script_options[:server][:parameters] = opts unless opts.nil?
+    location = connection.post(serv_href.path + '/run_script', script_options)
+    Status.new('href' => location)
+  end 
 
   def set_input(name, value)
     serv_href = URI.parse(self.href)
