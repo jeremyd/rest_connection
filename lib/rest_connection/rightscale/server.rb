@@ -75,15 +75,15 @@ class Server < RightScale::Api::Base
   end
 
   # This method takes a RightScript or Executable, and optional run time parameters in an options hash.
-  def run_script(script,opts=nil)
-    serv_href = URI.parse(self.href)
-    script_options = Hash.new
-    script_options[:server] = Hash.new
-    script_options[:server][:right_script_href] = script.href
-    script_options[:server][:parameters] = opts unless opts.nil?
-    location = connection.post(serv_href.path + '/run_script', script_options)
-    Status.new('href' => location)
-  end 
+#  def run_script(script,opts=nil)
+#    serv_href = URI.parse(self.href)
+#    script_options = Hash.new
+#    script_options[:server] = Hash.new
+#    script_options[:server][:right_script_href] = script.href
+#    script_options[:server][:parameters] = opts unless opts.nil?
+#    location = connection.post(serv_href.path + '/run_script', script_options)
+#    Status.new('href' => location)
+#  end 
 
   def set_input(name, value)
     serv_href = URI.parse(self.href)
@@ -126,6 +126,7 @@ class Server < RightScale::Api::Base
     self.wait_for_state("stopped")
     self.start  
   end
+
 
 #  DOES NOT WORK: fragile web scraping
 #  def relaunch

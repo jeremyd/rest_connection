@@ -35,18 +35,11 @@ module SshHax
     ssh_keys
   end
 
-  # recipe can be either a String, or an Executable
-  # host_dns is optional and will default to objects self.dns_name
-  def run_recipe(recipe, ssh_key=nil, host_dns=self.dns_name)
-    if recipe.is_a?(Executable)
-      recipe = recipe.recipe
-    end
+  def run_and_tail(run_this, tail_command, expect, ssh_key=nil, host_dns=self.dns_name)
     status = nil
     result = nil
     output = ""
-    tail_command ="tail -f -n1 /var/log/messages"
-    expect = /RightLink.*RS> ([completed|failed]+: < #{recipe} >)/
-    run_this = "rs_run_recipe -n '#{recipe}'"
+    connection.logger("Running: #{run_this}")
     Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key)) do |ssh|
       cmd_channel = ssh.open_channel do |ch1|
         ch1.on_request('exit-status') do |ch, data|
@@ -93,10 +86,41 @@ module SshHax
       cmd_channel.wait
       log_channel.wait
     end
-    success = result.include?('completed')
     connection.logger output
+    success = result.include?('completed')
     connection.logger "Converge failed. See server audit: #{self.audit_link}" unless success
     return {:status => success, :output => output}
+  end
+
+  # script is an Executable object with minimally nick or id set
+  def run_script(script, options={}, ssh_key=nil)
+    raise "FATAL: run_script called on a server with no dns_name. You need to run .settings on the server to populate this attribute." unless self.dns_name
+
+    raise "FATAL: unrecognized format for script.  Must be an Executable or RightScript with href or name attributes" unless (script.is_a?(RightScript) || script.is_a?(Executable)) && (script.href || script.name)
+    if script.href
+      run_this = "rs_run_right_script -i #{script.href.split(/\//).last}" 
+    elsif script.name
+      run_this = "rs_run_right_script -n #{script.name}" 
+    end
+    tail_command ="tail -f -n1 /var/log/messages"
+    expect = /RightLink.*RS> ([completed|failed]+:)/
+    options.each do |key, value|
+      run_this += " -p #{key}=#{value}"
+    end
+    AuditEntry.new(run_and_tail(run_this, tail_command, expect))
+  end
+
+  # recipe can be either a String, or an Executable
+  # host_dns is optional and will default to objects self.dns_name
+  def run_recipe(recipe, ssh_key=nil, host_dns=self.dns_name)
+    raise "FATAL: run_script called on a server with no dns_name. You need to run .settings on the server to populate this attribute." unless self.dns_name
+    if recipe.is_a?(Executable)
+      recipe = recipe.recipe
+    end
+    tail_command ="tail -f -n1 /var/log/messages"
+    expect = /RightLink.*RS> ([completed|failed]+: < #{recipe} >)/
+    run_this = "rs_run_recipe -n '#{recipe}'"
+    run_and_tail(run_this, tail_command, expect, ssh_key)
   end
 
   def spot_check(command, ssh_key=nil, host_dns=self.dns_name, &block)
@@ -131,6 +155,7 @@ module SshHax
             status = 1
           end
           ch2.on_data do |ch, data|
+
             output += data
           end
           ch2.on_extended_data do |ch, type, data|

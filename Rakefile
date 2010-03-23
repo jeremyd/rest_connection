@@ -9,6 +9,7 @@ Jeweler::Tasks.new do |gemspec|
   gemspec.authors = ["Jeremy Deininger"]
   gemspec.add_dependency('activesupport')
   gemspec.add_dependency('net-ssh')
+  gemspec.add_dependency('json')
 end
 Jeweler::GemcutterTasks.new
 
