@@ -95,8 +95,11 @@ module SshHax
   # script is an Executable object with minimally nick or id set
   def run_executable(script, options={}, ssh_key=nil)
     raise "FATAL: run_executable called on a server with no dns_name. You need to run .settings on the server to populate this attribute." unless self.dns_name
+    if script.is_a?(Executable)
+      script = script.right_script
+    end
 
-    raise "FATAL: unrecognized format for script.  Must be an Executable or RightScript with href or name attributes" unless (script.is_a?(RightScript) || script.is_a?(Executable)) && (script.href || script.name)
+    raise "FATAL: unrecognized format for script.  Must be an Executable or RightScript with href or name attributes" unless (script.is_a?(RightScript)) && (script.href || script.name)
     if script.href
       run_this = "rs_run_right_script -i #{script.href.split(/\//).last}" 
     elsif script.name
