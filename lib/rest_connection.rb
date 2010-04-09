@@ -169,13 +169,10 @@ module RestConnection
     def logger(message)
       init_message = "Initializing Logging using "
       if @@logger.nil?
-        if @settings[:log_file]
-          @@logger = Logger.new(@settings[:log_file])
-          init_message += @settings[:log_file]
-        elsif ENV['REST_CONNECTION_LOG']
+        if ENV['REST_CONNECTION_LOG']
           @@logger = Logger.new(ENV['REST_CONNECTION_LOG'])
           init_message += ENV['REST_CONNECTION_LOG']
-        else @settings[:log_file]
+        else
           @@logger = Logger.new(STDOUT)
           init_message += "STDOUT"
         end

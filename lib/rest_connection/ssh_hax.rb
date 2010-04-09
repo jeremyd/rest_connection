@@ -143,7 +143,7 @@ module SshHax
 
   # returns hash of exit_status and output from command
   def spot_check_command(command, ssh_key=nil, host_dns=self.dns_name)
-    connection.logger "SSHing to #{host_dns} using key #{ssh_key}"
+    connection.logger "SSHing to #{host_dns} using key(s) #{ssh_key_config(ssh_key)}"
     status = nil
     output = ""
     Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key)) do |ssh|
