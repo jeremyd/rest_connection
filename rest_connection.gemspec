@@ -9,62 +9,17 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Deininger"]
-  s.date = %q{2010-03-23}
+  s.date = %q{2010-04-12}
   s.description = %q{provides rest_connection}
   s.email = %q{jeremy@rubyonlinux.org}
   s.extra_rdoc_files = [
     "README"
-  ]
-  s.files = [
-    "README",
-     "Rakefile",
-     "VERSION",
-     "config/rest_api_config.yaml.sample",
-     "examples/console.rb",
-     "examples/dev_setup.rb",
-     "examples/relaunch_deployment.rb",
-     "examples/restart_instance_agent.rb",
-     "examples/right_scale_ec2_instances_api_test.rb",
-     "examples/run_ebs_sequence.rb",
-     "examples/run_ebs_terminate.rb",
-     "examples/run_mysql_chef_sequence.rb",
-     "examples/run_php_chef_sequence.rb",
-     "examples/set_deployment_template_href.rb",
-     "lib/rest_connection.rb",
-     "lib/rest_connection/rightscale/deployment.rb",
-     "lib/rest_connection/rightscale/ec2_security_group.rb",
-     "lib/rest_connection/rightscale/ec2_server_array.rb",
-     "lib/rest_connection/rightscale/ec2_ssh_key.rb",
-     "lib/rest_connection/rightscale/executable.rb",
-     "lib/rest_connection/rightscale/instance.rb",
-     "lib/rest_connection/rightscale/multi_cloud_image.rb",
-     "lib/rest_connection/rightscale/right_script.rb",
-     "lib/rest_connection/rightscale/rightscale_api_base.rb",
-     "lib/rest_connection/rightscale/rightscale_api_resources.rb",
-     "lib/rest_connection/rightscale/server.rb",
-     "lib/rest_connection/rightscale/server_template.rb",
-     "lib/rest_connection/rightscale/status.rb",
-     "lib/rest_connection/rightscale/tag.rb",
-     "lib/rest_connection/ssh_hax.rb",
-     "rest_connection.gemspec"
   ]
   s.homepage = %q{http://github.com/jeremyd/rest_connection}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.6}
   s.summary = %q{lib for restful connections to the rightscale api}
-  s.test_files = [
-    "examples/restart_instance_agent.rb",
-     "examples/console.rb",
-     "examples/run_php_chef_sequence.rb",
-     "examples/set_deployment_template_href.rb",
-     "examples/dev_setup.rb",
-     "examples/right_scale_ec2_instances_api_test.rb",
-     "examples/relaunch_deployment.rb",
-     "examples/run_ebs_terminate.rb",
-     "examples/run_mysql_chef_sequence.rb",
-     "examples/run_ebs_sequence.rb"
-  ]
 
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION

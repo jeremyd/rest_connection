@@ -14,7 +14,9 @@
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
 
-class RightScript < RightScale::Api::Base
+class RightScript 
+  include RightScale::Api::Base
+  extend RightScale::Api::BaseExtend
   def self.from_yaml(yaml)
     scripts = []
     x = YAML.load(yaml)

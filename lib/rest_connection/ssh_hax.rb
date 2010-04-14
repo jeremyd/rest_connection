@@ -93,7 +93,7 @@ module SshHax
   end
 
   # script is an Executable object with minimally nick or id set
-  def run_executable(script, options={}, ssh_key=nil)
+  def run_executable_with_ssh(script, options={}, ssh_key=nil)
     raise "FATAL: run_executable called on a server with no dns_name. You need to run .settings on the server to populate this attribute." unless self.dns_name
     if script.is_a?(Executable)
       script = script.right_script
@@ -115,7 +115,7 @@ module SshHax
 
   # recipe can be either a String, or an Executable
   # host_dns is optional and will default to objects self.dns_name
-  def run_recipe(recipe, ssh_key=nil, host_dns=self.dns_name)
+  def run_recipe_with_ssh(recipe, ssh_key=nil, host_dns=self.dns_name)
     raise "FATAL: run_script called on a server with no dns_name. You need to run .settings on the server to populate this attribute." unless self.dns_name
     if recipe.is_a?(Executable)
       recipe = recipe.recipe

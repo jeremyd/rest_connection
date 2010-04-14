@@ -13,7 +13,9 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-class Tag < RightScale::Api::Base
+class Tag 
+  include RightScale::Api::Base
+  extend RightScale::Api::BaseExtend
 
   def self.search(resource_name, tags)
     result = connection.get("/tags/search", :resource_type => resource_name.to_s, :tags => tags )

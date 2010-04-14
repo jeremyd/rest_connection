@@ -15,8 +15,11 @@
 
 require 'rest_connection/ssh_hax'
 
-class Server < RightScale::Api::Base
+class Server 
+  include RightScale::Api::Base
+  extend RightScale::Api::BaseExtend
   include SshHax
+
   def self.create(opts)
     create_options = Hash.new
     create_options[self.resource_singluar_name.to_sym] = opts
@@ -74,9 +77,29 @@ class Server < RightScale::Api::Base
     end
   end
 
-  # This method takes a RightScript or Executable, and optional run time parameters in an options hash.
+  # This should be used with v5 images only.
+  # executable to run can be a string, or an Executable object
+  def run_executable(executable)
+    script_options = Hash.new
+    script_options[:server] = Hash.new
+    if executable.is_a?(Executable)
+      if executable.recipe?
+        script_options[:server][:recipe] = executable.recipe
+      else
+        script_options[:server][:right_script_href] = executable.right_script.href
+      end
+    end
+    serv_href = URI.parse(self.href)
+    script_options[:server][:parameters] = opts unless opts.nil?
+    location = connection.post(serv_href.path + '/run_executable', script_options)
+    AuditEntry.new('href' => location)
+  end
+
   # This should be used with v4 images only.
   def run_script(script,opts=nil)
+    if script.is_a?(Executable)
+      script = script.right_script
+    end
     serv_href = URI.parse(self.href)
     script_options = Hash.new
     script_options[:server] = Hash.new

@@ -13,7 +13,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-class Deployment < RightScale::Api::Base
+class Deployment 
+  include RightScale::Api::Base
+  extend RightScale::Api::BaseExtend
+
   def set_input(name, value)
     deploy_href = URI.parse(self.href)
     connection.put(deploy_href.path, :deployment => {:parameters => {name => value} })

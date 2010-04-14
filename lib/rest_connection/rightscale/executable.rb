@@ -1,4 +1,6 @@
-class Executable < RightScale::Api::Base
+class Executable 
+  include RightScale::Api::Base
+  extend RightScale::Api::BaseExtend
 
   # executable can be EITHER a right_script or recipe
   # executable example params format:

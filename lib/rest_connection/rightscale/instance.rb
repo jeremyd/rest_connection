@@ -16,7 +16,9 @@
 # This is an instance facing api and can only be used with
 # an authentication URL normally found in the instance's userdata called
 # RS_API_URL
-class Instance < RightScale::Api::Base
+class Instance 
+  include RightScale::Api::Base
+  extend RightScale::Api::BaseExtend
   #def create_ebs_volume_from_snap(snap_aws_id)
   #  connection.post('create_ebs_volume.js', :aws_id => snap_aws_id )
   #end 

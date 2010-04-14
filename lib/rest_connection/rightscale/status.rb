@@ -14,20 +14,12 @@
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 #
 #    For now this is a stub for using with the ssh enabled Server#run_script
-class AuditEntry
-  attr_accessor :status, :output
-  def initialize(opts)
-    @status = opts[:status]
-    @output = opts[:output]
-  end
-  def wait_for_completed(audit_link = "no audit link available")
-    raise "FATAL: script failed. see audit #{audit_link}" unless @status
-  end
-end
 
 #This is the v4 image only work status api.
 # was used by Server#run_script (depricating..)
-class Status < RightScale::Api::Base
+class Status 
+  include RightScale::Api::Base
+  extend RightScale::Api::BaseExtend
   def wait_for_completed(audit_link = "no audit link available")
     while(1)
       reload

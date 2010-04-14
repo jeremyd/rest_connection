@@ -13,5 +13,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-class Ec2SecurityGroup < RightScale::Api::Base
+class Ec2SecurityGroup 
+  include RightScale::Api::Base
+  extend RightScale::Api::BaseExtend
 end
