@@ -78,7 +78,7 @@ class Server
   end
 
   # This should be used with v5 images only.
-  # executable to run can be a string, or an Executable object
+  # executable to run can be an Executable or RightScript object
   def run_executable(executable, opts=nil)
     script_options = Hash.new
     script_options[:server] = Hash.new
@@ -88,7 +88,12 @@ class Server
       else
         script_options[:server][:right_script_href] = executable.right_script.href
       end
+    elsif executable.is_a?(RightScript)
+      script_options[:server][:right_script_href] = executable.href
+    else
+      raise "Invalid class passed to run_executable, needs Executable or RightScript, was:#{executable.class}"
     end
+
     serv_href = URI.parse(self.href)
     script_options[:server][:parameters] = opts unless opts.nil?
     location = connection.post(serv_href.path + '/run_executable', script_options)
