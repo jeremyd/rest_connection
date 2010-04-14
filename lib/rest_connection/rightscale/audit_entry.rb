@@ -12,24 +12,33 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
+#
+#class AuditEntry
+#  attr_accessor :status, :output
+#  def initialize(opts)
+#    @status = opts[:status]
+#    @output = opts[:output]
+#  end
+#  def wait_for_completed(audit_link = "no audit link available")
+#    raise "FATAL: script failed. see audit #{audit_link}" unless @status
+#  end
+#end
 
-# Example:
-# a = Ec2ServerArray.new(:href => "https://validhref")
-# st = ServerTemplate.new(:href => "https://validhref")
-# st.executables.find(:nickname
-# a.run_script_on_all(
-
-class Ec2ServerArray 
-  include RightScale::Api::Base
+class AuditEntry
+  include  RightScale::Api::Base
   extend RightScale::Api::BaseExtend
-  def run_script_on_all(script, server_template_hrefs, inputs=nil)
-     serv_href = URI.parse(self.href)
-     options = Hash.new
-     options[:ec2_server_array] = Hash.new 
-     options[:ec2_server_array][:right_script_href] = self.href
-     options[:ec2_server_array][:parameters] = inputs unless inputs.nil?
-     options[:ec2_server_array][:server_template_hrefs] = server_template_hrefs
-     connection.post(serv_href.path, options)
-  end
-end
 
+  def wait_for_state(state)
+    while(1)
+      reload
+      connection.logger("state is #{self.state}, waiting for #{state}")
+      raise "FATAL error, script failed\nSee Audit: #{self.href}" if self.state == 'failed'
+      sleep 5
+      return true if state == self.state
+    end
+  end
+
+  def wait_for_completed
+    wait_for_state("completed")
+  end
+end 
