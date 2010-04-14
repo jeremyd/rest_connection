@@ -38,7 +38,7 @@ class AuditEntry
     end
   end
 
-  def wait_for_completed
+  def wait_for_completed(legacy=nil)
     wait_for_state("completed")
   end
 end 
