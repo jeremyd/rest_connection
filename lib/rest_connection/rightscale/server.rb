@@ -79,7 +79,7 @@ class Server
 
   # This should be used with v5 images only.
   # executable to run can be a string, or an Executable object
-  def run_executable(executable)
+  def run_executable(executable, opts=nil)
     script_options = Hash.new
     script_options[:server] = Hash.new
     if executable.is_a?(Executable)
