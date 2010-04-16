@@ -139,9 +139,13 @@ class Server
     @params.merge! connection.get(serv_href.path + "/monitoring")
   end
 
-  def reboot
+  # takes Bool argument to wait for state change (insurance that we can detect a reboot happened)
+  def reboot(wait_for_state = false)
     serv_href = URI.parse(self.href)
     connection.post(serv_href.path + "/reboot") 
+    if wait_for_state
+      wait_for_state_change
+    end
   end
 
   def events
@@ -156,6 +160,20 @@ class Server
     self.start  
   end
 
+  def wait_for_state_change(old_state = nil)
+    timeout = 60*4
+    timer = 0
+    while(timer < timeout)
+      reload
+      old_state = self.state unless old_state
+      connection.logger("#{nickname} is #{self.state}")
+      return true if self.state != old_state
+      sleep 5
+      timer += 5
+      connection.logger("waiting for server #{nickname} to change from #{old_state} state.")
+    end
+    raise("FATAL: timeout after #{timeout}s waiting for state change")
+  end
 
 #  DOES NOT WORK: fragile web scraping
 #  def relaunch
