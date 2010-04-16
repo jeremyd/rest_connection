@@ -141,10 +141,12 @@ class Server
 
   # takes Bool argument to wait for state change (insurance that we can detect a reboot happened)
   def reboot(wait_for_state = false)
+    reload
+    old_state = self.state
     serv_href = URI.parse(self.href)
     connection.post(serv_href.path + "/reboot") 
     if wait_for_state
-      wait_for_state_change
+      wait_for_state_change(old_state)
     end
   end
 
@@ -161,7 +163,7 @@ class Server
   end
 
   def wait_for_state_change(old_state = nil)
-    timeout = 60*4
+    timeout = 60*7
     timer = 0
     while(timer < timeout)
       reload
