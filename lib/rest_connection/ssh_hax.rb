@@ -20,6 +20,8 @@ require 'net/ssh'
 # The mixin typically used from Server#run_recipe
 module SshHax
 
+  SSH_RETRY_COUNT = 3
+
   def ssh_key_config(item)
     if item.is_a?(Array)
       ssh_keys = item
@@ -146,6 +148,10 @@ module SshHax
     connection.logger "SSHing to #{host_dns} using key(s) #{ssh_key_config(ssh_key)}"
     status = nil
     output = ""
+    success = false
+    retry_count = 0
+    while (!success && retry_count < SSH_RETRY_COUNT) do
+    begin
     Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key)) do |ssh|
       cmd_channel = ssh.open_channel do |ch1|
         ch1.on_request('exit-status') do |ch, data|
@@ -158,7 +164,6 @@ module SshHax
             status = 1
           end
           ch2.on_data do |ch, data|
-
             output += data
           end
           ch2.on_extended_data do |ch, type, data|
@@ -166,6 +171,11 @@ module SshHax
           end
         end
       end
+    end
+    rescue Exception => e
+      retry_count += 1 # opening the ssh channel failed -- try again.
+      sleep 10
+    end
     end
     connection.logger output
     return {:status => status, :output => output}
