@@ -26,3 +26,6 @@ require 'rest_connection/rightscale/multi_cloud_image'
 require 'rest_connection/rightscale/tag'
 require 'rest_connection/rightscale/rs_internal'
 require 'rest_connection/rightscale/audit_entry'
+require 'rest_connection/rightscale/ec2_ebs_volume'
+require 'rest_connection/rightscale/ec2_ebs_snapshot'
+
