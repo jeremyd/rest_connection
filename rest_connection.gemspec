@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rest_connection}
-  s.version = "0.0.4"
+  s.version = "0.0.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Deininger"]
-  s.date = %q{2010-04-16}
+  s.date = %q{2010-04-21}
   s.description = %q{provides rest_connection}
   s.email = %q{jeremy@rubyonlinux.org}
   s.extra_rdoc_files = [
@@ -61,19 +61,18 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.6}
   s.summary = %q{lib for restful connections to the rightscale api}
   s.test_files = [
-    "spec/rs_internal_spec.rb",
-     "spec/server_spec.rb",
-     "examples/console.rb",
-     "examples/dev_setup.rb",
-     "examples/relaunch_deployment.rb",
+    "spec/server_spec.rb",
+     "spec/rs_internal_spec.rb",
      "examples/restart_instance_agent.rb",
+     "examples/console.rb",
+     "examples/run_php_chef_sequence.rb",
+     "examples/set_deployment_template_href.rb",
+     "examples/dev_setup.rb",
      "examples/right_scale_ec2_instances_api_test.rb",
-     "examples/run_ebs_sequence.rb",
+     "examples/relaunch_deployment.rb",
      "examples/run_ebs_terminate.rb",
      "examples/run_mysql_chef_sequence.rb",
-     "examples/run_php_chef_sequence.rb",
-     "examples/set_deployment_images.rb",
-     "examples/set_deployment_template_href.rb"
+     "examples/run_ebs_sequence.rb"
   ]
 
   if s.respond_to? :specification_version then

@@ -32,7 +32,9 @@ class AuditEntry
     while(1)
       reload
       connection.logger("state is #{self.state}, waiting for #{state}")
-      raise "FATAL error, script failed\nSee Audit: #{self.href}" if self.state == 'failed'
+      friendly_url = "https://my.rightscale.com/audit_entries/"
+      friendly_url += self.href.split(/\//).last
+      raise "FATAL error, #{self.summary}\nSee Audit: API:#{self.href}, WWW:<a href='#{friendly_url}'>#{friendly_url}</a>\n" if self.state == 'failed'
       sleep 5
       return true if state == self.state
     end
