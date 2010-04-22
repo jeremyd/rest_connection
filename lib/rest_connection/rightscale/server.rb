@@ -56,7 +56,8 @@ class Server
   def audit_link
     # proof of concept for now
     server_id = self.href.split(/\//).last
-    "https://my.rightscale.com/servers/#{server_id}#audit_entries"
+    audit_href = "https://my.rightscale.com/servers/#{server_id}#audit_entries"
+    "<a href='#{audit_href}'>#{audit_href}</a>"
   end
 
   def start
