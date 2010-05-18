@@ -22,7 +22,7 @@ class Server
 
   def self.create(opts)
     create_options = Hash.new
-    create_options[self.resource_singluar_name.to_sym] = opts
+    create_options[self.resource_singular_name.to_sym] = opts
     create_options["cloud_id"] = opts[:cloud_id] if opts[:cloud_id]
     location = connection.post(self.resource_plural_name,create_options)    
     newrecord = self.new('href' => location)
@@ -76,6 +76,17 @@ class Server
     else
       connection.logger("WARNING: was in #{self.state} so skiping stop call")
     end
+  end
+
+# Uses ServerInternal api to start and stop EBS based instances
+  def start_ebs
+    @server_internal = ServerInternal.new(:href => self.href)
+    @server_internal.start
+  end
+
+  def stop_ebs
+    @server_internal = ServerInternal.new(:href => self.href)
+    @server_internal.stop
   end
 
   # This should be used with v5 images only.

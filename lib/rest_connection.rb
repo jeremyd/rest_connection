@@ -18,7 +18,6 @@ require 'rubygems'
 require 'json'
 require 'yaml'
 require 'cgi'
-require 'rest_connection/rightscale/rightscale_api_base'
 require 'rest_connection/rightscale/rightscale_api_resources'
 require 'logger'
 

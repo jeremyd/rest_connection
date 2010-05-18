@@ -13,6 +13,9 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
+
+require 'rest_connection/rightscale/rightscale_api_base'
+require 'rest_connection/rightscale/rightscale_api_internal'
 require 'rest_connection/rightscale/executable'
 require 'rest_connection/rightscale/server'
 require 'rest_connection/rightscale/deployment'
@@ -28,4 +31,8 @@ require 'rest_connection/rightscale/rs_internal'
 require 'rest_connection/rightscale/audit_entry'
 require 'rest_connection/rightscale/ec2_ebs_volume'
 require 'rest_connection/rightscale/ec2_ebs_snapshot'
-
+require 'rest_connection/rightscale/server_internal'
+require 'rest_connection/rightscale/ec2_ssh_key_internal'
+require 'rest_connection/rightscale/server_template_internal'
+require 'rest_connection/rightscale/multi_cloud_image_internal'
+require 'rest_connection/rightscale/multi_cloud_image_cloud_setting_internal'
