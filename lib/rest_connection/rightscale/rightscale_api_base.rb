@@ -26,7 +26,7 @@ module RightScale
         self.to_s.underscore.pluralize
       end 
 
-      def resource_singluar_name
+      def resource_singular_name
         self.to_s.underscore
       end
       # matches using result of block match expression
@@ -81,7 +81,7 @@ module RightScale
       end
 
       def create(opts)
-        location = connection.post(self.resource_plural_name, self.resource_singluar_name.to_sym => opts)
+        location = connection.post(self.resource_plural_name, self.resource_singular_name.to_sym => opts)
         newrecord = self.new('href' => location)
         newrecord.reload
         newrecord
@@ -151,6 +151,9 @@ module RightScale
           return @params[mn_dash] 
         elsif @params[mn.to_sym]
           return @params[mn.to_sym]
+        elsif assignment
+          @params[mn] = args[0]
+          return @params[mn] 
         else  
           return nil
           #raise "called unknown method #{method_name} with #{args.inspect}"
@@ -158,7 +161,7 @@ module RightScale
       end
 
       def [](name)
-        try_these = [name, name.gsub(/_/,'-'), name.to_sym]
+        try_these = [name, name.to_s.gsub(/_/,'-'), name.to_sym]
         try_these.each do |t|
           if @params[t]
             return @params[name]
