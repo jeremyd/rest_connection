@@ -13,7 +13,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-require 'active_support'
+require 'active_support/inflector'
 
 module RightScale
   module Api
