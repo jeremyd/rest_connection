@@ -151,6 +151,7 @@ module RestConnection
           begin
             return JSON.load(res.body)
           rescue => e
+            logger("WARNING: failed to parse HTTP response body with JSON.load!")
             return res
           end
         else

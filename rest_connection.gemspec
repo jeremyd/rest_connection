@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Deininger"]
-  s.date = %q{2010-05-17}
+  s.date = %q{2010-05-18}
   s.description = %q{provides rest_connection}
   s.email = %q{jeremy@rubyonlinux.org}
   s.extra_rdoc_files = [
@@ -58,7 +58,11 @@ Gem::Specification.new do |s|
      "lib/rest_connection/rightscale/tag.rb",
      "lib/rest_connection/ssh_hax.rb",
      "rest_connection.gemspec",
+     "spec/ec2_ssh_key_internal_spec.rb",
+     "spec/image_jockey.rb",
+     "spec/method_missing_spec.rb",
      "spec/rs_internal_spec.rb",
+     "spec/server_internal_spec.rb",
      "spec/server_spec.rb"
   ]
   s.homepage = %q{http://github.com/jeremyd/rest_connection}
