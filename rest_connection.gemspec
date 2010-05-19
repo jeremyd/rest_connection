@@ -86,7 +86,6 @@ Gem::Specification.new do |s|
      "examples/run_ebs_terminate.rb",
      "examples/run_mysql_chef_sequence.rb",
      "examples/run_php_chef_sequence.rb",
-     "examples/set_deployment_images.rb",
      "examples/set_deployment_template_href.rb"
   ]
 
