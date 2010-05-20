@@ -50,4 +50,9 @@ class ServerInternal
     connection.post(t.path + '/stop')
   end
 
+  def set_multi_cloud_image(mci_href)
+    t = URI.parse(self.href)
+    connection.put(t.path + '/set_multi_cloud_image', :multi_cloud_image_href => mci_href)
+  end
+
 end
