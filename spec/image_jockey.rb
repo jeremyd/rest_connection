@@ -1,7 +1,6 @@
 require 'rubygems'
 require 'rest_connection'
 require 'spec'
-require 'ruby-debug'
 
 describe MultiCloudImageInternal, "exercises the mci internal api" do
 
