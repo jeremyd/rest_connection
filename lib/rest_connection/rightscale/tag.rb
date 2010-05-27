@@ -18,6 +18,18 @@ class Tag
   extend RightScale::Api::BaseExtend
 
   def self.search(resource_name, tags)
-    result = connection.get("/tags/search", :resource_type => resource_name.to_s, :tags => tags )
+    result = connection.get("tags/search", :resource_type => resource_name.to_s, :tags => tags )
+  end
+
+  #TAGGABLE_RESOURCES = [ 'Server', 'Ec2EbsSnapshot', 'Ec2EbsVolume', 'Ec2Image', 'Image', 'ServerArray', 'Ec2Instance',
+  #                        'Instance', 'Deployment', 'ServerTemplate', 'Ec2ServerTemplate' ]
+  #
+  # Tag.set( resource_href, tags ) where tags is an array of tags to set on the resource.
+  def self.set(resource_href, tags)
+    connection.put("tags/set", :resource_href => resource_href, :tags => tags)
+  end
+
+  def self.unset(resource_href, tags)
+    connection.put("tags/unset", :resource_href => resource_href, :tags => tags)
   end
 end
