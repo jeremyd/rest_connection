@@ -1,0 +1,1 @@
+For an example of how rest_connection is used for acceptance testing with cucumber take a look at the cucumber directory.  The step-definitions files are where we turn this stuff into human readable tests.
