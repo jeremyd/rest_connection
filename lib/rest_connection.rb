@@ -197,7 +197,7 @@ module RestConnection
       elsif prefix.nil?
         parameters
       else
-        "#{CGI.escape(prefix)}=#{CGI.escape(parameters.to_s)}"
+        "#{prefix}=#{CGI.escape(parameters.to_s)}"
       end
     end
 
