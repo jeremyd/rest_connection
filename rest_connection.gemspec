@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Deininger"]
-  s.date = %q{2010-05-26}
+  s.date = %q{2010-05-27}
   s.description = %q{provides rest_connection}
   s.email = %q{jeremy@rubyonlinux.org}
   s.extra_rdoc_files = [
@@ -63,7 +63,8 @@ Gem::Specification.new do |s|
      "spec/method_missing_spec.rb",
      "spec/rs_internal_spec.rb",
      "spec/server_internal_spec.rb",
-     "spec/server_spec.rb"
+     "spec/server_spec.rb",
+     "spec/tag_spec.rb"
   ]
   s.homepage = %q{http://github.com/jeremyd/rest_connection}
   s.rdoc_options = ["--charset=UTF-8"]
