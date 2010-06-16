@@ -144,15 +144,22 @@ module RightScale
         assignment = mn.gsub!(/=/,"")
         mn_dash = mn.gsub(/_/,"-")
         if @params[mn]
-          @params[mn] = args[0] if assignment
+          if assignment
+            @params[mn] = args[0]
+            @params[mn_dash] = args[0]
+          end
           return @params[mn] 
         elsif @params[mn_dash]
-          @params[mn_dash] = args[0] if assignment
+          if assignment
+            @params[mn_dash] = args[0] 
+            @params[mn] = args[0]
+          end
           return @params[mn_dash] 
         elsif @params[mn.to_sym]
           return @params[mn.to_sym]
         elsif assignment
           @params[mn] = args[0]
+          @params[mn_dash] = args[0]
           return @params[mn] 
         else  
           return nil
