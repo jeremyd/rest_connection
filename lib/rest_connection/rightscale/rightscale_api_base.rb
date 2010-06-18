@@ -45,6 +45,14 @@ module RightScale
         return a
       end
 
+      def self.find_by_cloud_id(cloud_id)
+        a = Array.new
+        connection.get(self.resource_plural_name, "cloud_id" => cloud_id).each do |object|
+          a << self.new(object)
+        end
+        return a
+      end
+
       def find_by_nickname(nickname)
         connection.logger("DEPRICATION WARNING: use of find_by_nickname is depricated, please use find_by(:nickname) { |n| n == '#{nickname}' } ")
         self.find_by(:nickname) { |n| n == nickname }
