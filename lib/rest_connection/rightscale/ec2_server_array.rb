@@ -26,10 +26,20 @@ class Ec2ServerArray
      serv_href = URI.parse(self.href)
      options = Hash.new
      options[:ec2_server_array] = Hash.new 
-     options[:ec2_server_array][:right_script_href] = self.href
+     options[:ec2_server_array][:right_script_href] = script.href
      options[:ec2_server_array][:parameters] = inputs unless inputs.nil?
      options[:ec2_server_array][:server_template_hrefs] = server_template_hrefs
-     connection.post(serv_href.path, options)
+     connection.post("#{serv_href.path}/run_script_on_all", options)
+  end
+
+  def instances
+    serv_href = URI.parse(self.href)
+    connection.get("#{serv_href.path}/instances")
+  end 
+  
+  def terminate_all
+    serv_href = URI.parse(self.href)
+    connection.post("#{serv_href.path}/terminate_all")
   end
 end
 
