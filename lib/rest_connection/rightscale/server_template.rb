@@ -18,12 +18,24 @@ class ServerTemplate
   extend RightScale::Api::BaseExtend
   def initialize(params)
     @params = params
-    fetch_executables
   end
-  
+
+  def executables
+    unless @params["executables"]
+      fetch_executables
+    end
+    @params["executables"]
+  end
+
+  def multi_cloud_images
+    unless @params["multi_cloud_images"]
+      fetch_multi_cloud_images
+    end
+    @params["multi_cloud_images"]
+  end
+
   def fetch_executables
     my_href = URI.parse(self.href)
-    #@params.merge! :executables =? connection.get(my_href.path + "/executables")
     ex = []
     connection.get(my_href.path + "/executables").each do |e|
       ex << Executable.new(e)
