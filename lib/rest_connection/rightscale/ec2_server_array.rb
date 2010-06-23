@@ -22,6 +22,7 @@
 class Ec2ServerArray 
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+
   def run_script_on_all(script, server_template_hrefs, inputs=nil)
      serv_href = URI.parse(self.href)
      options = Hash.new
@@ -29,6 +30,7 @@ class Ec2ServerArray
      options[:ec2_server_array][:right_script_href] = script.href
      options[:ec2_server_array][:parameters] = inputs unless inputs.nil?
      options[:ec2_server_array][:server_template_hrefs] = server_template_hrefs
+# bug, this only returns work units if using xml, for json all we get is nil.  scripts still run though ..
      connection.post("#{serv_href.path}/run_script_on_all", options)
   end
 
