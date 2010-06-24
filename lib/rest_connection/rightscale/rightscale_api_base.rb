@@ -45,7 +45,7 @@ module RightScale
         return a
       end
 
-      def self.find_by_cloud_id(cloud_id)
+      def find_by_cloud_id(cloud_id)
         a = Array.new
         connection.get(self.resource_plural_name, "cloud_id" => cloud_id).each do |object|
           a << self.new(object)
