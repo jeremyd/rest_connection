@@ -98,8 +98,8 @@ class Server
     @server_internal.stop
   end
 
-  # This should be used with v5 images only.
-  # executable to run can be an Executable or RightScript object
+  # Works on v4 and v5 images.
+  # *executable can be an <~Executable> or <~RightScript>
   def run_executable(executable, opts=nil)
     script_options = Hash.new
     script_options[:server] = Hash.new
@@ -198,24 +198,5 @@ class Server
     raise("FATAL: timeout after #{timeout}s waiting for state change")
   end
 
-#  DOES NOT WORK: fragile web scraping
-#  def relaunch
-#    unless state == "stopped"
-#      wind_monkey
-#      server_id = self.href.split(/\//).last
-#      base_url = URI.parse(self.href)
-#      base_url.path = "/servers/#{server_id}"
-#
-#      s = agent.get(base_url.to_s)
-#      relaunch = s.links.detect {|d| d.to_s == "Relaunch"}
-#      prelaunch_page = agent.get(relaunch.href)
-#      debugger
-#      launch_form = prelaunch_page.forms[2]
-#      launch_form.radiobuttons_with(:name => 'launch_immediately').first.check
-#      agent.submit(launch_form, launch_form.buttons.first)
-#    else
-#      connection.logger("WARNING: detected server is #{self.state}, skipping relaunch")
-#    end
-#  end
 end
 
