@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rest_connection}
-  s.version = "0.0.8"
+  s.version = "0.0.10"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Deininger"]
-  s.date = %q{2010-06-22}
+  s.date = %q{2010-07-28}
   s.description = %q{provides rest_connection}
   s.email = %q{jeremy@rubyonlinux.org}
   s.extra_rdoc_files = [
@@ -31,6 +31,7 @@ Gem::Specification.new do |s|
      "examples/relaunch_deployment.rb",
      "examples/right_scale_ec2_instances_api_test.rb",
      "lib/rest_connection.rb",
+     "lib/rest_connection/rightscale/alert_spec.rb",
      "lib/rest_connection/rightscale/audit_entry.rb",
      "lib/rest_connection/rightscale/deployment.rb",
      "lib/rest_connection/rightscale/ec2_ebs_snapshot.rb",
