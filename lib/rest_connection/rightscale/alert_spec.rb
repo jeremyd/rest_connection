@@ -13,12 +13,15 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 #
-
-class Ec2EbsVolume
-  include  RightScale::Api::Base
+class AlertSpec
+  include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
 
+
+
   def attach(params)
-    connection.post('component_ec2_ebs_volumes.js' , :component_ec2_ebs_volume => params)
+    connection.post('alert_spec_subjects.js' , :alert_spec_subject => params)
   end
-end
+
+
+end 

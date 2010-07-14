@@ -150,6 +150,13 @@ class Server
     @params.merge! connection.get(serv_href.path + "/settings")
   end
 
+  def attach_volume(params)
+    hash = {}
+    hash[:server] = params 
+    serv_href = URI.parse(self.href)
+    connection.post(serv_href.path + "/attach_volume", hash)
+  end
+
   def get_sketchy_data
     serv_href = URI.parse(self.href)
     @params.merge! connection.get(serv_href.path + "/get_sketchy_data")
