@@ -13,16 +13,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-# Example:
-# a = Ec2ServerArray.new(:href => "https://validhref")
-# st = ServerTemplate.new(:href => "https://validhref")
-# st.executables.find(:nickname
-# a.run_script_on_all(
-
 class Ec2ServerArray 
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
 
+#  Example:
+#    right_script = @server_template.executables.first
+#    result = @my_array.run_script_on_all(right_script, [@server_template.href])
   def run_script_on_all(script, server_template_hrefs, inputs=nil)
      serv_href = URI.parse(self.href)
      options = Hash.new
