@@ -1,0 +1,49 @@
+= rest_connection Quick Start
+== Install
+==== Installing with rubygems
+  "gem install rest_connection"
+
+==== Installing from source
+  "git clone http://github.com/jeremyd/rest_connection.git"
+  "gem install jeweler rspec"
+  "rake check_dependencies" <- Install any gems listed.
+  "rake install"
+
+== Configuration
+
+You must setup ~/.rest_connection/rest_api_config.yaml or /etc/rest_connection/rest_api_config.yaml
+
+Copy the example from GEMHOME/rest_connection/examples/rest_api_config.yaml.sample and fill in your connection info.
+
+  Pro Tip: to find a GEMHOME, use gemedit
+  "gem install gemedit"
+  "gem edit rest_connection"
+
+== Usage: some IRB samples
+
+  $ irb
+  ruby> require 'rubygems'; require 'rest_connection'
+
+=== Lookup and run a RightScript
+
+  first_fe = Server.find(:first) { |s| s.nickname =~ /Front End/ }
+  st = ServerTemplate.find(first_fe.server_template_href)
+  connect_script = st.executables.detect { |ex| ex.name =~  /LB [app|mongrels]+ to HA proxy connect/i }
+  state = first_fe.run_executable(connect_script)
+  state.wait_for_completed
+
+=== Stop a Deployment
+
+  deployment = Deployment.find(opts[:id])
+  my_servers = deployment.servers
+  my_servers.each { |s| s.stop }
+  my_servers.each { |s| s.wait_for_state("stopped") }
+
+=== Activate an Ec2ServerArray / Display instances IPs
+  
+  my_array = Ec2ServerArray.find(opts[:href])  
+  my_array.active = true
+  my_array.save
+
+  puts my_array.instances.map { |i| i['ip-address'] }
+
