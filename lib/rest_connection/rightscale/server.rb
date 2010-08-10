@@ -178,12 +178,6 @@ class Server
     end
   end
 
-  def events
-    my_events = Event.new
-    id = self.href.split(/\//).last
-    my_events.filter_by(:server_id, id)
-  end
-
   def relaunch
     self.stop
     self.wait_for_state("stopped")
