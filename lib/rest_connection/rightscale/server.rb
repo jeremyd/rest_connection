@@ -33,14 +33,14 @@ class Server
   # waits until the specified state is reached for this Server
   # *st <~String> the name of the state to wait for, eg. "operational"
   # *timeout <~Integer> optional, how long to wait for the state before declare failure (in seconds).
-  def wait_for_state(st,timeout=900)
+  def wait_for_state(st,timeout=1200)
     reload
     connection.logger("#{nickname} is #{self.state}")
     while(timeout > 0)
       return true if state == st
       raise "FATAL error, this server is stranded and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('stranded')
-      sleep 5
-      timeout -= 5
+      sleep 30
+      timeout -= 30
       connection.logger("waiting for server #{nickname} to go #{st}, state is #{state}")
       reload
     end
@@ -49,14 +49,14 @@ class Server
 
   # waits until the server is operational and dns_name is available
   def wait_for_operational_with_dns
-    timeout = 300
+    timeout = 600
     wait_for_state("operational")
     while(timeout > 0)
       self.settings
       break if self['dns-name'] && !self['dns-name'].empty?
       connection.logger "waiting for dns-name for #{self.nickname}"
-      sleep 5
-      timeout -= 5
+      sleep 30
+      timeout -= 30
     end
     connection.logger "got DNS: #{self['dns-name']}"
     raise "FATAL, this server #{self.audit_link} timed out waiting for DNS" if timeout <= 0
@@ -192,8 +192,8 @@ class Server
       old_state = self.state unless old_state
       connection.logger("#{nickname} is #{self.state}")
       return true if self.state != old_state
-      sleep 5
-      timer += 5
+      sleep 30
+      timer += 30
       connection.logger("waiting for server #{nickname} to change from #{old_state} state.")
     end
     raise("FATAL: timeout after #{timeout}s waiting for state change")

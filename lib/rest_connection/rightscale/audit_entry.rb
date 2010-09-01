@@ -35,8 +35,8 @@ class AuditEntry
       friendly_url = "https://my.rightscale.com/audit_entries/"
       friendly_url += self.href.split(/\//).last
       raise "FATAL error, #{self.summary}\nSee Audit: API:#{self.href}, WWW:<a href='#{friendly_url}'>#{friendly_url}</a>\n" if self.state == 'failed'
-      sleep 5
-      timeout -= 5
+      sleep 30
+      timeout -= 30
       return true if state == self.state
     end
     raise "FATAL: Timeout waiting for Executable to complete.  State was #{self.state}" if timeout <= 0
