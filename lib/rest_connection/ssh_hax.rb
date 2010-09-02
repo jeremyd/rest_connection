@@ -42,7 +42,7 @@ module SshHax
     result = nil
     output = ""
     connection.logger("Running: #{run_this}")
-    Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key)) do |ssh|
+    Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key), :user_known_hosts_file => "/dev/null") do |ssh|
       cmd_channel = ssh.open_channel do |ch1|
         ch1.on_request('exit-status') do |ch, data|
           status = data.read_long
@@ -152,15 +152,13 @@ module SshHax
     retry_count = 0
     while (!success && retry_count < SSH_RETRY_COUNT) do
     begin
-    Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key)) do |ssh|
+    Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key), :user_known_hosts_file => "/dev/null") do |ssh|
       cmd_channel = ssh.open_channel do |ch1|
         ch1.on_request('exit-status') do |ch, data|
           status = data.read_long
         end
-        output += "Running: #{command}\n"
         ch1.exec(command) do |ch2, success|
           unless success
-            output = "ERROR: SSH cmd failed to exec"
             status = 1
           end
           ch2.on_data do |ch, data|
@@ -174,10 +172,11 @@ module SshHax
     end
     rescue Exception => e
       retry_count += 1 # opening the ssh channel failed -- try again.
+      connection.logger "ERROR during SSH session to #{host_dns}, retrying #{retry_count}: #{e} #{e.backtrace}"
       sleep 10
     end
     end
-    connection.logger output
+    connection.logger "SSH Run: #{command} on #{host_dns}. Retry was #{retry_count}. Exit status was #{status}. Output below ---\n#{output}\n---"
     return {:status => status, :output => output}
   end 
 
