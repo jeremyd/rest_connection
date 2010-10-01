@@ -30,6 +30,26 @@ class Server
     newrecord
   end
 
+  # The RightScale api returns the server parameters as a hash with "name" and "value".  
+  # This must be transformed into a hash in case we want to PUT this back to the API.
+  def transform_parameters(parameters)
+    new_params_hash = {}
+    parameters.each do |parameter_hash|
+      new_params_hash[parameter_hash["name"]] = parameter_hash["value"]
+    end
+    new_params_hash
+  end
+
+  # This is overriding the default save with one that can massage the parameters
+  def save
+    # if the parameters are an array of hashes, that means we need to transform.
+    if @params['parameters'].is_a?(Array)
+      @params['parameters'] = transform_parameters(@params['parameters'])
+    end
+    uri = URI.parse(self.href)
+    connection.put(uri.path, resource_singular_name.to_sym => @params)
+  end
+
   # waits until the specified state is reached for this Server
   # *st <~String> the name of the state to wait for, eg. "operational"
   # *timeout <~Integer> optional, how long to wait for the state before declare failure (in seconds).
@@ -53,7 +73,7 @@ class Server
     wait_for_state("operational")
     while(timeout > 0)
       self.settings
-      break if self['dns-name'] && !self['dns-name'].empty?
+      break if self['dns-name'] && !self['dns-name'].empty? && self['private-dns-name'] && !self['private-dns-name'].empty? 
       connection.logger "waiting for dns-name for #{self.nickname}"
       sleep 30
       timeout -= 30
