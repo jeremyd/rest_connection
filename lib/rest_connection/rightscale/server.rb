@@ -57,8 +57,8 @@ class Server
     reload
     connection.logger("#{nickname} is #{self.state}")
     while(timeout > 0)
-      return true if state == st
-      raise "FATAL error, this server is stranded and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('stranded')
+      return true if state ~= /#{st}/
+      raise "FATAL error, this server is stranded and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('stranded') && !st.include?('stranded')
       sleep 30
       timeout -= 30
       connection.logger("waiting for server #{nickname} to go #{st}, state is #{state}")
