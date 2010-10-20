@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rest_connection}
-  s.version = "0.0.10"
+  s.version = "0.0.11"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Deininger"]
-  s.date = %q{2010-10-01}
+  s.date = %q{2010-10-20}
   s.description = %q{provides rest_connection}
   s.email = %q{jeremy@rubyonlinux.org}
   s.extra_rdoc_files = [
@@ -73,21 +73,21 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.7}
   s.summary = %q{lib for restful connections to the rightscale api}
   s.test_files = [
-    "spec/ec2_server_array_spec.rb",
-     "spec/ec2_ssh_key_internal_spec.rb",
-     "spec/image_jockey.rb",
+    "spec/server_internal_spec.rb",
      "spec/method_missing_spec.rb",
-     "spec/rs_internal_spec.rb",
-     "spec/server_internal_spec.rb",
      "spec/server_spec.rb",
+     "spec/ec2_ssh_key_internal_spec.rb",
+     "spec/rs_internal_spec.rb",
      "spec/tag_spec.rb",
-     "examples/console.rb",
+     "spec/ec2_server_array_spec.rb",
+     "spec/image_jockey.rb",
+     "examples/relaunch_deployment.rb",
+     "examples/cucumber/step_definitions/spot_check_steps.rb",
      "examples/cucumber/step_definitions/deployment_steps.rb",
      "examples/cucumber/step_definitions/mysql_steps.rb",
      "examples/cucumber/step_definitions/recipe_steps.rb",
-     "examples/cucumber/step_definitions/spot_check_steps.rb",
-     "examples/relaunch_deployment.rb",
-     "examples/right_scale_ec2_instances_api_test.rb"
+     "examples/right_scale_ec2_instances_api_test.rb",
+     "examples/console.rb"
   ]
 
   if s.respond_to? :specification_version then
