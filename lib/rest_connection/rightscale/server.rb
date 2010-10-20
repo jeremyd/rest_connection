@@ -40,12 +40,18 @@ class Server
     new_params_hash
   end
 
-  # This is overriding the default save with one that can massage the parameters
-  def save
+  # Since RightScale hands back the parameters with a "name" and "value" tags we should
+  # transform them into the proper hash.  This it the same for setting and getting.
+  def parameters
     # if the parameters are an array of hashes, that means we need to transform.
     if @params['parameters'].is_a?(Array)
       @params['parameters'] = transform_parameters(@params['parameters'])
     end
+    @params['parameters']
+  end
+
+  # This is overriding the default save with one that can massage the parameters
+  def save
     uri = URI.parse(self.href)
     connection.put(uri.path, resource_singular_name.to_sym => @params)
   end
@@ -57,7 +63,7 @@ class Server
     reload
     connection.logger("#{nickname} is #{self.state}")
     while(timeout > 0)
-      return true if state ~= /#{st}/
+      return true if state =~ /#{st}/
       raise "FATAL error, this server is stranded and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('stranded') && !st.include?('stranded')
       sleep 30
       timeout -= 30
