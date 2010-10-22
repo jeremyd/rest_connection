@@ -157,8 +157,20 @@ module RestConnection
         else
           return res
         end
-      else 
+      else
         raise "invalid response HTTP code: #{res.code.to_i}, #{res.code}, #{res.body}"
+      end
+    end
+    
+    def on_error(&block)
+      @error_callback = block
+    end
+    
+    def handle_exception(e)
+      if @error_callback
+        @error_callback.call(e)
+      else
+        raise e
       end
     end
 
