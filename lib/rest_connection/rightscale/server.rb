@@ -105,11 +105,12 @@ class Server
   end
 
   def stop
-    if self.state != "stopped"
+    # All instances will have a valid href including EBS instances that are "stopped"
+    if self.current_instance_href
       t = URI.parse(self.href)
       connection.post(t.path + '/stop')
     else
-      connection.logger("WARNING: was in #{self.state} so skiping stop call")
+      connection.logger("WARNING: was in #{self.state} and had a current_instance_href so skiping stop call")
     end
   end
 
