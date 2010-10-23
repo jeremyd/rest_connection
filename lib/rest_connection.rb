@@ -29,7 +29,7 @@ module RestConnection
     # :api_url =>
     # :user =>
     # :pass =>
-    attr_accessor :settings
+    attr_accessor :settings, :on_error
 
     # RestConnection api settings configuration file:
     # Settings are loaded from a yaml configuration file in users home directory.
@@ -72,9 +72,16 @@ module RestConnection
         req.basic_auth(@settings[:user], @settings[:pass]) if @settings[:user]
         logger("#{req.method}: #{req.path}")
         logger("\trequest body: #{req.body}") if req.body
-        response, body = http.request(req)
+        response, body = call_api(http, req)
         handle_response(response)
       end
+    rescue Exception => e
+      handle_exception(e)
+    end
+    
+    # performs actual api call
+    def call_api(http, request_obj)
+      http.request(request_obj)
     end
 
     # connection.get("/root/login", :test_header => "x", :test_header2 => "y")
@@ -157,7 +164,7 @@ module RestConnection
         else
           return res
         end
-      else
+      else 
         raise "invalid response HTTP code: #{res.code.to_i}, #{res.code}, #{res.body}"
       end
     end
