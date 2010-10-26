@@ -55,4 +55,38 @@ class ServerTemplateInternal
     connection.get(t.path + "/multi_cloud_images")
   end
 
+  # message <~String>: commit message string (required)
+  def commit(message)
+    t = URI.parse(self.href)
+    connection.post(t.path + "/commit") 
+  end
+
+  # <~Executable> executable, an Executable object to add
+  # <~String> Apply, a string designating the type of executable: "boot", "operational", "decommission".  Default is operational
+  def add_executable(executable, apply="operational")
+    t = URI.parse(self.href)
+    params = {}
+    if executable.recipe?
+      params[:recipe] = executable.href
+    else
+      params[:right_script_href] = executable.href
+    end
+    params[:apply] = apply
+    connection.put(t.path + "/add_executable", params)
+  end
+
+  # <~Executable> executable, an Executable object to delete 
+  # <~String> Apply, a string designating the type of executable: "boot", "operational", "decommission".  Default is operational
+  def delete_executable(executable, apply="operational")
+    t = URI.parse(self.href)
+    params = {}
+    if executable.recipe?
+      params[:recipe] = executable.href
+    else
+      params[:right_script_href] = executable.href
+    end
+    params[:apply] = apply
+    connection.delete(t.path + "/delete_executable", params)
+  end
+
 end
