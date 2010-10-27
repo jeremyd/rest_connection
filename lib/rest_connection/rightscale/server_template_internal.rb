@@ -58,7 +58,7 @@ class ServerTemplateInternal
   # message <~String>: commit message string (required)
   def commit(message)
     t = URI.parse(self.href)
-    connection.post(t.path + "/commit") 
+    ServerTemplate.new(:href => connection.post(t.path + "/commit", :commit_message => message))
   end
 
   # <~Executable> executable, an Executable object to add
@@ -72,7 +72,7 @@ class ServerTemplateInternal
       params[:right_script_href] = executable.href
     end
     params[:apply] = apply
-    connection.put(t.path + "/add_executable", params)
+    connection.post(t.path + "/add_executable", params)
   end
 
   # <~Executable> executable, an Executable object to delete 
