@@ -13,36 +13,39 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-class MultiCloudImageInternal
+
+class RightScriptInternal 
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
   include RightScale::Api::Internal
   extend RightScale::Api::InternalExtend
 
   def resource_plural_name
-    "multi_cloud_images"
+    "right_scripts"
   end
 
   def resource_singular_name
-    "multi_cloud_image"
+    "right_script"
   end
 
   def self.resource_plural_name
-    "multi_cloud_images"
+    "right_scripts"
   end
 
   def self.resource_singular_name
-    "multi_cloud_image"
+    "right_script"
   end
 
+  # commits a rightscript
   def commit(message)
     t = URI.parse(self.href)
-    MultiCloudImage.new(:href => connection.post(t.path + "/commit"))
+    RightScript.new(:href => connection.post(t.path + "/commit", :commit_message => message))
   end
-
+  
+  # clones a RightScript and returns the new RightScript resource that's been created.
   def clone
     t = URI.parse(self.href)
-    MultiCloudImage.new(:href => connection.post(t.path + "/clone"))
+    RightScript.new(:href => connection.post(t.path + "/clone"))
   end
-
+    
 end

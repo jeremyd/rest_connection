@@ -19,12 +19,21 @@ describe MultiCloudImageInternal, "exercises the mci internal api" do
     trash.class.should == Array
     trash.first.class.should == Hash
     @really_new_st.delete_multi_cloud_image(@mci.href)
+
+    # test clone
+    @new_mci_test = @mci2.clone
+
+    # test commit
+    @new_mci_test.commit("hello commits world")
+
   end
 
   after(:all) do
+    @int_new_mci_test = MultiCloudImageInternal.new(:href => @new_mci_test.href)
     @new_st.destroy
-    #@mci.destroy
-    #@mci2.destroy
+    @mci.destroy
+    @mci2.destroy
+    @int_new_mci_test.destroy
   end
   
 

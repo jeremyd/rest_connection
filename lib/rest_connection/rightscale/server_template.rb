@@ -27,6 +27,22 @@ class ServerTemplate
     @params["executables"]
   end
 
+  def alert_specs
+    unless @params["alert_specs"]
+      fetch_alert_specs
+    end
+    @params["alert_specs"]
+  end
+
+  def fetch_alert_specs
+    my_href = URI.parse(self.href)
+    as = []
+    connection.get(my_href.path + "/alert_specs").each do |e|
+      as << AlertSpec.new(e)
+    end
+    @params["alert_specs"] = as
+  end
+    
   def multi_cloud_images
     unless @params["multi_cloud_images"]
       fetch_multi_cloud_images
@@ -46,5 +62,15 @@ class ServerTemplate
   def fetch_multi_cloud_images
     @params["multi_cloud_images"] = RsInternal.get_server_template_multi_cloud_images(self.href)
   end
-    
+
+  # The RightScale api calls this 'duplicate' but is more popularly known as 'clone' from a users perspective
+  def duplicate
+    my_href = URI.parse(self.href)
+    ServerTemplate.new(:href => connection.post(my_href.path + "/duplicate"))
+  end
+
+  def clone
+    duplicate
+  end
+
 end
