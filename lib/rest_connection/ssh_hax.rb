@@ -145,6 +145,7 @@ module SshHax
 
   # returns hash of exit_status and output from command
   def spot_check_command(command, ssh_key=nil, host_dns=self.dns_name)
+    raise "FATAL: spot_check_command called on a server with no dns_name. You need to run .settings on the server to populate this attribute." unless host_dns
     connection.logger "SSHing to #{host_dns} using key(s) #{ssh_key_config(ssh_key)}"
     status = nil
     output = ""

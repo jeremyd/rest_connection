@@ -226,5 +226,23 @@ class Server
     raise("FATAL: timeout after #{timeout}s waiting for state change")
   end
 
+  # Save the servers parameters to the current server (instead of the next server)
+  def save_current
+    uri = URI.parse(self.href)
+    connection.put(uri.path + "/current", resource_singular_name.to_sym => @params)
+  end
+
+  # Load server's settings from the current server (instead of the next server)
+  def settings_current
+    serv_href = URI.parse(self.href)
+    @params.merge! connection.get(serv_href.path + "/current" + "/settings")
+  end
+
+  # Reload the server's basic information from the current server.
+  def reload_current
+    uri = URI.parse(self.href)
+    @params ? @params.merge!(connection.get(uri.path + "/current")) : @params = connection.get(uri.path)
+  end
+
 end
 
