@@ -22,13 +22,19 @@ class RsInternal
 
   def connection
     @@little_brother_connection ||= RestConnection::Connection.new
-    @@little_brother_connection.settings[:common_headers] = { 'X-API-VERSION' => '0.1' }
+    settings = @@little_brother_connection.settings
+    settings[:common_headers]["X_API_VERSION"] = "0.1"         
+    settings[:api_href] = settings[:api_url]
+    settings[:extension] = ".js"
     @@little_brother_connection
   end
 
   def self.connection
     @@little_brother_connection ||= RestConnection::Connection.new
-    @@little_brother_connection.settings[:common_headers] = { 'X-API-VERSION' => '0.1' }
+    settings = @@little_brother_connection.settings
+    settings[:common_headers]["X_API_VERSION"] = "0.1"         
+    settings[:api_href] = settings[:api_url]
+    settings[:extension] = ".js"
     @@little_brother_connection
   end
 
