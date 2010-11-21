@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rest_connection}
-  s.version = "0.0.12"
+  s.version = "0.0.14"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Deininger"]
-  s.date = %q{2010-10-20}
+  s.date = %q{2010-12-01}
   s.description = %q{provides rest_connection}
   s.email = %q{jeremy@rubyonlinux.org}
   s.extra_rdoc_files = [
@@ -42,11 +42,14 @@ Gem::Specification.new do |s|
      "lib/rest_connection/rightscale/ec2_ssh_key_internal.rb",
      "lib/rest_connection/rightscale/executable.rb",
      "lib/rest_connection/rightscale/instance.rb",
+     "lib/rest_connection/rightscale/mc_server.rb",
      "lib/rest_connection/rightscale/multi_cloud_image.rb",
      "lib/rest_connection/rightscale/multi_cloud_image_cloud_setting_internal.rb",
      "lib/rest_connection/rightscale/multi_cloud_image_internal.rb",
      "lib/rest_connection/rightscale/right_script.rb",
+     "lib/rest_connection/rightscale/right_script_internal.rb",
      "lib/rest_connection/rightscale/rightscale_api_base.rb",
+     "lib/rest_connection/rightscale/rightscale_api_gateway.rb",
      "lib/rest_connection/rightscale/rightscale_api_internal.rb",
      "lib/rest_connection/rightscale/rightscale_api_resources.rb",
      "lib/rest_connection/rightscale/rs_internal.rb",
@@ -62,9 +65,12 @@ Gem::Specification.new do |s|
      "spec/ec2_ssh_key_internal_spec.rb",
      "spec/image_jockey.rb",
      "spec/method_missing_spec.rb",
+     "spec/right_script_internal.rb",
      "spec/rs_internal_spec.rb",
      "spec/server_internal_spec.rb",
      "spec/server_spec.rb",
+     "spec/server_template_internal.rb",
+     "spec/spec_helper.rb",
      "spec/tag_spec.rb"
   ]
   s.homepage = %q{http://github.com/jeremyd/rest_connection}
@@ -74,8 +80,11 @@ Gem::Specification.new do |s|
   s.summary = %q{lib for restful connections to the rightscale api}
   s.test_files = [
     "spec/server_internal_spec.rb",
+     "spec/spec_helper.rb",
      "spec/method_missing_spec.rb",
+     "spec/server_template_internal.rb",
      "spec/server_spec.rb",
+     "spec/right_script_internal.rb",
      "spec/ec2_ssh_key_internal_spec.rb",
      "spec/rs_internal_spec.rb",
      "spec/tag_spec.rb",

@@ -29,7 +29,7 @@ module RestConnection
     # :api_url =>
     # :user =>
     # :pass =>
-    attr_accessor :settings
+    attr_accessor :settings, :cookie
 
     # RestConnection api settings configuration file:
     # Settings are loaded from a yaml configuration file in users home directory.
@@ -48,6 +48,8 @@ module RestConnection
         logger("WARNING:  see GEM_HOME/rest_connection/config/rest_api_config.yaml for example config")
         @settings = {}
       end
+      @settings[:extension] = ".js"
+      @settings[:api_href] = @settings[:api_url] unless @settings[:api_href]
     end
 
     # Main HTTP connection loop. Common settings are set here, then we yield(BASE_URI, OPTIONAL_HEADERS) to other methods for each type of HTTP request: GET, PUT, POST, DELETE
@@ -60,16 +62,19 @@ module RestConnection
     # end
     #   
     def rest_connect(&block)
-      uri = URI.parse(@settings[:api_url])
+      uri = URI.parse(@settings[:api_href])
       http = Net::HTTP.new(uri.host, uri.port)
       if uri.scheme == 'https'
         http.use_ssl = true 
         http.verify_mode = OpenSSL::SSL::VERIFY_NONE
       end
       headers = @settings[:common_headers]
+      headers.merge!("Cookie" => @cookie) if @cookie 
       http.start do |http|
         req = yield(uri, headers)
-        req.basic_auth(@settings[:user], @settings[:pass]) if @settings[:user]
+        unless @cookie
+          req.basic_auth(@settings[:user], @settings[:pass]) if @settings[:user]
+        end
         logger("#{req.method}: #{req.path}")
         logger("\trequest body: #{req.body}") if req.body
         response, body = http.request(req)
@@ -84,7 +89,7 @@ module RestConnection
     def get(href, additional_parameters = "")
       rest_connect do |base_uri,headers|
         href = "#{base_uri}/#{href}" unless begins_with_slash(href)
-        new_path = URI.escape(href + '.js?' + requestify(additional_parameters))
+        new_path = URI.escape(href + @settings[:extension] + "?" + requestify(additional_parameters))
         Net::HTTP::Get.new(new_path, headers)
       end
     end
@@ -146,7 +151,7 @@ module RestConnection
     def handle_response(res)
       if res.code.to_i == 201
         return res['Location']
-      elsif [200,203,204].detect { |d| d == res.code.to_i }
+      elsif [200,203,204,302].detect { |d| d == res.code.to_i }
         if res.body
           begin
             return JSON.load(res.body)

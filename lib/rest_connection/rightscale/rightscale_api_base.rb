@@ -20,6 +20,11 @@ module RightScale
     module BaseExtend
       def connection()
         @@connection ||= RestConnection::Connection.new
+        settings = @@connection.settings
+        settings[:common_headers]["X_API_VERSION"] = "1.0"         
+        settings[:api_href] = settings[:api_url]
+        settings[:extension] = ".js"
+        @@connection
       end
 
       def resource_plural_name
@@ -121,6 +126,11 @@ module RightScale
 
       def connection()
         @@connection ||= RestConnection::Connection.new
+        settings = @@connection.settings
+        settings[:common_headers]["X_API_VERSION"] = "1.0"         
+        settings[:api_href] = settings[:api_url]
+        settings[:extension] = ".js"
+        @@connection
       end
    
       def resource_plural_name
