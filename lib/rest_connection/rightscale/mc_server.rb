@@ -16,7 +16,7 @@
 #    
 # You must have Beta v1.5 API access to use these internal API calls.
 # 
-class McServer < Server
+class McServer
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
   
