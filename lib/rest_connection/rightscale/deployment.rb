@@ -36,4 +36,13 @@ class Deployment
       s.reload
     end
   end
+
+  def duplicate
+    clone
+  end
+
+  def clone
+    deploy_href = URI.parse(self.href)
+    Deployment.new(:href => connection.post(deploy_href.path + "/duplicate"))
+  end
 end
