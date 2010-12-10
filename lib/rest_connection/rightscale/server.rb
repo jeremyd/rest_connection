@@ -184,9 +184,9 @@ class Server
     connection.post(serv_href.path + "/attach_volume", hash)
   end
 
-  def get_sketchy_data
+  def get_sketchy_data(params = {})
     serv_href = URI.parse(self.href)
-    @params.merge! connection.get(serv_href.path + "/get_sketchy_data")
+    @params.merge! connection.get(serv_href.path + "/get_sketchy_data", params)
   end
 
   def monitoring
