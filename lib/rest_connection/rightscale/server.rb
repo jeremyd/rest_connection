@@ -167,7 +167,7 @@ class Server
     connection.put(serv_href.path, :server => {:parameters => {name.to_sym => value} })
   end
 
-  def set_inputs(hash)
+  def set_inputs(hash = {})
     serv_href = URI.parse(self.href)
     connection.put(serv_href.path, :server => {:parameters => hash})
   end
