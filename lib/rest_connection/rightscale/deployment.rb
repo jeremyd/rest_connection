@@ -25,7 +25,11 @@ class Deployment
   def servers_no_reload
     server_list = []
     @params['servers'].each do |s|
-      server_list << Server.new(s)
+      if s["server_type"] == "ec2"
+        server_list << Server.new(s)
+      else
+        server_list << McServer.new(s)
+      end
     end
     return server_list
   end
