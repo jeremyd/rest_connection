@@ -24,6 +24,8 @@ class Server
     create_options = Hash.new
     create_options[self.resource_singular_name.to_sym] = opts
     create_options["cloud_id"] = opts[:cloud_id] if opts[:cloud_id]
+    create_options[self.resource_singular_name.to_sum][:mci_href] = nil
+    create_options[self.resource_singular_name.to_sum][:inputs] = nil
     location = connection.post(self.resource_plural_name,create_options)    
     newrecord = self.new('href' => location)
     newrecord.reload

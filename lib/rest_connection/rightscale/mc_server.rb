@@ -36,4 +36,17 @@ class McServer < Server
     "server"
   end
   
+  def self.create(opts)
+    server = {}
+    server[:name] = opts[:nickname] if opts[:nickname]
+    server[:deployment_href] = opts[:deployment_href] if opts[:deployment_href]
+    server[:instance] = {:server_template_href => opts[:server_template_href]}
+    server[:instance][:cloud_href] = "https://my.rightscale.com/api/clouds/#{opts[:cloud_id]}"
+    server[:instance][:multi_cloud_image_href] = opts[:mci_href]
+    server[:instance][:instance_type_href] = nil #TODO.....
+    server[:instance][:inputs] = opts[:inputs]
+    location = connection.post(self.resource_plural_name, {self.resource_singular_name.to_sym => server})
+    newrecord = self.new('href' => location)
+    newrecord.reload
+    newrecord
 end
