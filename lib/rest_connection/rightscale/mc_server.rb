@@ -49,4 +49,5 @@ class McServer < Server
     newrecord = self.new('href' => location)
     newrecord.reload
     newrecord
+  end
 end
