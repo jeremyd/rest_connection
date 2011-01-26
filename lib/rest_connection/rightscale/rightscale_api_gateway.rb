@@ -1,12 +1,13 @@
 module RightScale
   module Api
     module Gateway
+      include RightScale::Api::Base
       def connection        
         @@gateway_connection ||= RestConnection::Connection.new
         settings = @@gateway_connection.settings
         settings[:common_headers]["X_API_VERSION"] = "1.5"         
         settings[:api_href], account = settings[:api_url].split(/\/acct\//) if settings[:api_url].include?("acct")
-        settings[:extension] = ""
+        settings[:extension] = ".json"
         unless @@gateway_connection.cookie
           # login
           params = { "email" => settings[:user], "password" => settings[:pass], "account_href" => "/api/accounts/#{account}" }
@@ -23,12 +24,13 @@ module RightScale
     end
 
     module GatewayExtend
+      include RightScale::Api::BaseExtend
       def connection        
         @@gateway_connection ||= RestConnection::Connection.new
         settings = @@gateway_connection.settings
         settings[:common_headers]["X_API_VERSION"] = "1.5"         
         settings[:api_href], account = settings[:api_url].split(/\/acct\//) if settings[:api_url].include?("acct")
-        settings[:extension] = ""
+        settings[:extension] = ".json"
         unless @@gateway_connection.cookie
           # login
           params = { "email" => settings[:user], "password" => settings[:pass], "account_href" => "/api/accounts/#{account}" }

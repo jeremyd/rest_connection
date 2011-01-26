@@ -183,7 +183,7 @@ module RestConnection
         STDOUT.puts init_message
       end
 
-      @@logger.info(message)
+      @@logger.info("[API V#{@settings[:common_headers]["X_API_VERSION"]} ]" + message)
     end
 
     # used by requestify to build parameters strings
