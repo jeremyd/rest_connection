@@ -189,9 +189,9 @@ module RightScale
         try_these = [name, name.to_s.gsub(/_/,'-'), name.to_sym]
         try_these.each do |t|
           if @params[t]
-            return @params[name]
+            return @params[t]
           else
-            return nil
+            @params[t]
           end
         end
       end

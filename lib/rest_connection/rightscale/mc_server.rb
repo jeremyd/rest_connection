@@ -36,26 +36,8 @@ class McServer < Server
     "server"
   end
   
-  def self.create(opts)
-    location = connection.post(self.resource_plural_name, {self.resource_singular_name.to_sym => opts})
-    newrecord = self.new('href' => location)
-    newrecord.reload
-    newrecord
-  end
-
-  def initialize(params)
-    @params = params
-    if @params[:server]
-      @instance = McInstance.create(@params[:server][:instance])
-      if @params[:server][:instance]
-        @inputs = Inputs.create(@params[:server][:instance][:inputs])
-      end
-    end
-#    @monitor = MonitoringMetrics.create(@params[:
-  end
-
   def launch
-    if @instance.state == "stopped"
+    if actions.include?("launch")
       t = URI.parse(self.href)
       connection.post(t.path + '/launch')
     else
@@ -64,11 +46,11 @@ class McServer < Server
   end
 
   def terminate
-    if @instance.href
+    if actions.include?("terminate")
       t = URI.parse(self.href)
       connection.post(t.path + '/terminate')
     else
-      connection.logger("WARNING: was in #{self.state} so skipping launch call")
+      connection.logger("WARNING: was in #{self.state} so skipping terminate call")
     end
   end
   
@@ -81,11 +63,10 @@ class McServer < Server
   end
 
   def run_executable(executable, opts=nil)
-    connection.logger("Congratulations on making it this far into the Multicloud Monkey.")
-    raise "Congratulations on making it this far into the Multicloud Monkey."
+    @instance.run_executable(executable, opts)
   end
 
-  def transform_parameters(sym, parameters)
+  def transform_inputs(sym, parameters)
     ret = nil
     if parameters.is_a?(Array) and sym == :to_h
       ret = {}
@@ -102,20 +83,19 @@ class McServer < Server
   end
 
   def set_inputs(hash = {})
-    @inputs.multi_update(transform_parameters(:to_a, hash))
+    @inputs.multi_update(transform_inputs(:to_a, hash))
   end
 
-  def settings
+  def settings #show
     serv_href = URI.parse(self.href)
-    @params.merge! connection.get(serv_href.path, 'view' => 'full')
-    @params[:server][:instance].merge! @instance.show
-    @params[:server][:instance][:inputs].merge! @inputs.show
+    @params.merge! connection.get(serv_href.path, 'view' => 'instance_detail')
+    @current_instance = McInstance.new(self.current_instance) if self.current_instance
+    @next_instance = McInstance.new(self.next_instance)
 #    @monitoring update
     @params
   end
 
   def get_sketchy_data(params = {})
-    connection.logger("Congratulations on making it this far into the Multicloud Monkey.")
     raise "Congratulations on making it this far into the Multicloud Monkey."
 # TODO: Inprogress
 #    base_href = self.href.split(/\/server/).first
@@ -129,7 +109,31 @@ class McServer < Server
 
   def relaunch
     self.terminate
-    self.wait_for_state("stopped")
+    self.wait_for_state("inactive")
     self.launch
+  end
+
+  # Attributes taken for granted in API 1.0
+  def server_type
+    "gateway"
+  end
+
+  def server_template_href
+    if @current_instance
+      return @current_instance.server_template
+    end
+    return @next_instance.server_template
+  end
+
+  def tags
+    []
+  end
+
+  def deployment_href
+    hash_of_links["deployment"]
+  end
+
+  def current_instance_href
+    hash_of_links["current_instance"]
   end
 end

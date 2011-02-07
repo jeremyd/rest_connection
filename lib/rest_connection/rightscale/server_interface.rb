@@ -24,16 +24,8 @@ class ServerInterface
   def create(opts)
     location = connection.post(resource_plural_name, translate_create_opts(opts))
     @impl = (@multicloud ? McServer.new('href' => location) : Server.new('href' => location))
-    reload
+    settings
     self
-  end
-
-  def href
-    if @multicloud
-      return @impl.href
-    else
-      return
-    end
   end
 
   def name
@@ -41,107 +33,117 @@ class ServerInterface
   end
 
   def nickname
-    param = :nickname
-    param = :name if @multicloud
-    @impl.__send__(param)
+    @impl.nickname unless @multicloud
+    @impl.name if @multicloud
   end
 
   def method_missing(method_name, *args, &block)
     @impl.__send__(method_name, *args, &block)
   end
 
-  def ruby_1_8_7_keep_if(hsh, &block)
-    temp_a = hsh.select &block
-    temp_h = {}
-    temp_a.each { |array| temp_h[array.first] = array.last }
-    hsh.replace(temp_h)
-  end
-
-  def deep_duplicate(obj)
-    copy = {"Array" => lambda { |array| elem = deep_duplicate(elem) },
-            "Hash" => lambda { |key,val|
-              key = deep_duplicate(key)
-              val = deep_duplicate(val)
-            }}
-    new_obj = obj.dup.each 
-    return new_obj
+  def clean_and_translate_server_params(it)
+    it.each do |k, v|
+      clean_and_translate_server_params(v) if v.is_a?(Hash)
+    end
+    it.reject! { |k, v| v == nil or v == "" }
+    it.each { |k, v| it[k] = translate_href(v) if k.to_s =~ /href/ }
+    it
   end
 
   def translate_create_opts(old_opts)
+    fields = [{"1.0" => [:server_template_href],      "1.5" => [:server_template_href]},
+              {"1.0" => [:cloud_id],                  "fn" => :map_cloud_id,  "1.5" => [:cloud_href]},
+              {"1.0" => [:aki_image_href, :ari_image_href, :ec2_image_href],  "1.5" => [:image_href]},
+              {"1.0" => [:ec2_user_data],             "1.5" => [:user_data]},
+              {"1.0" => [:instance_type],             "fn" => :map_instance,  "1.5" => [:instance_type_href]},
+              {"1.0" => [:ec2_security_groups_href],  "1.5" => [:security_group_hrefs]},
+              {"1.0" => [:ec2_ssh_key_href],          "1.5" => [:ssh_key_href]},
+              {"1.0" => [:vpc_subnet_href]},
+              {"1.0" => [:ec2_availability_zone]},
+              {"1.0" => [:pricing]},
+              {"1.0" => [:max_spot_price]},
+              {                                       "1.5" => [:inputs]},
+              {                                       "1.5" => [:mci_href, :multi_cloud_image_href]},
+              {                                       "1.5" => [:datacenter_href]},
+              {                                       "1.5" => [:kernel_image_href]},
+              {                                       "1.5" => [:ramdisk_image_href]}]
+
     opts = old_opts.dup
-    server = {}
-    server[:deployment_href] = opts[:deployment_href]
     if @multicloud
-      server[:name] = (opts[:nickname] or opts[:name])
-      server[:instance] = {}
-      server[:instance][:server_template_href] = opts[:server_template_href]
-      server[:instance][:cloud_href] = opts[:cloud_href] if opts[:cloud_href]
-      server[:instance][:cloud_href] = "https://my.rightscale.com/api/clouds/#{opts[:cloud_id]}" if opts[:cloud_id]
-      server[:instance][:multi_cloud_image_href] = (opts[:mci_href] or opts[:multi_cloud_image_href])
-      server[:instance][:instance_type_href] = (map_ec2instance_type(opts[:instance_type]) or
-                                                opts[:instance_type_href])
-      server[:instance][:inputs] = opts[:inputs]
-      server[:instance][:user_data] = (opts[:ec2_user_data] or opts[:user_data])
-      server[:instance][:image_href] = (opts[:aki_image_href] or opts[:ari_image_href] or opts[:ec2_image_href])
-      server[:instance][:security_groups_href] = (opts[:ec2_security_groups_href] or opts[:security_groups_href])
-      server[:instance][:ssh_key_href] = (opts[:ec2_ssh_key_href] or opts[:ssh_key_href])
-      server[:instance][:datacenter_href] = opts[:datacenter_href]
-      server[:instance][:kernel_image_href] = opts[:kernel_image_href]
-      server[:instance][:ramdisk_image_href] = opts[:ramdisk_image_href]
-      server[:description] = opts[:description]
-      ruby_1_8_7_keep_if(server) { |key,val|
-        if val.is_a?(Hash)
-          val.delete_if { |k,v| v.nil? or v == "" }
-          val.each { |k,v| v = translate_href(v) if k.to_s =~ /href/ }
-          ret = true
-        elsif val.nil? or val == ""
-          ret = false
-        else
-          val = translate_href(val) if key.to_s =~ /href/
-          ret = true
-        end
-        ret
-      }
-      return {:server => server}
-    else #API 1.0
-      server[:nickname] = (opts[:nickname] or opts[:name])
+      to = "1.5"
+      ret = {:server => {:instance => {}}}
+      ret[:server][:name] = (opts[:name] ? opts[:name] : opts[:nickname])
+      ret[:server][:description] = opts[:description]
+      ret[:server][:deployment_href] = opts[:deployment_href]
+      server = ret[:server][:instance]
+    else
+      to = "1.0"
+      server = {:nickname => (opts[:nickname] ? opts[:nickname] : opts[:name])}
       server[:deployment_href] = opts[:deployment_href]
-      server[:server_template_href] = opts[:server_template_href]
-      server[:aki_image_href] = opts[:aki_image_href]
-      server[:ari_image_href] = opts[:ari_image_href]
-      server[:ec2_image_href] = opts[:ec2_image_href]
-      server[:ec2_user_data] = (opts[:ec2_user_data] or opts[:user_data])
-      server[:instance_type] = (opts[:instance_type] or unmap_ec2_instance_href(opts[:instance_type_href]))
-      server[:ec2_security_groups_href] = (opts[:ec2_security_groups_href] or opts[:security_groups_href])
-      server[:vpc_subnet_href] = opts[:vpc_subnet_href]
-      server[:ec2_availability_zone] = opts[:ec2_availability_zone]
-      server[:pricing] = opts[:pricing]
-      server[:max_spot_price] = opts[:max_spot_price]
+      ret = {:server => server}
       begin
-        cloud_id = opts[:cloud_href].split(/\/clouds\//).last
+        ret[:cloud_id] = opts[:cloud_href].split(/\/clouds\//).last
       rescue Exception => e
-        cloud_id = opts[:cloud_id]
+        ret[:cloud_id] = opts[:cloud_id]
       end
-      ruby_1_8_7_keep_if(server) { |key,val|
-        if val.is_a?(Hash)
-          val.delete_if { |k,v| v.nil? or v == "" }
-          val.each { |k,v| v = translate_href(v) if k.to_s =~ /href/ }
-          ret = true
-        elsif val.nil? or val == ""
-          ret = false
+    end
+    
+    fields.each { |hsh|
+      next unless hsh[to]
+      hsh[to].each { |field|
+        vals = opts.select {|k,v| [[hsh["1.0"]] + [hsh["1.5"]]].flatten.include?(k.to_sym) }
+        vals.flatten!
+        vals.compact!
+        if hsh["fn"]
+          server[field] = __send__(hsh["fn"], to, opts[vals.first]) unless vals.first.nil?
         else
-          val = translate_href(val) if key.to_s =~ /href/
-          ret = true
+#          case field
+#          when :inputs
+#            server[field] = opts[field]
+#          when :security_group_hrefs
+#            server[field] = opts[field]
+#          else
+            server[field] = opts[vals.first] unless vals.first.nil?
+#          end
         end
-        ret
       }
-      return {:server => server, :cloud_id => cloud_id}
+    }
+    clean_and_translate_server_params(ret)
+    return ret
+  end
+
+  def map_cloud_id(to, val)
+    if val.is_a?(String)
+      begin
+        val = val.split(/\//).last
+      rescue Exception => e
+      end
+    end
+    if to == "1.5"
+      return "https://my.rightscale.com/api/clouds/#{val}"
+    elsif to == "1.0"
+      return "#{val}"
     end
   end
 
-  def translate_href(href)
-    if href.include?("acct") #API 1.0
-      return href.gsub!(/\/acct\/[0-9]*/,'').gsub!(/ec2_/,'') if @multicloud
+  def map_instance(to, val)
+    nil
+  end
+
+  def translate_href(old_href)
+    if old_href.is_a?(Array)
+      new_array = []
+      old_href.each { |url| new_array << translate_href(url) }
+      return new_array
+    else
+      href = old_href.dup
+      if @multicloud
+        href.gsub!(/ec2_/,'')
+        href.gsub!(/\/acct\/[0-9]*/,'')
+      end
+      return href
+    end
+#    if href.include?("acct")
 #      my_base_href, @account = href.split(/\/acct\//)
 #      @account, *remaining = @account.split(/\//)
 #      if @multicloud
@@ -150,8 +152,7 @@ class ServerInterface
 #        return href
 #      end
 #    else #API 1.5
-    end
-    href
+#    end
   end
 
   # The RightScale api returns the server parameters as a hash with "name" and "value".  
@@ -227,6 +228,13 @@ class ServerInterface
 #      ret['start'] = 
 #    end
 #    monitor=server.get_sketchy_data({'start'=>-60,'end'=>-20,'plugin_name'=>"cpu-0",'plugin_type'=>"cpu-idle"})
+  end
+
+  def wait_for_state(st,timeout=1200)
+    if @multicloud and st == "stopped"
+      st = "inactive"
+    end
+    @impl.wait_for_state(st,timeout)
   end
 
   # takes Bool argument to wait for state change (insurance that we can detect a reboot happened)
