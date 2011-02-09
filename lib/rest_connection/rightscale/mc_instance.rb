@@ -19,6 +19,7 @@
 class McInstance
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
+  attr_accessor :monitoring_metrics
   
   def resource_plural_name
     "instances"
@@ -56,11 +57,50 @@ class McInstance
     connection.post(inst_href.path + '/terminate')
   end
 
+  def transform_inputs(sym, parameters)
+    ret = nil
+    if parameters.is_a?(Array) and sym == :to_h
+      ret = {}
+      parameters.each { |hash| ret[hash['name']] = hash['value'] }
+    elsif parameters.is_a?(Hash) and sym == :to_a
+      ret = []
+      parameters.each { |key,val| ret << {'name' => key, 'value' => val} }
+    end
+    ret
+  end
+
+  def translate_href(old_href)
+    href = old_href.dup
+    href.gsub!(/ec2_/,'')
+    href.gsub!(/\/acct\/[0-9]*/,'')
+    return href
+  end
+
   def run_executable(executable, opts=nil)
-    raise "Congratulations on making it this far into the Multicloud Monkey."
-#    script_options = { :server => {} }
-#    if executable.is_a?(Executable) or executable.is_a?(RightScript)
-#      executable = Task.convert_from(executable)
-#    inst_href = URI.parse(self.href)
+    run_options = Hash.new
+    if executable.is_a?(Executable)
+      if executable.recipe?
+        run_options[:recipe_name] = executable.recipe
+      else
+        run_options[:right_script_href] = translate_href(executable.right_script.href)
+      end
+    elsif executable.is_a?(RightScript)
+      run_options[:right_script_href] = translate_href(executable.href)
+    else
+      raise "Invalid class passed to run_executable, needs Executable or RightScript, was:#{executable.class}"
+    end
+
+    inst_href = URI.parse(self.href)
+    run_options[:inputs] = transform_inputs(:to_a, opts) unless opts.nil?
+    location = connection.post(inst_href.path + '/run_executable', run_options)
+    Task.new('href' => location)
+  end
+
+  def fetch_monitoring_metrics
+    @monitoring_metrics = []
+    connection.get(URI.parse(self.href).path + '/monitoring_metrics').each { |mm|
+      @monitoring_metrics << MonitoringMetric.new(mm)
+    }
+    @monitoring_metrics
   end
 end

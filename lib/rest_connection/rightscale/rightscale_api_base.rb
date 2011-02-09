@@ -191,7 +191,7 @@ module RightScale
           if @params[t]
             return @params[t]
           else
-            @params[t]
+            return @params[t]
           end
         end
       end

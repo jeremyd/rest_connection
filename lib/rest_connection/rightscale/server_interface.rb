@@ -16,6 +16,8 @@
 require 'rest_connection/ssh_hax'
 
 class ServerInterface
+  attr_reader :multicloud
+
   def initialize(cloud_id = 1, params = {})
     @multicloud = (cloud_id.to_i > 10 ? true : false)
     @impl = (@multicloud ? McServer.new(params) : Server.new(params))

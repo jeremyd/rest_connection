@@ -49,6 +49,7 @@ class McServer < Server
     if actions.include?("terminate")
       t = URI.parse(self.href)
       connection.post(t.path + '/terminate')
+      @current_instance = nil
     else
       connection.logger("WARNING: was in #{self.state} so skipping terminate call")
     end
@@ -63,7 +64,8 @@ class McServer < Server
   end
 
   def run_executable(executable, opts=nil)
-    @instance.run_executable(executable, opts)
+    raise "Instance isn't running; Can't run executable" unless @current_instance
+    @current_instance.run_executable(executable, opts)
   end
 
   def transform_inputs(sym, parameters)
@@ -89,9 +91,11 @@ class McServer < Server
   def settings #show
     serv_href = URI.parse(self.href)
     @params.merge! connection.get(serv_href.path, 'view' => 'instance_detail')
-    @current_instance = McInstance.new(self.current_instance) if self.current_instance
+    if self.current_instance
+      @current_instance = McInstance.new(self.current_instance)
+      @current_instance.fetch_monitoring_metrics
+    end
     @next_instance = McInstance.new(self.next_instance)
-#    @monitoring update
     @params
   end
 
@@ -104,7 +108,7 @@ class McServer < Server
   end
 
   def monitoring
-    get_sketchy_data ? true : false
+    @current_instance.fetch_monitoring_metrics
   end
 
   def relaunch

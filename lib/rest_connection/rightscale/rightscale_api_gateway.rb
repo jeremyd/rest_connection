@@ -59,12 +59,8 @@ module RightScale
         update
       end
 
-      def reload
-        settings
-      end
-
       def method_missing(method_name, *args)
-        puts "#{method_name}"
+        puts "DEBUG: method_missing in #{self.class.to_s}: #{method_name}" if ENV['REST_CONNECT_DEBUG']
         mn = method_name.to_s
         assignment = mn.gsub!(/=/,"")
         mn_dash = mn.gsub(/_/,"-")

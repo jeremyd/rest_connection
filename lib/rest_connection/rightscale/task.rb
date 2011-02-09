@@ -16,7 +16,23 @@
 #    
 # You must have Beta v1.5 API access to use these internal API calls.
 # 
-class MonitoringMetric
+class Task
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
+
+  def wait_for_state(state, timeout=900)
+    while(timeout > 0)
+      reload
+      connection.logger("state is #{self.summary}, waiting for #{state}")
+      raise "FATAL error, #{self.summary}\n" if self.summary.include?('failed')
+      sleep 30
+      timeout -= 30
+      return true if self.summary.include?(state)
+    end
+    raise "FATAL: Timeout waiting for Executable to complete.  State was #{self.state}" if timeout <= 0
+  end
+
+  def wait_for_completed(legacy=nil)
+    wait_for_state("completed")
+  end
 end
