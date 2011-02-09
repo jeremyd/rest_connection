@@ -140,4 +140,16 @@ class McServer < Server
   def current_instance_href
     hash_of_links["current_instance"]
   end
+
+  def wait_for_operational_with_dns
+    timeout = 600
+    wait_for_state("operational")
+  end
+
+  def dns_name
+    if @current_instance
+      return @current_instance.public_ip_addresses.first
+    end
+    nil
+  end
 end
