@@ -149,7 +149,7 @@ module RestConnection
     #
     # decoding and post processing goes here. This is where you may need some customization if you want to handle the response differently (or not at all!).  Luckily it's easy to modify based on this handler.
     def handle_response(res)
-      if res.code.to_i == 201 && res.code.to_i == 202
+      if res.code.to_i == 201 or res.code.to_i == 202
         return res['Location']
       elsif [200,203,204,302].detect { |d| d == res.code.to_i }
         if res.body
