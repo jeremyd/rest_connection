@@ -98,7 +98,7 @@ class McInstance
 
   def fetch_monitoring_metrics
     @monitoring_metrics = []
-    return @monitoring_metrics if self.state == "operational"
+    return @monitoring_metrics if self.state != "operational"
     connection.get(URI.parse(self.href).path + '/monitoring_metrics').each { |mm|
       @monitoring_metrics << MonitoringMetric.new(mm)
     }
