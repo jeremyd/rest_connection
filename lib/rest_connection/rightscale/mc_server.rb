@@ -91,10 +91,7 @@ class McServer < Server
   def settings #show
     serv_href = URI.parse(self.href)
     @params.merge! connection.get(serv_href.path, 'view' => 'instance_detail')
-    if self.current_instance
-      @current_instance = McInstance.new(self.current_instance)
-      @current_instance.fetch_monitoring_metrics
-    end
+    @current_instance = McInstance.new(self.current_instance) if self.current_instance
     @next_instance = McInstance.new(self.next_instance)
     @params
   end
