@@ -26,7 +26,7 @@ module RightScale
         ret = {}
         unless @params['links']# and not (@params['nickname'] or @params['name'])
           @params = Kernel.const_get(self.class.to_s).find_by(:name) { |n| n == self.nickname }.first.params
-          connection.logger("#{@params.inspect}")
+          connection.logger("in hash_of_links: @params = #{@params.inspect}") if ENV['REST_CONNECT_DEBUG']
         end
         @params['links'].each { |link| ret[link['rel']] = link['href'] } if @params['links']
         ret
@@ -38,7 +38,7 @@ module RightScale
         unless @params['links']
           raise "Cannot find attribute 'nickname' or 'name' in #{self.inspect}. Aborting." unless self.nickname
           @params = Kernel.const_get(self.class.to_s).find_by(:name) { |n| n == self.nickname }.first.params
-          connection.logger("#{@params.inspect}")
+          connection.logger("in href: @params = #{@params.inspect}") if ENV['REST_CONNECT_DEBUG']
         end
         @params['links'].each { |link| ret = link['href'] if link['rel'] == 'self' }
         ret
@@ -49,7 +49,7 @@ module RightScale
         unless @params['actions']
           raise "Cannot find attribute 'nickname' or 'name' in #{self.inspect}. Aborting." unless self.nickname
           @params = Kernel.const_get(self.class.to_s).find_by(:name) { |n| n == self.nickname }.first.params
-          connection.logger("#{@params.inspect}")
+          connection.logger("in actions: @params = #{@params.inspect}") if ENV['REST_CONNECT_DEBUG']
         end
         @params['actions'].each { |action| ret << action['rel'] }
         ret
