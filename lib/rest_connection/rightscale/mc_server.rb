@@ -123,6 +123,7 @@ class McServer < Server
     if @current_instance
       return @current_instance.server_template
     end
+    self.settings unless @next_instance
     return @next_instance.server_template
   end
 
