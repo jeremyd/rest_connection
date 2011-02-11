@@ -35,8 +35,8 @@ class ServerInterface
   end
 
   def nickname
-    @impl.nickname unless @multicloud
-    @impl.name if @multicloud
+    return @impl.nickname unless @multicloud
+    return @impl.name if @multicloud
   end
 
   def method_missing(method_name, *args, &block)
