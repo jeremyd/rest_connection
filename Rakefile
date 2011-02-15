@@ -7,7 +7,7 @@ Jeweler::Tasks.new do |gemspec|
   gemspec.email = "jeremy@rubyonlinux.org"
   gemspec.homepage = "http://github.com/jeremyd/rest_connection"
   gemspec.authors = ["Jeremy Deininger"]
-  gemspec.add_dependency('activesupport')
+  gemspec.add_dependency('activesupport', "=2.3.10")
   gemspec.add_dependency('net-ssh')
   gemspec.add_dependency('json')
 end
