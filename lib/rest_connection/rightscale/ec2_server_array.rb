@@ -40,5 +40,10 @@ class Ec2ServerArray
     serv_href = URI.parse(self.href)
     connection.post("#{serv_href.path}/terminate_all")
   end
+
+  def launch
+    serv_href = URI.parse(self.href)
+    connection.post("#{serv_href.path}/launch")
+  end
 end
 
