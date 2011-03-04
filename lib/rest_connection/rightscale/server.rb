@@ -27,6 +27,7 @@ class Server
     location = connection.post(self.resource_plural_name,create_options)    
     newrecord = self.new('href' => location)
     newrecord.reload
+    newrecord.parameters #transform the parameters!
     newrecord
   end
 
@@ -52,6 +53,7 @@ class Server
 
   # This is overriding the default save with one that can massage the parameters
   def save
+    self.parameters #transform the parameters, if they're not already!!
     uri = URI.parse(self.href)
     connection.put(uri.path, resource_singular_name.to_sym => @params)
   end
