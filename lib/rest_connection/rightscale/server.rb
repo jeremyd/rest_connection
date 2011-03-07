@@ -70,15 +70,18 @@ class Server
       sleep 30
       timeout -= 30
       connection.logger("waiting for server #{nickname} to go #{st}, state is #{state}")
+      if state =~ /terminated/
+        raise "FATAL error, this server terminated when waiting for #{st}: #{nickname}, see audit #{self.audit_link}"
+      end
       reload
     end
     raise "FATAL, this server #{self.audit_link} timed out waiting for the state to be #{st}" if timeout <= 0
   end
 
   # waits until the server is operational and dns_name is available
-  def wait_for_operational_with_dns
+  def wait_for_operational_with_dns(state_wait_timeout=1200)
     timeout = 600
-    wait_for_state("operational")
+    wait_for_state("operational", state_wait_timeout)
     while(timeout > 0)
       self.settings
       break if self['dns-name'] && !self['dns-name'].empty? && self['private-dns-name'] && !self['private-dns-name'].empty? 
@@ -93,7 +96,7 @@ class Server
   def audit_link
     # proof of concept for now
     server_id = self.href.split(/\//).last
-    audit_href = "https://my.rightscale.com/servers/#{server_id}#audit_entries"
+    audit_href = "https://my.rightscale.com/servers/#{server_id}#auditentries"
     "<a href='#{audit_href}'>#{audit_href}</a>"
   end
 
