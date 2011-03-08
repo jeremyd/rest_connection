@@ -180,7 +180,7 @@ module RestConnection
           @@logger = Logger.new(STDOUT)
           init_message += "STDOUT"
         end
-        STDOUT.puts init_message
+        @@logger.info(init_message)
       end
 
       @@logger.info(message)
