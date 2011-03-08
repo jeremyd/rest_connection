@@ -64,15 +64,19 @@ class Server
   def wait_for_state(st,timeout=1200)
     reload
     connection.logger("#{nickname} is #{self.state}")
+    catch_early_terminated = 4
     while(timeout > 0)
       return true if state =~ /#{st}/
       raise "FATAL error, this server is stranded and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('stranded') && !st.include?('stranded')
+      connection.logger("waiting for server #{nickname} to go #{st}, state is #{state}")
+      if state =~ /terminated|stopped/ and st !~ /terminated|stopped/
+        if catch_early_terminated <= 0
+          raise "FATAL error, this server terminated when waiting for #{st}: #{nickname}"
+        end
+        catch_early_terminated -= 1
+      end
       sleep 30
       timeout -= 30
-      connection.logger("waiting for server #{nickname} to go #{st}, state is #{state}")
-      if state =~ /terminated/
-        raise "FATAL error, this server terminated when waiting for #{st}: #{nickname}, see audit #{self.audit_link}"
-      end
       reload
     end
     raise "FATAL, this server #{self.audit_link} timed out waiting for the state to be #{st}" if timeout <= 0
