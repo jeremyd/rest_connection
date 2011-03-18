@@ -142,6 +142,16 @@ class McServer < Server
   def wait_for_operational_with_dns(state_wait_timeout=1200)
     timeout = 600
     wait_for_state("operational", state_wait_timeout)
+    step = 15
+    while(timeout > 0)
+      self.settings
+      break if self.dns_name
+      connection.logger "waiting for a public IP for #{self.nickname}"
+      sleep step
+      timeout -= step
+    end
+    connection.logger "got IP: #{self.dns_name}"
+    raise "FATAL, this server #{self.audit_link} timed out waiting for DNS" if timeout <= 0
   end
 
   def dns_name

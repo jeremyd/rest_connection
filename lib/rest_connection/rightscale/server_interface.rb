@@ -55,7 +55,7 @@ class ServerInterface
   def translate_create_opts(old_opts)
     fields = [{"1.0" => [:server_template_href],      "1.5" => [:server_template_href]},
               {"1.0" => [:cloud_id],                  "fn" => :map_cloud_id,  "1.5" => [:cloud_href]},
-              {"1.0" => [:ec2_image_href],  "1.5" => [:image_href]},
+              {"1.0" => [:ec2_image_href],            "1.5" => [:image_href]},
               {"1.0" => [:ec2_user_data],             "1.5" => [:user_data]},
               {"1.0" => [:instance_type],             "fn" => :map_instance,  "1.5" => [:instance_type_href]},
               {"1.0" => [:ec2_security_groups_href],  "1.5" => [:security_group_hrefs]},
