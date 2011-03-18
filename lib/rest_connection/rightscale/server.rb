@@ -64,7 +64,8 @@ class Server
   def wait_for_state(st,timeout=1200)
     reload
     connection.logger("#{nickname} is #{self.state}")
-    catch_early_terminated = 4
+    step = 15
+    catch_early_terminated = 120 / step
     while(timeout > 0)
       return true if state =~ /#{st}/
       raise "FATAL error, this server is stranded and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('stranded') && !st.include?('stranded')
@@ -75,8 +76,8 @@ class Server
         end
         catch_early_terminated -= 1
       end
-      sleep 30
-      timeout -= 30
+      sleep step
+      timeout -= step
       reload
     end
     raise "FATAL, this server #{self.audit_link} timed out waiting for the state to be #{st}" if timeout <= 0
@@ -86,12 +87,13 @@ class Server
   def wait_for_operational_with_dns(state_wait_timeout=1200)
     timeout = 600
     wait_for_state("operational", state_wait_timeout)
+    step = 15
     while(timeout > 0)
       self.settings
       break if self['dns-name'] && !self['dns-name'].empty? && self['private-dns-name'] && !self['private-dns-name'].empty? 
       connection.logger "waiting for dns-name for #{self.nickname}"
-      sleep 30
-      timeout -= 30
+      sleep step
+      timeout -= step
     end
     connection.logger "got DNS: #{self['dns-name']}"
     raise "FATAL, this server #{self.audit_link} timed out waiting for DNS" if timeout <= 0

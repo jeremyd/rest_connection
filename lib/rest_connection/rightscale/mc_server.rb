@@ -139,9 +139,9 @@ class McServer < Server
     hash_of_links["current_instance"]
   end
 
-  def wait_for_operational_with_dns
+  def wait_for_operational_with_dns(state_wait_timeout=1200)
     timeout = 600
-    wait_for_state("operational")
+    wait_for_state("operational", state_wait_timeout)
   end
 
   def dns_name
