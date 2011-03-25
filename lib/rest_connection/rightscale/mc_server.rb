@@ -139,6 +139,12 @@ class McServer < Server
     hash_of_links["current_instance"]
   end
 
+  def cloud_id
+    cloud_href = @current_instance.hash_of_links["cloud"] if @current_instance
+    cloud_href = @next_instance.hash_of_links["cloud"] unless cloud_href
+    return cloud_href.split("/").last.to_i
+  end
+
   def wait_for_operational_with_dns(state_wait_timeout=1200)
     timeout = 600
     wait_for_state("operational", state_wait_timeout)

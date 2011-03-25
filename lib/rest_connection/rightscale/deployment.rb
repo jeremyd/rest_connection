@@ -25,7 +25,14 @@ class Deployment
   end
 
   def cloud_id
-    @cloud_id = self.nickname.match(/cloud_[0-9]+/)[0].match(/[0-9]+/)[0].to_i unless @cloud_id
+    unless @cloud_id
+      if self.nickname =~ /cloud_[0-9]+/
+        @cloud_id = self.nickname.match(/cloud_[0-9]+/)[0].match(/[0-9]+/)[0].to_i
+      else
+        @cloud_id = servers.first.cloud_id
+      end
+      @cloud_id = nil if self.nickname =~ /cloud_multicloud/
+    end
     @cloud_id
   end
 
