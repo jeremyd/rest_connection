@@ -107,10 +107,12 @@ module RightScale
 
 # filter is only implemented on some api endpoints
       def find_with_filter(filter = {})
-        filter_params = ""
-        filter.each {|key,val| filter_params += "filter[]=#{key}=#{val}&"}
+        filter_params = [] 
+        filter.each { |key,val| 
+          filter_params << "#{key}=#{val}"
+          }
         a = Array.new
-        connection.get(self.resource_plural_name, filter_params).each do |object|
+        connection.get(self.resource_plural_name, :filter => filter_params).each do |object|
           a << self.new(object)
         end
         return a
