@@ -89,7 +89,7 @@ module RestConnection
     def get(href, additional_parameters = "")
       rest_connect do |base_uri,headers|
         href = "#{base_uri}/#{href}" unless begins_with_slash(href)
-        new_path = URI.escape(href + @settings[:extension] + "?" + requestify(additional_parameters))
+        new_path = URI.escape(href + @settings[:extension] + "?") + requestify(additional_parameters)
         Net::HTTP::Get.new(new_path, headers)
       end
     end
@@ -180,7 +180,7 @@ module RestConnection
           @@logger = Logger.new(STDOUT)
           init_message += "STDOUT"
         end
-        STDOUT.puts init_message
+        @@logger.info(init_message)
       end
 
       @@logger.info("[API V#{@settings[:common_headers]["X_API_VERSION"]} ]" + message)
