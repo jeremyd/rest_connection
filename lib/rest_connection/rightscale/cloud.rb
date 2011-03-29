@@ -16,11 +16,7 @@
 #    
 # You must have Beta v1.5 API access to use these internal API calls.
 # 
-class MonitoringMetric
+class Cloud
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
-  
-  def self.parse_args(cloud_id, instance_id)
-    "clouds/#{cloud_id}/instances/#{instance_id}/"
-  end
 end

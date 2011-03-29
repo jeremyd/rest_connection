@@ -141,17 +141,16 @@ module RightScale
         @@gateway_connection
       end
 
-      def find_by(attrib, cloud_id=nil, &block)
+      def find_by(attrib, *args, &block)
         attrib = :name if attrib == :nickname
-        self.find_all.select do |s|
+        self.find_all(*args).select do |s|
           yield(s[attrib.to_s])
         end
       end
 
-      def find_all(cloud_id=nil)
+      def find_all(*args)
         a = Array.new
-        url = self.resource_plural_name
-        url = "clouds/#{cloud_id}/#{self.resource_plural_name}" if cloud_id
+        url = "#{parse_args(*args)}#{self.resource_plural_name}"
         connection.get(url).each do |object|
           a << self.new(object)
         end

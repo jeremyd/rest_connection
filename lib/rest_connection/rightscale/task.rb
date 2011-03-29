@@ -19,6 +19,10 @@
 class Task
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
+  
+  def self.parse_args(cloud_id, instance_id)
+    "clouds/#{cloud_id}/instances/#{instance_id}/live/"
+  end
 
   def wait_for_state(state, timeout=900)
     while(timeout > 0)

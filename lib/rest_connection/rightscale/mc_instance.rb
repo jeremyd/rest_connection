@@ -37,6 +37,10 @@ class McInstance
     "instance"
   end
   
+  def self.parse_args(cloud_id)
+    "clouds/#{cloud_id}/"
+  end
+  
   def show
     inst_href = URI.parse(self.href)
     @params.merge! connection.get(inst_href.path, 'view' => "full")

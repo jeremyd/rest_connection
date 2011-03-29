@@ -36,4 +36,8 @@ class McSshKey
     "ssh_key"
   end
   
+  def self.parse_args(cloud_id)
+    "clouds/#{cloud_id}/"
+  end
+  
 end

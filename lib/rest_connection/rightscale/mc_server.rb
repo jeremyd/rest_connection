@@ -36,6 +36,10 @@ class McServer < Server
     "server"
   end
   
+  def self.parse_args(deployment_id=nil)
+    deployment_id ? "deployments/#{deployment_id}/" : ""
+  end
+  
   def launch
     if actions.include?("launch")
       t = URI.parse(self.href)

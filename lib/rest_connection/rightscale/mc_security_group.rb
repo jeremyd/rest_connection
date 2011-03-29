@@ -36,14 +36,7 @@ class McSecurityGroup
     "security_group"
   end
   
-  def show
-    inst_href = URI.parse(self.href)
-    @params.merge! connection.get(inst_href.path, 'view' => "full")
+  def self.parse_args(cloud_id)
+    "clouds/#{cloud_id}/"
   end
-
-  def save
-    inst_href = URI.parse(self.href)
-    connection.put(inst_href.path, @params)
-  end
-
 end
