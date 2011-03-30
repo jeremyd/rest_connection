@@ -21,6 +21,9 @@ class Tag
     result = connection.get("tags/search", :resource_type => resource_name.to_s, :tags => tags )
   end
 
+  def self.search_by_href(resource_href)
+      connection.get("tags/search", :resource_href => resource_href)
+  end
   #TAGGABLE_RESOURCES = [ 'Server', 'Ec2EbsSnapshot', 'Ec2EbsVolume', 'Ec2Image', 'Image', 'ServerArray', 'Ec2Instance',
   #                        'Instance', 'Deployment', 'ServerTemplate', 'Ec2ServerTemplate' ]
   #
