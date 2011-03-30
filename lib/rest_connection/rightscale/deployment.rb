@@ -29,7 +29,7 @@ class Deployment
       if self.nickname =~ /cloud_[0-9]+/
         @cloud_id = self.nickname.match(/cloud_[0-9]+/)[0].match(/[0-9]+/)[0].to_i
       else
-        @cloud_id = servers.first.cloud_id
+        @cloud_id = 1
       end
       @cloud_id = nil if self.nickname =~ /cloud_multicloud/
     end
