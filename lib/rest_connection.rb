@@ -20,6 +20,7 @@ require 'yaml'
 require 'cgi'
 require 'rest_connection/rightscale/rightscale_api_resources'
 require 'logger'
+require 'highline/import'
 
 module RestConnection
   class Connection
@@ -50,6 +51,8 @@ module RestConnection
       end
       @settings[:extension] = ".js"
       @settings[:api_href] = @settings[:api_url] unless @settings[:api_href]
+      @settings[:user] = ask("Username: ") unless @settings[:user]
+      @settings[:pass] = ask("Password: ") { |q| q.echo = false } unless @settings[:pass]
     end
 
     # Main HTTP connection loop. Common settings are set here, then we yield(BASE_URI, OPTIONAL_HEADERS) to other methods for each type of HTTP request: GET, PUT, POST, DELETE
