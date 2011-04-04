@@ -39,6 +39,8 @@ module RestConnection
     #
     def initialize(config_yaml = File.join(File.expand_path("~"), ".rest_connection", "rest_api_config.yaml"))
       @@logger = nil
+      @@user = nil
+      @@pass = nil
       etc_config = File.join("#{File::SEPARATOR}etc", "rest_connection", "rest_api_config.yaml")
       if File.exists?(config_yaml)
         @settings = YAML::load(IO.read(config_yaml))
@@ -51,8 +53,14 @@ module RestConnection
       end
       @settings[:extension] = ".js"
       @settings[:api_href] = @settings[:api_url] unless @settings[:api_href]
-      @settings[:user] = ask("Username: ") unless @settings[:user]
-      @settings[:pass] = ask("Password: ") { |q| q.echo = false } unless @settings[:pass]
+      unless @settings[:user]
+        @@user = ask("Username:") unless @@user
+        @settings[:user] = @@user
+      end
+      unless @settings[:pass]
+        @@pass = ask("Password:") { |q| q.echo = false } unless @@pass
+        @settings[:pass] = @@pass
+      end
     end
 
     # Main HTTP connection loop. Common settings are set here, then we yield(BASE_URI, OPTIONAL_HEADERS) to other methods for each type of HTTP request: GET, PUT, POST, DELETE
