@@ -69,7 +69,15 @@ class Deployment
   end
 
   def clone
-    deploy_href = URI.parse(@deploy.href)
+    deploy_href = URI.parse(self.href)
     Deployment.new(:href => connection.post(deploy_href.path + "/duplicate"))
+  end
+
+  def destroy(wait_for_servers = nil)
+    deploy_href = URI.parse(self.href)
+    if wait_for_servers
+      servers_no_reload.each { |s| s.wait_for_state("stopped") }
+    end
+    connection.delete(deploy_href.path)
   end
 end
