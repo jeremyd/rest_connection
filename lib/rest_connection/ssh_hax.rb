@@ -144,7 +144,7 @@ module SshHax
 
 
   # returns hash of exit_status and output from command
-  def spot_check_command(command, ssh_key=nil, host_dns=self.dns_name)
+  def spot_check_command(command, ssh_key=nil, host_dns=self.dns_name, do_not_log_result=false)
     raise "FATAL: spot_check_command called on a server with no dns_name. You need to run .settings on the server to populate this attribute." unless host_dns
     connection.logger "SSHing to #{host_dns} using key(s) #{ssh_key_config(ssh_key)}"
     status = nil
@@ -177,7 +177,7 @@ module SshHax
       sleep 10
     end
     end
-    connection.logger "SSH Run: #{command} on #{host_dns}. Retry was #{retry_count}. Exit status was #{status}. Output below ---\n#{output}\n---"
+    connection.logger "SSH Run: #{command} on #{host_dns}. Retry was #{retry_count}. Exit status was #{status}. Output below ---\n#{output}\n---" unless do_not_log_result
     return {:status => status, :output => output}
   end 
 
