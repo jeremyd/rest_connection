@@ -157,10 +157,6 @@ module RightScale
         return a
       end
 
-      def parse_args(*args)
-        nil
-      end
-
       def create(opts)
         location = connection.post(self.resource_plural_name, self.resource_singular_name.to_sym => opts)
         newrecord = self.new('links' => [ {'rel' => 'self', 'href' => location } ])
