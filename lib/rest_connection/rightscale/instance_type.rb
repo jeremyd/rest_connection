@@ -16,7 +16,7 @@
 #    
 # You must have Beta v1.5 API access to use these internal API calls.
 # 
-class Cloud
+class InstanceType
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
   

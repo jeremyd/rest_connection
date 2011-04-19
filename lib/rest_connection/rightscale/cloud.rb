@@ -19,8 +19,4 @@
 class Cloud
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
-  
-  def self.parse_args()
-    ""
-  end
 end
