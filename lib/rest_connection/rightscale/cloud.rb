@@ -19,4 +19,8 @@
 class Cloud
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
+
+  def cloud_id
+    self.href.split("/").last
+  end
 end
