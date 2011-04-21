@@ -34,6 +34,8 @@ class Ec2ServerArray
   def instances
     serv_href = URI.parse(self.href)
     connection.get("#{serv_href.path}/instances")
+    rescue
+    [] # raise an error on self.href which we want, it'll just rescue on rackspace and return an empty array.
   end 
   
   def terminate_all
