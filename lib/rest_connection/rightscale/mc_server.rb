@@ -19,6 +19,7 @@
 class McServer < Server
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
+  attr_accessor :current_instance, :next_instance, :inputs
   
   def resource_plural_name
     "servers"
@@ -95,8 +96,8 @@ class McServer < Server
   def settings #show
     serv_href = URI.parse(self.href)
     @params.merge! connection.get(serv_href.path, 'view' => 'instance_detail')
-    @current_instance = McInstance.new(self.current_instance) if self.current_instance
-    @next_instance = McInstance.new(self.next_instance)
+    @current_instance = McInstance.new(self['current_instance']) if self['current_instance']
+    @next_instance = McInstance.new(self['next_instance'])
     @params
   end
 
@@ -169,5 +170,25 @@ class McServer < Server
       return @current_instance.public_ip_addresses.first
     end
     nil
+  end
+
+  def save
+    @next_instance.save
+  end
+
+  def update
+    @next_instance.save
+  end
+
+  def save_current
+    @current_instance.update if @current_instance
+  end
+
+  def settings_current
+    settings # Gets all instance (including current) information
+  end
+
+  def reload_current
+    settings # Gets all instance (including current) information
   end
 end

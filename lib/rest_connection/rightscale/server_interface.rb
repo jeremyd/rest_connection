@@ -52,7 +52,7 @@ class ServerInterface
     it
   end
 
-  def translate_create_opts(old_opts)
+  def translate_create_opts(old_opts, instance_only=false)
     fields = [{"1.0" => [:server_template_href],      "1.5" => [:server_template_href]},
               {"1.0" => [:cloud_id],                  "fn" => :map_cloud_id,  "1.5" => [:cloud_href]},
               {"1.0" => [:ec2_image_href],            "1.5" => [:image_href]},
@@ -73,11 +73,16 @@ class ServerInterface
     opts = old_opts.dup
     if @multicloud
       to = "1.5"
-      ret = {:server => {:instance => {}}}
-      ret[:server][:name] = (opts[:name] ? opts[:name] : opts[:nickname])
-      ret[:server][:description] = opts[:description]
-      ret[:server][:deployment_href] = opts[:deployment_href]
-      server = ret[:server][:instance]
+      if instance_only
+        ret = {:instance => {}}
+        server = ret[:instance]
+      else
+        ret = {:server => {:instance => {}}}
+        ret[:server][:name] = (opts[:name] ? opts[:name] : opts[:nickname])
+        ret[:server][:description] = opts[:description]
+        ret[:server][:deployment_href] = opts[:deployment_href]
+        server = ret[:server][:instance]
+      end
     else
       to = "1.0"
       server = {:nickname => (opts[:nickname] ? opts[:nickname] : opts[:name])}
@@ -99,14 +104,7 @@ class ServerInterface
         if hsh["fn"]
           server[field] = __send__(hsh["fn"], to, opts[vals.first]) unless vals.first.nil?
         else
-#          case field
-#          when :inputs
-#            server[field] = opts[field]
-#          when :security_group_hrefs
-#            server[field] = opts[field]
-#          else
-            server[field] = opts[vals.first] unless vals.first.nil?
-#          end
+          server[field] = opts[vals.first] unless vals.first.nil?
         end
       }
     }
@@ -247,21 +245,19 @@ class ServerInterface
     @impl.reboot(wait_for_state) unless @multicloud
   end
 
-  # Save the servers parameters to the current server (instead of the next server)
-  def save_current
-    connection.logger("WARNING: Gateway Servers do not currently support save_current. Ignoring.") if @multicloud
-    @impl.save_current unless @multicloud
+  def save(new_params = nil)
+    if new_params
+      @impl.settings
+      if @multicloud
+        @impl.next_instance.params = translate_create_opts(new_params, :instance_only)
+      else
+        @impl.params = translate_create_opts(new_params)
+      end
+    end
+    @impl.save
   end
 
-  # Load server's settings from the current server (instead of the next server)
-  def settings_current
-    connection.logger("WARNING: Gateway Servers do not support settings_current. Ignoring.") if @multicloud
-    @impl.settings_current unless @multicloud
-  end
-
-  # Reload the server's basic information from the current server.
-  def reload_current
-    connection.logger("WARNING: Gateway Servers do not support reload_current. Ignoring.") if @multicloud
-    @impl.reload_current unless @multicloud
+  def update(new_params = nil)
+    save(new_params)
   end
 end
