@@ -74,24 +74,24 @@ class ServerInterface
     if @multicloud
       to = "1.5"
       if instance_only
-        ret = {:instance => {}}
-        server = ret[:instance]
+        ret = {"instance" => {}}
+        server = ret["instance"]
       else
-        ret = {:server => {:instance => {}}}
-        ret[:server][:name] = (opts[:name] ? opts[:name] : opts[:nickname])
-        ret[:server][:description] = opts[:description]
-        ret[:server][:deployment_href] = opts[:deployment_href]
-        server = ret[:server][:instance]
+        ret = {"server" => {"instance" => {}}}
+        ret["server"]["name"] = (opts["name"] ? opts["name"] : opts["nickname"])
+        ret["server"]["description"] = opts["description"]
+        ret["server"]["deployment_href"] = opts["deployment_href"]
+        server = ret["server"]["instance"]
       end
     else
       to = "1.0"
-      server = {:nickname => (opts[:nickname] ? opts[:nickname] : opts[:name])}
-      server[:deployment_href] = opts[:deployment_href]
-      ret = {:server => server}
+      server = {"nickname" => (opts["nickname"] ? opts["nickname"] : opts["name"])}
+      server["deployment_href"] = opts["deployment_href"]
+      ret = {"server" => server}
       begin
-        ret[:cloud_id] = opts[:cloud_href].split(/\/clouds\//).last
+        ret["cloud_id"] = opts["cloud_href"].split(/\/clouds\//).last
       rescue Exception => e
-        ret[:cloud_id] = opts[:cloud_id]
+        ret["cloud_id"] = opts["cloud_id"]
       end
     end
     
@@ -102,9 +102,9 @@ class ServerInterface
         vals.flatten!
         vals.compact!
         if hsh["fn"]
-          server[field] = __send__(hsh["fn"], to, opts[vals.first]) unless vals.first.nil?
+          server[field.to_s] = __send__(hsh["fn"], to, opts[vals.first]) unless vals.first.nil?
         else
-          server[field] = opts[vals.first] unless vals.first.nil?
+          server[field.to_s] = opts[vals.first] unless vals.first.nil?
         end
       }
     }
@@ -249,9 +249,9 @@ class ServerInterface
     if new_params
       @impl.settings
       if @multicloud
-        @impl.next_instance.params = translate_create_opts(new_params, :instance_only)
+        @impl.next_instance.params.merge!(translate_create_opts(new_params, :instance_only)["instance"])
       else
-        @impl.params = translate_create_opts(new_params)
+        @impl.params.merge!(translate_create_opts(new_params)["server"])
       end
     end
     @impl.save
