@@ -117,6 +117,18 @@ module RightScale
         end
         return a
       end
+
+      def [](*args)
+        ret = []
+        args.each { |arg|
+          begin
+            ret << (arg.is_a?(Hash) ? find_with_filter(arg) : find(arg))
+          rescue
+            ret << find_by_nickname_speed(arg)
+          end
+        }
+        return (args.empty? ? find_all : ret.flatten)
+      end
     end
 
     module Base

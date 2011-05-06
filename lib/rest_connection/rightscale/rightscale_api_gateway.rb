@@ -14,10 +14,10 @@ module RightScale
           resp = @@gateway_connection.post("session", params)
           raise "ERROR: Login failed. #{resp.message}. Code:#{resp.code}" unless resp.code == "302" || resp.code == "204"
           @@gateway_connection.cookie = resp.response['set-cookie']
-            
+
           # test session
-          resp, data = @@gateway_connection.get("session")
-          raise "ERROR: Invalid session. #{resp.message}. Code:#{resp.code}" unless resp.code == "200" 
+          resp = @@gateway_connection.get("session")
+          raise "ERROR: Invalid session. #{resp["message"]}." unless resp.is_a?(Hash)
         end
         @@gateway_connection
       end
@@ -135,8 +135,8 @@ module RightScale
           @@gateway_connection.cookie = resp.response['set-cookie']
             
           # test session
-          resp, data = @@gateway_connection.get("session")
-          raise "ERROR: Invalid session. #{resp.message}. Code:#{resp.code}" unless resp.code == "200"
+          resp = @@gateway_connection.get("session")
+          raise "ERROR: Invalid session. #{resp["message"]}." unless resp.is_a?(Hash)
         end
         @@gateway_connection
       end

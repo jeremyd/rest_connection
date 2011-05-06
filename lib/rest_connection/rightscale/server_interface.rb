@@ -34,6 +34,20 @@ class ServerInterface
     nickname
   end
 
+  def inspect
+    @impl.inspect
+  end
+
+  def self.[](*args)
+    begin
+      ret = Server[*args]
+      raise "" if ret.empty?
+    rescue
+      ret = McServer[*args]
+    end
+    return ret
+  end
+
   def nickname
     return @impl.nickname unless @multicloud
     return @impl.name if @multicloud
