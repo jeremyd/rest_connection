@@ -121,15 +121,20 @@ module RightScale
       def [](*args)
         ret = []
         args.each { |arg|
+          temp = []
           begin
-            ret << (arg.is_a?(Hash) ? find_with_filter(arg) : find(arg))
+            temp << (arg.is_a?(Hash) ? find_with_filter(arg) : find(arg))
           rescue
+          end
+          temp.flatten!
+          if temp.empty?
             if arg.is_a?(Hash)
-              ret << find_by(arg.keys.first) { |v| v =~ /#{arg.values.first}/ }
+              temp << find_by(arg.keys.first) { |v| v =~ /#{arg.values.first}/ }
             else
-              ret << find_by_nickname_speed(arg)
+              temp << find_by_nickname_speed(arg)
             end
           end
+          ret += temp
         }
         return (args.empty? ? find_all : ret.flatten)
       end
