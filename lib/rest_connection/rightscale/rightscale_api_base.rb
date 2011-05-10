@@ -124,7 +124,11 @@ module RightScale
           begin
             ret << (arg.is_a?(Hash) ? find_with_filter(arg) : find(arg))
           rescue
-            ret << find_by_nickname_speed(arg)
+            if arg.is_a?(Hash)
+              ret << find_by(arg.keys.first) { |v| v =~ /#{arg.values.first}/ }
+            else
+              ret << find_by_nickname_speed(arg)
+            end
           end
         }
         return (args.empty? ? find_all : ret.flatten)
