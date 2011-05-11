@@ -123,7 +123,15 @@ module RightScale
         args.each { |arg|
           temp = []
           begin
-            temp << (arg.is_a?(Hash) ? find_with_filter(arg) : find(arg))
+            if arg.is_a?(Hash)
+              if arg.keys.first.to_s == "cloud_id"
+                temp << find_by_cloud_id(arg.values.first.to_i)
+              else
+                temp << find_with_filter(arg)
+              end
+            else
+              temp << find(arg)
+            end
           rescue
           end
           temp.flatten!
