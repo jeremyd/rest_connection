@@ -2,7 +2,16 @@ module RightScale
   module Api
     module Gateway
       include RightScale::Api::Base
-      def connection        
+
+      def initialize(params = {})
+        @params = parse_params(params)
+      end
+
+      def parse_params(params = {})
+        params
+      end
+
+      def connection
         @@gateway_connection ||= RestConnection::Connection.new
         settings = @@gateway_connection.settings
         settings[:common_headers]["X_API_VERSION"] = "1.5"         

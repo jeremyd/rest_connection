@@ -219,6 +219,10 @@ module RightScale
         end
       end
 
+      def rs_id
+        self.href.split(/\//).last
+      end
+
     end
   end
 end

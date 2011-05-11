@@ -54,7 +54,7 @@ class Deployment
   end
 
   def servers_no_reload
-    @params['servers'].map { |s| ServerInterface.new(cloud_id, s) }
+    @params['servers'].map { |s| ServerInterface.new(cloud_id, s, self.rs_id) }
   end
 
   def servers

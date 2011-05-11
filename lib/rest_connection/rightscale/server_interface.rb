@@ -18,9 +18,18 @@ require 'rest_connection/ssh_hax'
 class ServerInterface
   attr_reader :multicloud
 
-  def initialize(cloud_id = 1, params = {})
+  def initialize(cloud_id = 1, params = {}, deployment_id = nil)
     @multicloud = (cloud_id.to_i > 10 ? true : false)
-    @impl = (@multicloud ? McServer.new(params) : Server.new(params))
+    if @multicloud
+      if deployment_id
+        name = params["nickname"] || params["name"] || params[:nickname] || params[:name]
+        @impl = McServer.find_by(:name, deployment_id) { |n| n == name }.first
+      else
+        @impl = McServer.new(params)
+      end
+    else
+      @impl = Server.new(params)
+    end
   end
 
   def create(opts)
