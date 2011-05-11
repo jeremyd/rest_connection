@@ -263,9 +263,17 @@ class ServerInterface
   end
 
   # takes Bool argument to wait for state change (insurance that we can detect a reboot happened)
-  def reboot(wait_for_state = false)
-    connection.logger("WARNING: Gateway Servers do not support reboot. Ignoring.") if @multicloud
-    @impl.reboot(wait_for_state) unless @multicloud
+  def reboot(wait = false)
+    if @multicloud
+      connection.logger("WARNING: Gateway Servers do not support reboot natively. Using SshHax for now.")
+      old_state = self.state
+      @impl.spot_check_command?("init 6")
+      if wait
+        wait_for_state_change(old_change)
+        wait_for_state("operational")
+      end
+    end
+    @impl.reboot(wait) unless @multicloud
   end
 
   def save(new_params = nil)
