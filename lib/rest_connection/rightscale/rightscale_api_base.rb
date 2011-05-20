@@ -139,12 +139,13 @@ module RightScale
             if arg.is_a?(Hash)
               temp << find_by(arg.keys.first) { |v| v =~ /#{arg.values.first}/ }
             else
-              temp << find_by_nickname_speed(arg)
+              temp << find_by(:name) { |n| n =~ /#{arg}/ }
+              temp << find_by(:nickname) { |n| n =~ /#{arg}/ } if temp.empty?
             end
           end
           ret += temp
         }
-        return (args.empty? ? find_all : ret.flatten)
+        return (args.empty? ? find_all : ret.flatten.uniq)
       end
     end
 
