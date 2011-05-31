@@ -87,7 +87,7 @@ module RestConnection
           req.basic_auth(@settings[:user], @settings[:pass]) if @settings[:user]
         end
         logger("#{req.method}: #{req.path}")
-        logger("\trequest body: #{req.body}") if req.body
+        logger("\trequest body: #{req.body}") if req.body and req.body !~ /password/
         response, body = http.request(req)
         handle_response(response)
       end
