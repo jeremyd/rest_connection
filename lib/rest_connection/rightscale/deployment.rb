@@ -54,6 +54,7 @@ class Deployment
   end
 
   def servers_no_reload
+    connection.logger("WARNING: No Servers in the Deployment!") if @params['servers'].empty?
     @params['servers'].map { |s| ServerInterface.new(cloud_id, s, self.rs_id) }
   end
 
