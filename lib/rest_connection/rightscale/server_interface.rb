@@ -180,24 +180,15 @@ class ServerInterface
 #    end
   end
 
-  # The RightScale api returns the server parameters as a hash with "name" and "value".  
-  # This must be transformed into a hash in case we want to PUT this back to the API.
-  def transform_parameters(parameters)
-    new_params_hash = {}
-    parameters.each do |parameter_hash|
-      new_params_hash[parameter_hash["name"]] = parameter_hash["value"]
-    end
-    new_params_hash
-  end
-
   # Since RightScale hands back the parameters with a "name" and "value" tags we should
   # transform them into the proper hash.  This it the same for setting and getting.
   def parameters
-    # if the parameters are an array of hashes, that means we need to transform.
-    if @params['parameters'].is_a?(Array)
-      @params['parameters'] = transform_parameters(@params['parameters'])
-    end
-    @params['parameters']
+    @impl.parameters unless @multicloud
+    @impl.inputs if @multicloud
+  end
+
+  def inputs
+    parameters
   end
 
   def start
@@ -230,7 +221,7 @@ class ServerInterface
 
   # This should be used with v4 images only.
   def run_script(script,opts=nil)
-    connection.logger("WARNING: Gateway Servers do not support run_script. Ignoring.") if @multicloud
+    connection.logger("WARNING: Gateway Servers do not support run_script. Did you mean run_executable?") if @multicloud
     @impl.run_script(script,opts) unless @multicloud
   end 
 

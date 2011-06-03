@@ -85,12 +85,24 @@ class McServer < Server
     ret
   end
 
+  def inputs
+    if @current_instance
+      @current_instance.show
+      return transform_inputs(:to_h, @current_instance.inputs)
+    else
+      @next_instance.show
+      return transform_inputs(:to_h, @next_instance.inputs)
+    end
+  end
+
   def set_input(name, value)
-    @inputs.multi_update([{'name' => name, 'value' => value}])
+    @current_instance.multi_update([{'name' => name, 'value' => value}]) if @current_instance
+    @next_instance.multi_update([{'name' => name, 'value' => value}])
   end
 
   def set_inputs(hash = {})
-    @inputs.multi_update(transform_inputs(:to_a, hash))
+    @current_instance.multi_update(transform_inputs(:to_a, hash)) if @current_instance
+    @next_instance.multi_update(transform_inputs(:to_a, hash))
   end
 
   def settings #show

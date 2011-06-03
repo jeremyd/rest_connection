@@ -61,6 +61,11 @@ class McInstance
     connection.post(inst_href.path + '/terminate')
   end
 
+  def multi_update(input_ary)
+    inst_href = URI.parse(self.href)
+    connection.put(inst_href.path + '/inputs/multi_update', {'inputs' => input_ary})
+  end
+
   def transform_inputs(sym, parameters)
     ret = nil
     if parameters.is_a?(Array) and sym == :to_h
