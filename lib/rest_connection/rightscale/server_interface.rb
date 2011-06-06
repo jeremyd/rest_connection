@@ -18,8 +18,14 @@ require 'rest_connection/ssh_hax'
 class ServerInterface
   attr_reader :multicloud
 
-  def initialize(cloud_id = 1, params = {}, deployment_id = nil)
-    @multicloud = (cloud_id.to_i > 10 ? true : false)
+  def initialize(cid = nil, params = {}, deployment_id = nil)
+    if cid
+      @multicloud = (cid.to_i > 10 ? true : false)
+    elsif params["href"]
+      @multicloud = false
+    else
+      @multicloud = true
+    end
     if @multicloud
       if deployment_id
         name = params["nickname"] || params["name"] || params[:nickname] || params[:name]

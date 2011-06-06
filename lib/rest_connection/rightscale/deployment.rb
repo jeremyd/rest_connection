@@ -29,9 +29,8 @@ class Deployment
       if self.nickname =~ /cloud_[0-9]+/
         @cloud_id = self.nickname.match(/cloud_[0-9]+/)[0].match(/[0-9]+/)[0].to_i
       else
-        @cloud_id = 1
+        @cloud_id = nil # if self.nickname =~ /cloud_multicloud/
       end
-      @cloud_id = nil if self.nickname =~ /cloud_multicloud/
     end
     @cloud_id
   end
@@ -55,7 +54,7 @@ class Deployment
 
   def servers_no_reload
     connection.logger("WARNING: No Servers in the Deployment!") if @params['servers'].empty?
-    @params['servers'].map { |s| ServerInterface.new(cloud_id, s, self.rs_id) }
+    @params['servers'].map { |s| ServerInterface.new(self.cloud_id, s, self.rs_id) }
   end
 
   def servers

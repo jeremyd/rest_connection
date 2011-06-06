@@ -263,5 +263,43 @@ class Server
     @params ? @params.merge!(connection.get(uri.path + "/current")) : @params = connection.get(uri.path)
   end
 
+  # Complex logic for determining the cloud_id of even a stopped server
+  def cloud_id
+    self.settings
+    if self.state == "operational"
+      return self["cloud_id"]
+    end
+    cloud_ids = RestConnection::AWS_CLOUDS.map { |hsh| hsh["cloud_id"] }
+
+    api0_1 = false
+    begin
+      api0_1 = true if Ec2SshKeyInternal.find_all
+    rescue
+    end
+
+    # Try ssh keys
+    if self.ec2_ssh_key_href and api0_1
+      ref = self.ec2_ssh_key_href
+      cloud_ids.each { |cloud|
+        if Ec2SshKeyInternal.find_by_cloud_id(cloud.to_s).select { |o| o.href == ref }.first
+          return cloud
+        end
+      }
+    end
+
+    # Try security groups
+    if self.ec2_security_groups_href
+      self.ec2_security_groups_href.each { |sg|
+        cloud_ids.each { |cloud|
+          if Ec2SecurityGroup.find_by_cloud_id(cloud.to_s).select { |o| o.href == sg }.first
+            return cloud
+          end
+        }
+      }
+    end
+
+    raise "Could not determine cloud_id...try setting an ssh key or security group"
+  end
+
 end
 
