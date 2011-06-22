@@ -108,8 +108,12 @@ class McServer < Server
   def settings #show
     serv_href = URI.parse(self.href)
     @params.merge! connection.get(serv_href.path, 'view' => 'instance_detail')
-    @current_instance = McInstance.new(self['current_instance']) if self['current_instance']
+    if self['current_instance']
+      @current_instance = McInstance.new(self['current_instance'])
+      @current_instance.show
+    end
     @next_instance = McInstance.new(self['next_instance'])
+    @next_instance.show
     @params
   end
 
@@ -179,7 +183,7 @@ class McServer < Server
 
   def dns_name
     if @current_instance
-      return @current_instance.public_ip_addresses.first
+      return @current_instance.public_ip_addresses.first || @current_instance.public_dns_names.first
     end
     nil
   end

@@ -129,6 +129,8 @@ module RightScale
               else
                 temp << find_with_filter(arg)
               end
+            elsif arg.is_a?(Regexp)
+              temp << find_by(:nickname) { |n| n =~ arg }
             else
               temp << find(arg)
             end
@@ -136,11 +138,15 @@ module RightScale
           end
           temp.flatten!
           if temp.empty?
+            all = find_all
             if arg.is_a?(Hash)
-              temp << find_by(arg.keys.first) { |v| v =~ /#{arg.values.first}/ }
+              temp << all.select { |v| v.__send__(arg.keys.first.to_sym) =~ /#{arg.values.first}/ }
+            elsif arg.is_a?(Regexp)
+              temp += all.select { |n| n.name =~ arg }
+              temp += all.select { |n| n.nickname =~ arg } if temp.empty?
             else
-              temp += find_by(:name) { |n| n =~ /#{arg}/ }
-              temp += find_by(:nickname) { |n| n =~ /#{arg}/ } if temp.empty?
+              temp += all.select { |n| n.name =~ /#{arg}/ }
+              temp += all.select { |n| n.nickname =~ /#{arg}/ } if temp.empty?
             end
           end
           ret += temp

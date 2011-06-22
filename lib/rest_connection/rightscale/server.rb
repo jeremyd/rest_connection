@@ -301,5 +301,9 @@ class Server
     raise "Could not determine cloud_id...try setting an ssh key or security group"
   end
 
+  def run_executable_and_wait_for_completed(executable, opts=nil)
+    run_executable(executable, opts).wait_for_completed
+  end
+
 end
 
