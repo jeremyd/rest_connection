@@ -42,8 +42,11 @@ class McInstance
   end
   
   def show
+    # Remove this hack-y workaround once 1.5 is fixed
+    c = Cloud[self.cloud].first
+    view = (c.name =~ /euca/i or c.description =~ /euca/i ? "full" : "default")
     inst_href = URI.parse(self.href)
-    @params.merge! connection.get(inst_href.path, 'view' => "full")
+    @params.merge! connection.get(inst_href.path, 'view' => view)
   end
 
   def update
