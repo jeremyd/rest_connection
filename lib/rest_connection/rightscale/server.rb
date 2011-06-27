@@ -307,6 +307,11 @@ class Server
     run_executable(executable, opts).wait_for_completed
   end
 
+  def dns_name
+    self.settings unless self["dns_name"]
+    self["dns_name"]
+  end
+
   # Override Taggable mixin so that it sets tags on both next and current instances
   def add_tags(*args)
     return false if args.empty?

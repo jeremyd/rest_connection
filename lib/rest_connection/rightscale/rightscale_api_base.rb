@@ -228,10 +228,19 @@ module RightScale
         try_these.each do |t|
           if @params[t]
             return @params[t]
-          else
-            return @params[t]
           end
         end
+        nil
+      end
+
+      def []=(name,val)
+        try_these = [name, name.to_s.gsub(/_/,'-'), name.to_sym]
+        try_these.each do |t|
+          if @params[t]
+            @params[t] = val
+          end
+        end
+        val
       end
 
       def rs_id
