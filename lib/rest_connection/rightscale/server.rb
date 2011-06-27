@@ -324,7 +324,7 @@ class Server
     self.tags(true)
   end
 
-  def get_tag_values(*tag_keys)
+  def get_info_tags(*tag_keys)
     ret = {}
     tags = {"self" => Tag.search_by_href(self.href)}
     if self.current_instance_href

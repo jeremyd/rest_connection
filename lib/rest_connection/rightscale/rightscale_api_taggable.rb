@@ -33,7 +33,7 @@ module RightScale
         @params["tags"]
       end
 
-      def remove_tags_by_keys(*tag_keys)
+      def remove_info_tags(*tag_keys)
         tags_to_unset = []
         tags = get_tag_values(*(tag_keys.uniq))
         tags.each { |res,hsh|
@@ -44,7 +44,7 @@ module RightScale
         self.remove_tags(*tags_to_unset)
       end
     
-      def set_tags_by_keys(hsh={})
+      def set_info_tags(hsh={})
         keys_to_change = []
         tags_to_set = []
         hsh.each { |k,v| keys_to_change << k; tags_to_set << "info:#{k}=#{v}" }
@@ -52,7 +52,7 @@ module RightScale
         self.add_tags(*tags_to_set)
       end
     
-      def get_tag_values(*tag_keys)
+      def get_info_tags(*tag_keys)
         ret = {}
         tags = {"self" => self.tags(true)}
         tags.each { |res,ary|
