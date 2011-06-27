@@ -16,6 +16,9 @@
 class ServerTemplate 
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+  include RightScale::Api::Taggable
+  extend RightScale::Api::TaggableExtend
+
   def initialize(params)
     @params = params
   end

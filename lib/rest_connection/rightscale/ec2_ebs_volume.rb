@@ -17,6 +17,8 @@
 class Ec2EbsVolume
   include  RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+  include RightScale::Api::Taggable
+  extend RightScale::Api::TaggableExtend
 
   def attach(params)
     connection.post('component_ec2_ebs_volumes.js' , :component_ec2_ebs_volume => params)

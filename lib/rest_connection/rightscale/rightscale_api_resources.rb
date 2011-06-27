@@ -17,6 +17,7 @@
 require 'rest_connection/rightscale/rightscale_api_base'
 require 'rest_connection/rightscale/rightscale_api_internal'
 require 'rest_connection/rightscale/rightscale_api_gateway'
+require 'rest_connection/rightscale/rightscale_api_taggable'
 require 'rest_connection/rightscale/executable'
 require 'rest_connection/rightscale/server'
 require 'rest_connection/rightscale/deployment'

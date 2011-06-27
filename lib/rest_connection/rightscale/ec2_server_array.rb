@@ -16,6 +16,8 @@
 class Ec2ServerArray 
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+  include RightScale::Api::Taggable
+  extend RightScale::Api::TaggableExtend
 
 #  Example:
 #    right_script = @server_template.executables.first

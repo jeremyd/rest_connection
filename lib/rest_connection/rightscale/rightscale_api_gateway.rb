@@ -126,6 +126,27 @@ module RightScale
         end
         val
       end
+
+      def load(resource)
+        if resource.is_a?(Class)
+          param_string = resource.resource_singular_name
+          class_name = resource
+        elsif resource.is_a?(String) or resource.is_a?(Symbol)
+          param_string = resource
+          begin
+            class_name = Kernel.const_get(resource.singularize.camelize)
+          rescue
+            class_name = Kernel.const_get("Mc#{resource.singularize.camelize}")
+          end
+        end
+        if self[param_string].nil?
+          return class_name.load_all(self[param_string.pluralize])
+        elsif param_string.pluralize == param_string
+          return class_name.load_all(self[param_string])
+        else
+          return class_name.load(self[param_string])
+        end
+      end
     end
 
     module GatewayExtend
@@ -160,6 +181,18 @@ module RightScale
       def find_all(*args)
         a = Array.new
         url = "#{parse_args(*args)}#{self.resource_plural_name}"
+        connection.get(url).each do |object|
+          a << self.new(object)
+        end
+        return a
+      end
+
+      def load(url)
+        return self.new(connection.get(url))
+      end
+
+      def load_all(url)
+        a = Array.new
         connection.get(url).each do |object|
           a << self.new(object)
         end

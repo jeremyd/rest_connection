@@ -16,6 +16,8 @@
 class Deployment
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+  include RightScale::Api::Taggable
+  extend RightScale::Api::TaggableExtend
 
   def reload
     uri = URI.parse(self.href)

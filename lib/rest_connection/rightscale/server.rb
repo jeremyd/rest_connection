@@ -19,6 +19,8 @@ class Server
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
   include SshHax
+  include RightScale::Api::Taggable
+  extend RightScale::Api::TaggableExtend
 
   def self.create(opts)
     create_options = Hash.new
@@ -305,5 +307,44 @@ class Server
     run_executable(executable, opts).wait_for_completed
   end
 
-end
+  # Override Taggable mixin so that it sets tags on both next and current instances
+  def add_tags(*args)
+    return false if args.empty?
+    args.uniq!
+    Tag.set(self.href, args)
+    Tag.set(self.current_instance_href, args) if self.current_instance_href
+    self.tags(true)
+  end
 
+  def remove_tags(*args)
+    return false if args.empty?
+    args.uniq!
+    Tag.unset(self.href, args)
+    Tag.unset(self.current_instance_href, args) if self.current_instance_href
+    self.tags(true)
+  end
+
+  def get_tag_values(*tag_keys)
+    ret = {}
+    tags = {"self" => Tag.search_by_href(self.href)}
+    if self.current_instance_href
+      tags["current_instance"] = Tag.search_by_href(self.current_instance_href)
+    end
+    tags.each { |res,ary|
+      ret[res] ||= {}
+      ary.each { |hsh|
+        next unless hsh["name"].start_with?("info:")
+        key, value = hsh["name"].split(":").last.split("=")
+        ret[res][key] = value if tag_keys.include?(key)
+      }
+    }
+    return ret
+  end
+
+  def clear_tags(namespace = nil)
+    tags = Tag.search_by_href(self.href)
+    tags.deep_merge! Tag.search_by_href(self.current_instance_href) if self.current_instance_href
+    tags = tags.select { |hsh| hsh["name"].start_with?("#{namespace}:") } if namespace
+    self.remove_tags(*(tags.map { |k,v| v }))
+  end
+end

@@ -19,6 +19,7 @@ require 'json'
 require 'yaml'
 require 'cgi'
 require 'rest_connection/rightscale/rightscale_api_resources'
+require 'rest_connection/patches'
 require 'logger'
 require 'highline/import'
 

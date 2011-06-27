@@ -17,4 +17,6 @@
 class Ec2EbsSnapshot
   include  RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+  include RightScale::Api::Taggable
+  extend RightScale::Api::TaggableExtend
 end

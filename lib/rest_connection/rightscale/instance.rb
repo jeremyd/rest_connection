@@ -19,6 +19,8 @@
 class Instance 
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+  include RightScale::Api::Taggable
+  extend RightScale::Api::TaggableExtend
   #def create_ebs_volume_from_snap(snap_aws_id)
   #  connection.post('create_ebs_volume.js', :aws_id => snap_aws_id )
   #end 
