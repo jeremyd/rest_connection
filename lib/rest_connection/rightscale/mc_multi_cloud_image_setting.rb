@@ -16,20 +16,27 @@
 #    
 # You must have Beta v1.5 API access to use these internal API calls.
 # 
-class MonitoringMetric
+class McMultiCloudImageSetting
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
   
-  def self.parse_args(cloud_id, instance_id)
-    "clouds/#{cloud_id}/instances/#{instance_id}/"
+  def resource_plural_name
+    "settings"
   end
 
-  def data(start_time = "-60", end_time = "0")
-    params = {'start' => start_time.to_s, 'end' => end_time.to_s}
-    monitor = connection.get(URI.parse(self.href).path + "/data", params)
-    # NOTE: The following is a dirty hack
-    monitor['data'] = monitor['variables_data'].first
-    monitor['data']['value'] = monitor['data']['points']
-    monitor
+  def resource_singular_name
+    "setting"
+  end
+
+  def self.resource_plural_name
+    "settings"
+  end
+
+  def self.resource_singular_name
+    "setting"
+  end
+  
+  def self.parse_args(multi_cloud_image_id)
+    "multi_cloud_images/#{multi_cloud_image_id}/"
   end
 end

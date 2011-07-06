@@ -236,41 +236,11 @@ class ServerInterface
     @impl.attach_volume(params) unless @multicloud
   end
 
-  def get_sketchy_data(params = {})
-    @impl.get_sketchy_data(translate_sketchy_params(params))
-  end
-
-  def translate_sketchy_params(params)
-    return params
-    #TODO
-#    ret = {}
-#    if @multicloud #API 1.5
-#      ret['period'] = (ret['period'] or (ret['start']
-#    else #API 1.0
-#      ret['start'] = 
-#    end
-#    monitor=server.get_sketchy_data({'start'=>-60,'end'=>-20,'plugin_name'=>"cpu-0",'plugin_type'=>"cpu-idle"})
-  end
-
   def wait_for_state(st,timeout=1200)
     if @multicloud and st == "stopped"
       st = "inactive"
     end
     @impl.wait_for_state(st,timeout)
-  end
-
-  # takes Bool argument to wait for state change (insurance that we can detect a reboot happened)
-  def reboot(wait = false)
-    if @multicloud
-      connection.logger("WARNING: Gateway Servers do not support reboot natively. Using SshHax for now.")
-      old_state = self.state
-      @impl.spot_check_command?("init 6")
-      if wait
-        wait_for_state_change(old_change)
-        wait_for_state("operational")
-      end
-    end
-    @impl.reboot(wait) unless @multicloud
   end
 
   def save(new_params = nil)

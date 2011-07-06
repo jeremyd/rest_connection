@@ -26,17 +26,6 @@ class Deployment
     @params
   end
 
-  def cloud_id
-    unless @cloud_id
-      if self.nickname =~ /cloud_[0-9]+/
-        @cloud_id = self.nickname.match(/cloud_[0-9]+/)[0].match(/[0-9]+/)[0].to_i
-      else
-        @cloud_id = nil # if self.nickname =~ /cloud_multicloud/
-      end
-    end
-    @cloud_id
-  end
-
   def self.create(opts)
     location = connection.post(self.resource_plural_name, self.resource_singular_name.to_sym => opts)
     newrecord = self.new('href' => location)

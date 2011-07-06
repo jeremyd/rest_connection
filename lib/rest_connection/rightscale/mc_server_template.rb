@@ -16,20 +16,31 @@
 #    
 # You must have Beta v1.5 API access to use these internal API calls.
 # 
-class MonitoringMetric
+class McServerTemplate
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
+  include RightScale::Api::McTaggable
+  extend RightScale::Api::McTaggableExtend
+  attr_reader :mcis
   
-  def self.parse_args(cloud_id, instance_id)
-    "clouds/#{cloud_id}/instances/#{instance_id}/"
+  def resource_plural_name
+    "server_templates"
   end
 
-  def data(start_time = "-60", end_time = "0")
-    params = {'start' => start_time.to_s, 'end' => end_time.to_s}
-    monitor = connection.get(URI.parse(self.href).path + "/data", params)
-    # NOTE: The following is a dirty hack
-    monitor['data'] = monitor['variables_data'].first
-    monitor['data']['value'] = monitor['data']['points']
-    monitor
+  def resource_singular_name
+    "server_template"
+  end
+
+  def self.resource_plural_name
+    "server_templates"
+  end
+
+  def self.resource_singular_name
+    "server_template"
+  end
+  
+  def get_mcis_and_settings
+    @mcis = McMultiCloudImage.find_all(self.rs_id)
+    @mcis.each { |mci| mci.get_settings }
   end
 end

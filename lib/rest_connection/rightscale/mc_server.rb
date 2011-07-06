@@ -19,6 +19,8 @@
 class McServer < Server
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
+  include RightScale::Api::McTaggable
+  extend RightScale::Api::McTaggableExtend
   attr_accessor :current_instance, :next_instance, :inputs
   
   def resource_plural_name
@@ -206,5 +208,11 @@ class McServer < Server
 
   def reload_current
     settings # Gets all instance (including current) information
+  end
+
+  def get_sketchy_data(params)
+    settings
+    raise "No current instance found!" unless @current_instance
+    @current_instance.get_sketchy_data(params)
   end
 end

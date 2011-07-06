@@ -19,6 +19,8 @@
 class McInstance
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
+  include RightScale::Api::McTaggable
+  extend RightScale::Api::McTaggableExtend
   attr_accessor :monitoring_metrics
   
   def resource_plural_name
@@ -42,11 +44,10 @@ class McInstance
   end
   
   def show
-    # Remove this hack-y workaround once 1.5 is fixed
-    c = Cloud[self.cloud].first
-    view = (c.name =~ /euca/i or c.description =~ /euca/i ? "full" : "default")
+#    c = Cloud[self.cloud].first
+#    view = (c.name =~ /euca/i or c.description =~ /euca/i ? "full" : "default")
     inst_href = URI.parse(self.href)
-    @params.merge! connection.get(inst_href.path, 'view' => view)
+    @params.merge! connection.get(inst_href.path, 'view' => "full")
   end
 
   def update
@@ -115,5 +116,16 @@ class McInstance
       @monitoring_metrics << MonitoringMetric.new(mm)
     }
     @monitoring_metrics
+  end
+
+  def get_sketchy_data(params)
+    metric = fetch_monitoring_metrics.detect { |mm| mm.plugin == params['plugin_name'] and mm.view == params['plugin_type'] }
+    raise "Metric not found!" unless metric
+    metric.data(params['start'], params['end'])
+  end
+
+  def reboot
+    self.show
+    connection.post(URI.parse(self.href).path + '/reboot')
   end
 end
