@@ -45,4 +45,19 @@ class MultiCloudImageInternal
     MultiCloudImage.new(:href => connection.post(t.path + "/clone"))
   end
 
+  def initialize(params={})
+    @params = params
+    if @params["multi_cloud_image_cloud_settings"]
+      @params["multi_cloud_image_cloud_settings"].map! { |setting|
+        # Have to reject because API0.1 returns all clouds
+        next if setting["fingerprint"] || setting["cloud_id"] > 10
+        MultiCloudImageCloudSettingInternal.new(setting)
+      }
+      @params["multi_cloud_image_cloud_settings"].compact!
+    end
+  end
+
+  def supported_cloud_ids
+    @params["multi_cloud_image_cloud_settings"].map { |mcics| mcics.cloud_id }
+  end
 end

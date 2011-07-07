@@ -30,6 +30,45 @@ module RestConnection
                 {"cloud_id" => 4, "name" => "AWS AP-Singapore"},
                 {"cloud_id" => 5, "name" => "AWS AP-Tokyo"}]
 
+    # Check for API 0.1 Access
+  def self.api0_1?
+    unless class_variable_defined?("@@api0_1")
+      begin
+        Ec2SshKeyInternal.find_all
+        @@api0_1 = true
+      rescue
+        @@api0_1 = false
+      end
+    end
+    return @@api0_1
+  end
+
+  # Check for API 1.0 Access
+  def self.api1_0?
+    unless class_variable_defined?("@@api1_0")
+      begin
+        Ec2SecurityGroup.find_all
+        @@api1_0 = true
+      rescue
+        @@api1_0 = false
+      end
+    end
+    return @@api1_0
+  end
+
+  # Check for API 1.5 Beta Access
+  def self.api1_5?
+    unless class_variable_defined?("@@api1_5")
+      begin
+        Cloud.find_all
+        @@api1_5 = true
+      rescue
+        @@api1_5 = false
+      end
+    end
+    return @@api1_5
+  end
+
   class Connection
     # Settings is a hash of options for customizing the connection.
     # settings.merge! {

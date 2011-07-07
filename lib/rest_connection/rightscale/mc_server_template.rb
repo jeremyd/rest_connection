@@ -21,7 +21,6 @@ class McServerTemplate
   extend RightScale::Api::GatewayExtend
   include RightScale::Api::McTaggable
   extend RightScale::Api::McTaggableExtend
-  attr_reader :mcis
   
   def resource_plural_name
     "server_templates"
@@ -40,7 +39,14 @@ class McServerTemplate
   end
   
   def get_mcis_and_settings
-    @mcis = McMultiCloudImage.find_all(self.rs_id)
-    @mcis.each { |mci| mci.get_settings }
+    @params["multi_cloud_images"] = McMultiCloudImage.find_all(self.rs_id)
+    @params["multi_cloud_images"].each { |mci| mci.get_settings }
+  end
+
+  def multi_cloud_images
+    unless @params["multi_cloud_images"]
+      get_mcis_and_settings
+    end
+    @params["multi_cloud_images"]
   end
 end

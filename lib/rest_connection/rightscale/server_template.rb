@@ -63,7 +63,15 @@ class ServerTemplate
   end
 
   def fetch_multi_cloud_images
-    @params["multi_cloud_images"] = RsInternal.get_server_template_multi_cloud_images(self.href)
+    @params["multi_cloud_images"] = []
+    ServerTemplateInternal.new(:href => self.href).multi_cloud_images.each { |mci_params|
+      @params["multi_cloud_images"] << MultiCloudImageInternal.new(mci_params)
+    }
+    mcis = McServerTemplate.find(self.rs_id.to_i).multi_cloud_images
+    @params["multi_cloud_images"].each_index { |i|
+      @params["multi_cloud_images"][i]["multi_cloud_image_cloud_settings"] += mcis[i].settings
+    }
+    @params["multi_cloud_images"]
   end
 
   # The RightScale api calls this 'duplicate' but is more popularly known as 'clone' from a users perspective

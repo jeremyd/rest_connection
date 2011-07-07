@@ -39,4 +39,8 @@ class McMultiCloudImageSetting
   def self.parse_args(multi_cloud_image_id)
     "multi_cloud_images/#{multi_cloud_image_id}/"
   end
+
+  def cloud_id
+    self.cloud.split(/\//).last.to_i
+  end
 end
