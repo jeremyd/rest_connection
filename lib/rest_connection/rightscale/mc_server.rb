@@ -119,12 +119,9 @@ class McServer < Server
     @params
   end
 
-  def get_sketchy_data(params = {})
-    raise "Congratulations on making it this far into the Multicloud Monkey."
-# TODO: Inprogress
-#    base_href = self.href.split(/\/server/).first
-#    base_href = base_href.split(/\/deployment/).first if base_href.include?(/\/deployment/)
-#    @monitors ? @monitors = MonitoringMetric.new('href' => MonitoringMetric.href(find_all(@cloud_id
+  def get_sketchy_data(params)
+    raise "No current instance found to check!" unless @current_instance
+    @current_instance.get_sketchy_data(params)
   end
 
   def monitoring
@@ -148,10 +145,6 @@ class McServer < Server
     end
     self.settings unless @next_instance
     return @next_instance.server_template
-  end
-
-  def tags
-    []
   end
 
   def deployment_href
@@ -199,21 +192,18 @@ class McServer < Server
 
   def save
     @next_instance.save
+    @current_instance.update if @current_instance
   end
 
   def update
     @next_instance.save
   end
 
-  def save_current
-    @current_instance.update if @current_instance
-  end
-
-  def settings_current
+  def reload_as_current
     settings # Gets all instance (including current) information
   end
 
-  def reload_current
+  def reload_as_next
     settings # Gets all instance (including current) information
   end
 
