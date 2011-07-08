@@ -312,6 +312,11 @@ class Server
     self["dns_name"]
   end
 
+  def private_ip
+    self.settings unless @params["private-ip-address"]
+    @params["private-ip-address"]
+  end
+
   # Override Taggable mixin so that it sets tags on both next and current instances
   def add_tags(*args)
     return false if args.empty?

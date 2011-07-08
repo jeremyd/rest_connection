@@ -16,4 +16,18 @@
 class MultiCloudImage 
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+
+  def supported_cloud_ids
+    @params["multi_cloud_image_cloud_settings"].map { |mcics| mcics.cloud_id }
+  end
+
+  # You must have access to multiple APIs for this (0.1, and 1.5)
+  def find_and_flatten_settings()
+    some_settings = McMultiCloudImage.find(rs_id.to_i).get_settings
+    internal = MultiCloudImageInternal.new("href" => self.href) 
+    internal.reload
+    more_settings = internal.settings
+    @params["multi_cloud_image_cloud_settings"] = some_settings + more_settings
+  end
+
 end

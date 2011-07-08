@@ -190,6 +190,13 @@ class McServer < Server
     nil
   end
 
+  def private_ip
+    if @current_instance
+      return @current_instance.private_ip_addresses.first || @current_instance.private_dns_names.first
+    end
+    nil
+  end
+
   def save
     @next_instance.save
   end

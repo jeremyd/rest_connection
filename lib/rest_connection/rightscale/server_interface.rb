@@ -159,6 +159,7 @@ class ServerInterface
     if to == "1.0"
       return val
     end
+    val
   end
 
   def translate_href(old_href)

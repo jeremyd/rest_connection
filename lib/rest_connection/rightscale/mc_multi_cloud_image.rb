@@ -43,6 +43,10 @@ class McMultiCloudImage
     server_template_id ? "server_templates/#{server_template_id}/" : ""
   end
 
+  def supported_cloud_ids
+    @settings.map { |mcics| mcics.cloud_id }
+  end
+
   def get_settings
     @settings = []
     url = URI.parse(self.href)
