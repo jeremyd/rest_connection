@@ -52,7 +52,7 @@ class Server
     if @params['parameters'].is_a?(Array)
       @params['parameters'] = transform_parameters(@params['parameters'])
     end
-    @params['parameters']
+    @params['parameters'] ||= {}
   end
 
   # This is overriding the default save with one that can massage the parameters
