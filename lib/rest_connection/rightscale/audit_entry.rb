@@ -31,13 +31,13 @@ class AuditEntry
   def wait_for_state(state, timeout=900)
     while(timeout > 0)
       reload
+      return true if state == self.state
       connection.logger("state is #{self.state}, waiting for #{state}")
       friendly_url = "https://my.rightscale.com/audit_entries/"
       friendly_url += self.href.split(/\//).last
       raise "FATAL error, #{self.summary}\nSee Audit: API:#{self.href}, WWW:<a href='#{friendly_url}'>#{friendly_url}</a>\n" if self.state == 'failed'
       sleep 30
       timeout -= 30
-      return true if state == self.state
     end
     raise "FATAL: Timeout waiting for Executable to complete.  State was #{self.state}" if timeout <= 0
   end
