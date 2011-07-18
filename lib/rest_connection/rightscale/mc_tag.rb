@@ -37,11 +37,11 @@ class McTag
   end
 
   def self.search(resource_type, tags) #, include_tags_with_prefix = false)
-    result = connection.get("tags/by_tag", :resource_type => resource_type.to_s, :tags => tags)
+    result = connection.post("tags/by_tag", :resource_type => resource_type.to_s, :tags => tags)
   end
 
   def self.search_by_href(*resource_hrefs)
-    connection.get("tags/by_resource", :resource_hrefs => resource_hrefs)
+    connection.post("tags/by_resource", :resource_hrefs => resource_hrefs)
   end
   #TAGGABLE_RESOURCES = [ 'Server', 'Ec2EbsSnapshot', 'Ec2EbsVolume', 'Ec2Image', 'Image', 'ServerArray', 'Ec2Instance',
   #                        'Instance', 'Deployment', 'ServerTemplate', 'Ec2ServerTemplate' ]
