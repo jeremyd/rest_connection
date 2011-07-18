@@ -27,11 +27,11 @@ class Task
   def wait_for_state(state, timeout=900)
     while(timeout > 0)
       reload
+      return true if self.summary.include?(state)
       connection.logger("state is #{self.summary}, waiting for #{state}")
       raise "FATAL error, #{self.summary}\n" if self.summary.include?('failed')
       sleep 30
       timeout -= 30
-      return true if self.summary.include?(state)
     end
     raise "FATAL: Timeout waiting for Executable to complete.  State was #{self.state}" if timeout <= 0
   end
