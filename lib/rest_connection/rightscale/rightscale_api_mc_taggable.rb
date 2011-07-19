@@ -32,7 +32,7 @@ module RightScale
       end
 
       def tags(reload=false)
-        @params["tags"] = McTag.search_by_href(self.href) if reload
+        @params["tags"] = McTag.search_by_href(self.href).first["tags"] if reload
         @params["tags"]
       end
 
