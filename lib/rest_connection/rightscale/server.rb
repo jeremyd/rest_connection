@@ -130,6 +130,16 @@ class Server
     end
   end
 
+  def force_stop
+    if self.current_instance_href
+      t = URI.parse(self.href)
+      connection.post(t.path + '/stop')
+      connection.post(t.path + '/stop')
+    else
+      connection.logger("WARNING: was in #{self.state} and had a current_instance_href so skiping stop call")
+    end
+  end
+
 # Uses ServerInternal api to start and stop EBS based instances
   def start_ebs
     @server_internal = ServerInternal.new(:href => self.href)

@@ -61,6 +61,13 @@ class McServer < Server
       connection.logger("WARNING: was in #{self.state} so skipping terminate call")
     end
   end
+
+  def force_terminate
+    t = URI.parse(self.href)
+    connection.post(t.path + '/terminate')
+    connection.post(t.path + '/terminate')
+    @current_instance = nil
+  end
   
   def start #start_ebs
     raise "You shouldn't be here."
@@ -177,6 +184,7 @@ class McServer < Server
   end
 
   def dns_name
+    self.settings
     if @current_instance
       return @current_instance.public_ip_addresses.first || @current_instance.public_dns_names.first
     end
@@ -184,6 +192,7 @@ class McServer < Server
   end
 
   def private_ip
+    self.settings
     if @current_instance
       return @current_instance.private_ip_addresses.first || @current_instance.private_dns_names.first
     end

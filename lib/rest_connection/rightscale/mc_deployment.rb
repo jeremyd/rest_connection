@@ -16,32 +16,49 @@
 #    
 # You must have Beta v1.5 API access to use these internal API calls.
 # 
-class Task
+class McDeployment
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
+  include RightScale::Api::McTaggable
+  extend RightScale::Api::McTaggableExtend
   
-  def self.parse_args(cloud_id, instance_id)
-    "clouds/#{cloud_id}/instances/#{instance_id}/live/"
+  def resource_plural_name
+    "deployments"
   end
 
+  def resource_singular_name
+    "deployment"
+  end
+
+  def self.resource_plural_name
+    "deployments"
+  end
+
+  def self.resource_singular_name
+    "deployment"
+  end
+  
   def show
-    url = URI.parse(self.href)
-    @params.merge! connection.get(url.path, 'view' => "extended")
+    inst_href = URI.parse(self.href)
+    @params.merge! connection.get(inst_href.path, 'view' => "inputs")
   end
 
-  def wait_for_state(state, timeout=900)
-    while(timeout > 0)
-      show
-      return true if self.summary.include?(state)
-      connection.logger("state is #{self.summary}, waiting for #{state}")
-      raise "FATAL error:\n\n #{self.detail} \n\n" if self.summary.include?('failed')
-      sleep 30
-      timeout -= 30
-    end
-    raise "FATAL: Timeout waiting for Executable to complete.  State was #{self.state}" if timeout <= 0
+  def self.create(opts)
+    location = connection.post(resource_plural_name, opts)
+    newrecord = self.new('href' => location)
+    newrecord.show
+    newrecord
   end
 
-  def wait_for_completed(legacy=nil)
-    wait_for_state("completed")
+  def save
+    inst_href = URI.parse(self.href)
+    connection.put(inst_href.path, @params)
+  end
+
+  # TODO Add server method
+
+  def destroy
+    deploy_href = URI.parse(self.href)
+    connection.delete(deploy_href.path)
   end
 end
