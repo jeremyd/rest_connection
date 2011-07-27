@@ -126,11 +126,6 @@ class McServer < Server
     @params
   end
 
-  def get_sketchy_data(params)
-    raise "No current instance found to check!" unless @current_instance
-    @current_instance.get_sketchy_data(params)
-  end
-
   def monitoring
     @current_instance.fetch_monitoring_metrics
   end
@@ -220,5 +215,51 @@ class McServer < Server
     settings
     raise "No current instance found!" unless @current_instance
     @current_instance.get_sketchy_data(params)
+  end
+
+  # Override Taggable mixin so that it sets tags on both next and current instances
+  # TODO: do we need to tweak
+  def add_tags(*args)
+    return false if args.empty?
+    args.uniq!
+    McTag.set(self.href, args)
+    McTag.set(self.current_instance_href, args) if @current_instance
+    self.tags(true)
+  end
+
+  def remove_tags(*args)
+    return false if args.empty?
+    args.uniq!
+    McTag.unset(self.href, args)
+    McTag.unset(self.current_instance_href, args) if @current_instance
+    self.tags(true)
+  end
+
+  def get_info_tags(*tag_keys)
+    ret = {}
+    tags = {"self" => McTag.search_by_href(self.href)}
+    if @current_instance
+      tags["current_instance"] = McTag.search_by_href(self.current_instance_href)
+    end
+    tags.each { |res,ary|
+      ret[res] ||= {}
+      ary.each { |hsh|
+        next unless hsh["name"].start_with?("info:")
+        key, value = hsh["name"].split(":").last.split("=")
+        if tag_keys.empty?
+          ret[res][key] = value
+        else
+          ret[res][key] = value if tag_keys.include?(key)
+        end
+      }
+    }
+    return ret
+  end
+
+  def clear_tags(namespace = nil)
+    tags = McTag.search_by_href(self.href)
+    tags.deep_merge! McTag.search_by_href(self.current_instance_href) if @current_instance
+    tags = tags.select { |hsh| hsh["name"].start_with?("#{namespace}:") } if namespace
+    self.remove_tags(*(tags.map { |k,v| v }))
   end
 end

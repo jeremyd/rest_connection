@@ -350,7 +350,11 @@ class Server
       ary.each { |hsh|
         next unless hsh["name"].start_with?("info:")
         key, value = hsh["name"].split(":").last.split("=")
-        ret[res][key] = value if tag_keys.include?(key)
+        if tag_keys.empty?
+          ret[res][key] = value
+        else
+          ret[res][key] = value if tag_keys.include?(key)
+        end
       }
     }
     return ret
