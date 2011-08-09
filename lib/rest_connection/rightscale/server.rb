@@ -73,6 +73,7 @@ class Server
     while(timeout > 0)
       return true if state =~ /#{st}/
       raise "FATAL error, this server is stranded and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('stranded') && !st.include?('stranded')
+      raise "FATAL error, this server went to error state and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('error') && !st.include?('error')
       connection.logger("waiting for server #{nickname} to go #{st}, state is #{state}")
       if state =~ /terminated|stopped/ and st !~ /terminated|stopped/
         if catch_early_terminated <= 0
@@ -320,6 +321,12 @@ class Server
   def private_ip
     self.settings unless @params["private-ip-address"]
     @params["private-ip-address"]
+  end
+
+  def reachable_ip
+    return self.dns_name if self.dns_name
+    return self.private_ip if self.private_ip
+    nil
   end
 
   # Override Taggable mixin so that it sets tags on both next and current instances

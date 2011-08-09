@@ -36,6 +36,7 @@ class ServerInterface
     else
       @impl = Server.new(params)
     end
+    self
   end
 
   def create(opts)

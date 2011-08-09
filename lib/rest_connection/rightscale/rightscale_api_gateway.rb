@@ -179,9 +179,25 @@ module RightScale
       end
 
       def find_all(*args)
+#        self.find_with_filter(*args, {})
         a = Array.new
         url = "#{parse_args(*args)}#{self.resource_plural_name}"
         connection.get(url).each do |object|
+          a << self.new(object)
+        end
+        return a
+      end
+
+      def find_with_filter(*args)
+        filter_params = []
+        filter = {}
+        filter = args.pop if args.last.is_a?(Hash)
+        filter.each { |key,val|
+          filter_params << "#{key}==#{val}"
+        }
+        a = Array.new
+        url = "#{parse_args(*args)}#{self.resource_plural_name}"
+        connection.get(url, :filter => filter_params).each do |object|
           a << self.new(object)
         end
         return a

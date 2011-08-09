@@ -218,7 +218,6 @@ class McServer < Server
   end
 
   # Override Taggable mixin so that it sets tags on both next and current instances
-  # TODO: do we need to tweak
   def add_tags(*args)
     return false if args.empty?
     args.uniq!
