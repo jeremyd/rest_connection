@@ -136,7 +136,7 @@ class ServerInterface
         else
           server[field.to_s] = opts[vals.first] unless vals.first.nil?
         end
-        server.delete("inputs") if field == :inputs and server["inputs"].empty? # Inputs cannot be empty for 1.5
+        server.delete("inputs") if server["inputs"] && server["inputs"].empty? # Inputs cannot be empty for 1.5
       }
     }
     clean_and_translate_server_params(ret)

@@ -98,7 +98,7 @@ module RightScale
       end
 
       def [](name)
-        try_these = [name, name.to_s.gsub(/_/,'-'), name.to_sym]
+        try_these = [name.to_s, name.to_s.gsub(/_/,'-'), name.to_sym]
         if try_these.include?(:nickname)
           try_these += ["name", :name]
         end
@@ -113,7 +113,7 @@ module RightScale
       end
 
       def []=(name,val)
-        try_these = [name, name.to_s.gsub(/_/,'-'), name.to_sym]
+        try_these = [name.to_s, name.to_s.gsub(/_/,'-'), name.to_sym]
         if try_these.include?(:nickname)
           try_these += ["name", :name]
         end
@@ -121,7 +121,9 @@ module RightScale
           if @params[t]
             @params[t] = val
           elsif hash_of_links[t]
-            hash_of_links[t] = val
+            @params['links'].each { |link|
+              link['href'] = val if link['rel'] == t
+            }
           end
         end
         val

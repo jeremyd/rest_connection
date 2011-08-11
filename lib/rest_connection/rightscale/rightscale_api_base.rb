@@ -224,7 +224,7 @@ module RightScale
       end
 
       def [](name)
-        try_these = [name, name.to_s.gsub(/_/,'-'), name.to_sym]
+        try_these = [name.to_s, name.to_s.gsub(/_/,'-'), name.to_sym]
         try_these.each do |t|
           if @params[t]
             return @params[t]
@@ -234,7 +234,7 @@ module RightScale
       end
 
       def []=(name,val)
-        try_these = [name, name.to_s.gsub(/_/,'-'), name.to_sym]
+        try_these = [name.to_s, name.to_s.gsub(/_/,'-'), name.to_sym]
         try_these.each do |t|
           if @params[t]
             @params[t] = val

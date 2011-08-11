@@ -48,9 +48,45 @@ class McInstance
     @params.merge! connection.get(inst_href.path, 'view' => "full")
   end
 
+  def save
+    update
+  end
+
+  def map_security_groups(to, sg_ary)
+    sg_ary.map { |hsh| hsh["href"] }
+  end
+
+  def map_user_data(to, user_data)
+    user_data
+  end
+
   def update
+    fields = [{"attr" => :datacenter,                                       "api" => :datacenter_href},
+              {"attr" => :image,                                            "api" => :image_href},
+              {"attr" => :instance_type,                                    "api" => :instance_type_href},
+              {                                                             "api" => :kernel_image_href},
+              {"attr" => :multi_cloud_image,                                "api" => :multi_cloud_image_href},
+              {                                                             "api" => :ramdisk_image_href},
+              {"attr" => :security_groups,    "fn" => :map_security_groups, "api" => :security_group_hrefs},
+              {"attr" => :server_template,                                  "api" => :server_template_href},
+              {"attr" => :ssh_key,                                          "api" => :ssh_key_href},
+              {"attr" => :user_data,          "fn" => :map_user_data,       "api" => :user_data}]
+
+    opts = {"instance" => {}}
+    instance = opts["instance"]
+    to = "api"
+    from = "attr"
+    fields.each { |hsh|
+      next unless hsh[from]
+      val = self[hsh[from]]
+      if hsh["fn"]
+        instance[hsh[to].to_s] = __send__(hsh["fn"], to, val) unless val.nil? || val.empty?
+      else
+        instance[hsh[to].to_s] = val unless val.nil? || val.empty?
+      end
+    }
     inst_href = URI.parse(self.href)
-    connection.put(inst_href.path, {"instance" => @params})
+    connection.put(inst_href.path, opts)
   end
 
   def launch
