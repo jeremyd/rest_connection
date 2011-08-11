@@ -50,7 +50,7 @@ class McInstance
 
   def update
     inst_href = URI.parse(self.href)
-    connection.put(inst_href.path, @params)
+    connection.put(inst_href.path, {"instance" => @params})
   end
 
   def launch

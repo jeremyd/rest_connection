@@ -195,12 +195,12 @@ class McServer < Server
   end
 
   def save
-    @next_instance.save
-    @current_instance.update if @current_instance
+    update
   end
 
   def update
-    @next_instance.save
+    @next_instance.update
+    @current_instance.update if @current_instance
   end
 
   def reload_as_current

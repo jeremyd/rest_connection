@@ -246,7 +246,7 @@ class ServerInterface
     @impl.wait_for_state(st,timeout)
   end
 
-  def save(new_params = nil)
+  def update(new_params = nil)
     if new_params
       @impl.settings
       if @multicloud
@@ -255,7 +255,7 @@ class ServerInterface
         @impl.params.merge!(translate_create_opts(new_params)["server"])
       end
     end
-    @impl.save
+    @impl.update
   end
 
   def set_inputs(hash = {})
@@ -271,7 +271,7 @@ class ServerInterface
     end
   end
 
-  def update(new_params = nil)
-    save(new_params)
+  def save(new_params = nil)
+    update(new_params)
   end
 end
