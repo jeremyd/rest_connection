@@ -127,7 +127,9 @@ class McServer < Server
   end
 
   def monitoring
-    @current_instance.fetch_monitoring_metrics
+    ret = @current_instance.fetch_monitoring_metrics
+    raise "FATAL: Monitoring not available!" if ret.empty?
+    ret
   end
 
   def relaunch
