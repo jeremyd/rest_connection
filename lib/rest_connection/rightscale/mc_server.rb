@@ -246,7 +246,7 @@ class McServer < Server
       ret[res] ||= {}
       ary.each { |tag|
         next unless tag.start_with?("info:")
-        key = tag.split(":").first
+        key = tag.split("=").first.split(":").last
         value = tag.split(":")[1..-1].join(":").split("=")[1..-1].join("=")
         if tag_keys.empty?
           ret[res][key] = value
