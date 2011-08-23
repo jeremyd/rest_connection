@@ -116,7 +116,7 @@ class McServer < Server
 
   def settings #show
     serv_href = URI.parse(self.href)
-    @params.merge! connection.get(serv_href.path, 'view' => 'instance_detail')
+    @params = connection.get(serv_href.path, 'view' => 'instance_detail')
     if self['current_instance']
       @current_instance = McInstance.new(self['current_instance'])
       @current_instance.show
@@ -238,15 +238,16 @@ class McServer < Server
 
   def get_info_tags(*tag_keys)
     ret = {}
-    tags = {"self" => McTag.search_by_href(self.href)}
+    tags = {"self" => McTag.search_by_href(self.href).first["tags"].map { |h| h["name"] }}
     if @current_instance
-      tags["current_instance"] = McTag.search_by_href(self.current_instance_href)
+      tags["current_instance"] = McTag.search_by_href(self.current_instance_href).first["tags"].map { |h| h["name"] }
     end
     tags.each { |res,ary|
       ret[res] ||= {}
-      ary.each { |hsh|
-        next unless hsh["name"].start_with?("info:")
-        key, value = hsh["name"].split(":").last.split("=")
+      ary.each { |tag|
+        next unless tag.start_with?("info:")
+        key = tag.split(":").first
+        value = tag.split(":")[1..-1].join(":").split("=")[1..-1].join("=")
         if tag_keys.empty?
           ret[res][key] = value
         else
@@ -258,9 +259,9 @@ class McServer < Server
   end
 
   def clear_tags(namespace = nil)
-    tags = McTag.search_by_href(self.href)
-    tags.deep_merge! McTag.search_by_href(self.current_instance_href) if @current_instance
+    tags = McTag.search_by_href(self.href).first["tags"].map { |h| h["name"] }
+    tags.deep_merge! McTag.search_by_href(self.current_instance_href).first["tags"].map { |h| h["name"] } if @current_instance
     tags = tags.select { |hsh| hsh["name"].start_with?("#{namespace}:") } if namespace
-    self.remove_tags(*(tags.map { |k,v| v }))
+    self.remove_tags(*tags)
   end
 end

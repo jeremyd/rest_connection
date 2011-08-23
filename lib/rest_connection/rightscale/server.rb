@@ -58,6 +58,7 @@ class Server
   # This is overriding the default save with one that can massage the parameters
   def save
     self.parameters #transform the parameters, if they're not already!!
+    self.tags #transform the tags, if they're not already!!
     uri = URI.parse(self.href)
     connection.put(uri.path, resource_singular_name.to_sym => @params)
   end
@@ -348,15 +349,16 @@ class Server
 
   def get_info_tags(*tag_keys)
     ret = {}
-    tags = {"self" => Tag.search_by_href(self.href)}
+    tags = {"self" => Tag.search_by_href(self.href).map { |h| h["name"] }}
     if self.current_instance_href
-      tags["current_instance"] = Tag.search_by_href(self.current_instance_href)
+      tags["current_instance"] = Tag.search_by_href(self.current_instance_href).map { |h| h["name"] }
     end
     tags.each { |res,ary|
       ret[res] ||= {}
-      ary.each { |hsh|
-        next unless hsh["name"].start_with?("info:")
-        key, value = hsh["name"].split(":").last.split("=")
+      ary.each { |tag|
+        next unless tag.start_with?("info:")
+        key = tag.split(":").first
+        value = tag.split(":")[1..-1].join(":").split("=")[1..-1].join("=")
         if tag_keys.empty?
           ret[res][key] = value
         else
@@ -368,9 +370,9 @@ class Server
   end
 
   def clear_tags(namespace = nil)
-    tags = Tag.search_by_href(self.href)
-    tags.deep_merge! Tag.search_by_href(self.current_instance_href) if self.current_instance_href
-    tags = tags.select { |hsh| hsh["name"].start_with?("#{namespace}:") } if namespace
-    self.remove_tags(*(tags.map { |k,v| v }))
+    tags = Tag.search_by_href(self.href).map { |h| h["name"] }
+    tags.deep_merge! Tag.search_by_href(self.current_instance_href).map { |h| h["name"] } if self.current_instance_href
+    tags = tags.select { |tag| tag.start_with?("#{namespace}:") } if namespace
+    self.remove_tags(*tags)
   end
 end

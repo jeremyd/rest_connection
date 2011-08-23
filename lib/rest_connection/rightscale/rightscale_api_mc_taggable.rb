@@ -32,7 +32,7 @@ module RightScale
       end
 
       def tags(reload=false)
-        @params["tags"] = McTag.search_by_href(self.href).first["tags"] if reload
+        @params["tags"] = McTag.search_by_href(self.href).first["tags"].map { |hsh| hsh["name"] } if reload
         @params["tags"]
       end
 
@@ -60,9 +60,10 @@ module RightScale
         tags = {"self" => self.tags(true)}
         tags.each { |res,ary|
           ret[res] ||= {}
-          ary.each { |hsh|
-            next unless hsh["name"].start_with?("info:")
-            key, value = hsh["name"].split(":").last.split("=")
+          ary.each { |tag|
+            next unless tag.start_with?("info:")
+            key = tag.split(":").first
+            value = tag.split(":")[1..-1].join(":").split("=")[1..-1].join("=")
             if tag_keys.empty?
               ret[res][key] = value
             else
@@ -80,8 +81,8 @@ module RightScale
   
       def clear_tags(namespace = nil)
         tag_ary = self.tags(true)
-        tag_ary = tag_ary.select { |hsh| hsh["name"].start_with?("#{namespace}:") } if namespace
-        self.remove_tags(*(tag_ary.map { |k,v| v }))
+        tag_ary = tag_ary.select { |tag| tag.start_with?("#{namespace}:") } if namespace
+        self.remove_tags(*tag_ary)
       end
     end
 

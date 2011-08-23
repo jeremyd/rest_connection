@@ -42,7 +42,7 @@ class AuditEntry
     raise "FATAL: Timeout waiting for Executable to complete.  State was #{self.state}" if timeout <= 0
   end
 
-  def wait_for_completed(legacy=nil)
-    wait_for_state("completed")
+  def wait_for_completed(timeout=900)
+    wait_for_state("completed", timeout)
   end
 end 
