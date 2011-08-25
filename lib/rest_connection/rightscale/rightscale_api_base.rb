@@ -67,9 +67,9 @@ module RightScale
       # 1) takes href (URI), 
       # 2) or id (Integer)
       # 3) or symbol :all, :first, :last
-      def find(href, &block)
+      def find(href, additional_params={}, &block)
         if href.is_a?(Integer)
-          return self.new(connection.get(self.resource_plural_name + "/#{href}"))
+          return self.new(connection.get(self.resource_plural_name + "/#{href}", additional_params))
         elsif href.is_a?(Symbol)
           results = self.find_all
           if block_given?
