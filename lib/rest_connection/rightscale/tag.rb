@@ -17,8 +17,10 @@ class Tag
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
 
-  def self.search(resource_name, tags)
-    result = connection.get("tags/search", :resource_type => resource_name.to_s, :tags => tags )
+  def self.search(resource_name, tags, opts=nil)
+    parameters = { :resource_type => resource_name.to_s, :tags => tags }
+    parameters.merge!(opts) unless opts.nil?
+    result = connection.get("tags/search", parameters)
   end
 
   def self.search_by_href(resource_href)
