@@ -155,7 +155,7 @@ class Server
 
   # Works on v4 and v5 images.
   # *executable can be an <~Executable> or <~RightScript>
-  def run_executable(executable, opts=nil)
+  def run_executable(executable, opts=nil, ignore_lock=false)
     script_options = Hash.new
     script_options[:server] = Hash.new
     if executable.is_a?(Executable)
@@ -172,6 +172,7 @@ class Server
 
     serv_href = URI.parse(self.href)
     script_options[:server][:parameters] = opts unless opts.nil?
+    script_options[:server][:ignore_lock] = true if ignore_lock
     location = connection.post(serv_href.path + '/run_executable', script_options)
     AuditEntry.new('href' => location)
   end
