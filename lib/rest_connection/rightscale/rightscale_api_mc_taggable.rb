@@ -32,7 +32,8 @@ module RightScale
       end
 
       def tags(reload=false)
-        @params["tags"] = McTag.search_by_href(self.href).first["tags"].map { |hsh| hsh["name"] } if reload
+        @params["tags"] ||= []
+        @params["tags"].deep_merge! McTag.search_by_href(self.href).first["tags"].map { |hsh| hsh["name"] } if reload
         @params["tags"]
       end
 

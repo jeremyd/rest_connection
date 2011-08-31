@@ -29,7 +29,8 @@ module RightScale
       end
 
       def tags(reload=false)
-        @params["tags"] = Tag.search_by_href(self.href).map { |hsh| hsh["name"] } if reload
+        @params["tags"] ||= []
+        @params["tags"].deep_merge! Tag.search_by_href(self.href).map { |hsh| hsh["name"] } if reload
         @params["tags"]
       end
 
