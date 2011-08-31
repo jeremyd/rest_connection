@@ -350,7 +350,7 @@ class Server
 
   def get_info_tags(*tag_keys)
     ret = {}
-    tags = {"self" => self.tags(true)}
+    tags = {"self" => Tag.search_by_href(self.href).map { |h| h["name"] }}
     if self.current_instance_href
       tags["current_instance"] = Tag.search_by_href(self.current_instance_href).map { |h| h["name"] }
     end
