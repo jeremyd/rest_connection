@@ -238,7 +238,7 @@ class McServer < Server
 
   def get_info_tags(*tag_keys)
     ret = {}
-    tags = {"self" => McTag.search_by_href(self.href).first["tags"].map { |h| h["name"] }}
+    tags = {"self" => self.tags(true)}
     if @current_instance
       tags["current_instance"] = McTag.search_by_href(self.current_instance_href).first["tags"].map { |h| h["name"] }
     end

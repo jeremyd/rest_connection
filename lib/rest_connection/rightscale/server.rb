@@ -200,6 +200,9 @@ class Server
     serv_href = URI.parse(self.href)
     params = self.parameters.deep_merge hash
     connection.put(serv_href.path, :server => {:parameters => params})
+# TODO Test this!!!
+#    connection.put(serv_href.path, :server => {:parameters => hash})
+#    settings
   end
 
   def set_template(href)
@@ -350,7 +353,7 @@ class Server
 
   def get_info_tags(*tag_keys)
     ret = {}
-    tags = {"self" => Tag.search_by_href(self.href).map { |h| h["name"] }}
+    tags = {"self" => self.tags(true)}
     if self.current_instance_href
       tags["current_instance"] = Tag.search_by_href(self.current_instance_href).map { |h| h["name"] }
     end
