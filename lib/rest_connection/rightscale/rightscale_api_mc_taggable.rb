@@ -91,8 +91,8 @@ module RightScale
     module McTaggableExtend
       def find_by_tags(*args)
         a = Array.new
-        McTag.search(self.resource_singular_name, args.uniq).each do |object|
-          a << self.new(object)
+        McTag.search(self.resource_plural_name, args.uniq).first["links"].each do |hash|
+          a << self.find(hash["href"])
         end
         return a
       end
