@@ -38,7 +38,7 @@ class Task
       sleep 30
       timeout -= 30
     end
-    raise "FATAL: Timeout waiting for Executable to complete.  State was #{self.state}" if timeout <= 0
+    raise "FATAL: Timeout waiting for Executable to complete.  State was #{self.summary}" if timeout <= 0
   end
 
   def wait_for_completed(legacy=nil)
