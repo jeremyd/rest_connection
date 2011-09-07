@@ -40,7 +40,7 @@ module RightScale
 
       def remove_info_tags(*tag_keys)
         tags_to_unset = []
-        tags = get_tag_values(*(tag_keys.uniq))
+        tags = get_info_tags(*(tag_keys.uniq))
         tags.each { |res,hsh|
           hsh.each { |k,v|
             tags_to_unset << "info:#{k}=#{v}"
