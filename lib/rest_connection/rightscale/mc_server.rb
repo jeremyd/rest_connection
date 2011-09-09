@@ -171,13 +171,13 @@ class McServer < Server
     step = 15
     while(timeout > 0)
       self.settings
-      break if self.dns_name
-      connection.logger "waiting for a public IP for #{self.nickname}"
+      break if self.reachable_ip
+      connection.logger "waiting for any IP for #{self.nickname}"
       sleep step
       timeout -= step
     end
-    connection.logger "got IP: #{self.dns_name}"
-    raise "FATAL, this server #{self.audit_link} timed out waiting for DNS" if timeout <= 0
+    connection.logger "got IP: #{self.reachable_ip}"
+    raise "FATAL, this server #{self.audit_link} timed out waiting for an IP" if timeout <= 0
   end
 
   def dns_name

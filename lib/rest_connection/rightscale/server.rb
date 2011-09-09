@@ -96,13 +96,14 @@ class Server
     step = 15
     while(timeout > 0)
       self.settings
-      break if self['dns-name'] && !self['dns-name'].empty? && self['private-dns-name'] && !self['private-dns-name'].empty? 
-      connection.logger "waiting for dns-name for #{self.nickname}"
+#      break if self['dns-name'] && !self['dns-name'].empty? && self['private-dns-name'] && !self['private-dns-name'].empty? 
+      break if self.reachable_ip 
+      connection.logger "waiting for IP for #{self.nickname}"
       sleep step
       timeout -= step
     end
-    connection.logger "got DNS: #{self['dns-name']}"
-    raise "FATAL, this server #{self.audit_link} timed out waiting for DNS" if timeout <= 0
+    connection.logger "got IP: #{self.reachable_ip}"
+    raise "FATAL, this server #{self.audit_link} timed out waiting for IP" if timeout <= 0
   end
 
   def audit_link

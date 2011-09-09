@@ -37,7 +37,7 @@ module SshHax
     ssh_keys
   end
 
-  def run_and_tail(run_this, tail_command, expect, ssh_key=nil, host_dns=self.dns_name)
+  def run_and_tail(run_this, tail_command, expect, ssh_key=nil, host_dns=self.reachable_ip)
     status = nil
     result = nil
     output = ""
@@ -96,7 +96,7 @@ module SshHax
 
   # script is an Executable object with minimally nick or id set
   def run_executable_with_ssh(script, options={}, ssh_key=nil)
-    raise "FATAL: run_executable called on a server with no dns_name. You need to run .settings on the server to populate this attribute." unless self.dns_name
+    raise "FATAL: run_executable called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless self.reachable_ip
     if script.is_a?(Executable)
       script = script.right_script
     end
@@ -116,9 +116,9 @@ module SshHax
   end
 
   # recipe can be either a String, or an Executable
-  # host_dns is optional and will default to objects self.dns_name
-  def run_recipe_with_ssh(recipe, ssh_key=nil, host_dns=self.dns_name)
-    raise "FATAL: run_script called on a server with no dns_name. You need to run .settings on the server to populate this attribute." unless self.dns_name
+  # host_dns is optional and will default to objects self.reachable_ip
+  def run_recipe_with_ssh(recipe, ssh_key=nil, host_dns=self.reachable_ip)
+    raise "FATAL: run_script called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless self.reachable_ip
     if recipe.is_a?(Executable)
       recipe = recipe.recipe
     end
@@ -128,7 +128,7 @@ module SshHax
     run_and_tail(run_this, tail_command, expect, ssh_key)
   end
 
-  def spot_check(command, ssh_key=nil, host_dns=self.dns_name, &block)
+  def spot_check(command, ssh_key=nil, host_dns=self.reachable_ip, &block)
     connection.logger "SSHing to #{host_dns}"
     Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key)) do |ssh|
       result = ssh.exec!(command)
@@ -137,15 +137,15 @@ module SshHax
   end 
 
   # returns true or false based on command success
-  def spot_check_command?(command, ssh_key=nil, host_dns=self.dns_name)
+  def spot_check_command?(command, ssh_key=nil, host_dns=self.reachable_ip)
     results = spot_check_command(command, ssh_key, host_dns)
     return results[:status] == 0
   end
 
 
   # returns hash of exit_status and output from command
-  def spot_check_command(command, ssh_key=nil, host_dns=self.dns_name, do_not_log_result=false)
-    raise "FATAL: spot_check_command called on a server with no dns_name. You need to run .settings on the server to populate this attribute." unless host_dns
+  def spot_check_command(command, ssh_key=nil, host_dns=self.reachable_ip, do_not_log_result=false)
+    raise "FATAL: spot_check_command called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless host_dns
     connection.logger "SSHing to #{host_dns} using key(s) #{ssh_key_config(ssh_key)}"
     status = nil
     output = ""
