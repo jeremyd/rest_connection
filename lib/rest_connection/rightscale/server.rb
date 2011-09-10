@@ -143,6 +143,11 @@ class Server
     else
       raise "Invalid class passed to run_executable, needs Executable or RightScript, was:#{executable.class}"
     end
+    
+    if not opts.nil? and opts.has_key?(:ignore_lock)
+      script_options[:server][:ignore_lock] = "true"
+      opts.delete(:ignore_lock)
+    end
 
     serv_href = URI.parse(self.href)
     script_options[:server][:parameters] = opts unless opts.nil?
