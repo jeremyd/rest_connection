@@ -74,9 +74,9 @@ class Server
     while(timeout > 0)
       return true if state =~ /#{st}/
       raise "FATAL error, this server is stranded and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('stranded') && !st.include?('stranded')
-      raise "FATAL error, this server went to error state and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('error') && !st.include?('error')
+      raise "FATAL error, this server went to error state and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('error') && st !~ /error|terminated|stopped/
       connection.logger("waiting for server #{nickname} to go #{st}, state is #{state}")
-      if state =~ /terminated|stopped/ and st !~ /terminated|stopped/
+      if state =~ /terminated|stopped|error/ and st !~ /terminated|stopped|error/
         if catch_early_terminated <= 0
           raise "FATAL error, this server terminated when waiting for #{st}: #{nickname}"
         end
@@ -178,7 +178,7 @@ class Server
 
     serv_href = URI.parse(self.href)
     script_options[:server][:parameters] = opts unless opts.nil?
-    script_options[:server][:ignore_lock] = true if ignore_lock
+    script_options[:server][:ignore_lock] = "true" if ignore_lock
     location = connection.post(serv_href.path + '/run_executable', script_options)
     AuditEntry.new('href' => location)
   end

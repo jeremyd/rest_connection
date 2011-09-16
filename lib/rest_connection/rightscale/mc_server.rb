@@ -165,6 +165,7 @@ class McServer < Server
     return cloud_href.split("/").last.to_i
   end
 
+=begin
   def wait_for_operational_with_dns(state_wait_timeout=1200)
     timeout = 600
     wait_for_state("operational", state_wait_timeout)
@@ -179,6 +180,7 @@ class McServer < Server
     connection.logger "got IP: #{self.reachable_ip}"
     raise "FATAL, this server #{self.audit_link} timed out waiting for an IP" if timeout <= 0
   end
+=end
 
   def dns_name
     self.settings

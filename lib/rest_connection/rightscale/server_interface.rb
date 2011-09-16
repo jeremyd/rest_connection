@@ -192,8 +192,8 @@ class ServerInterface
   # Since RightScale hands back the parameters with a "name" and "value" tags we should
   # transform them into the proper hash.  This it the same for setting and getting.
   def parameters
-    @impl.parameters unless @multicloud
-    @impl.inputs if @multicloud
+    return @impl.parameters unless @multicloud
+    return @impl.inputs if @multicloud
   end
 
   def inputs
@@ -209,34 +209,34 @@ class ServerInterface
   end
 
   def launch
-    @impl.launch if @multicloud
-    @impl.start unless @multicloud
+    return @impl.launch if @multicloud
+    return @impl.start unless @multicloud
   end
 
   def terminate
-    @impl.terminate if @multicloud
-    @impl.stop unless @multicloud
+    return @impl.terminate if @multicloud
+    return @impl.stop unless @multicloud
   end
 
   def start_ebs
-    connection.logger("WARNING: Gateway Servers do not support start_ebs. Ignoring.") if @multicloud
-    @impl.start_ebs unless @multicloud
+    return connection.logger("WARNING: Gateway Servers do not support start_ebs. Ignoring.") if @multicloud
+    return @impl.start_ebs unless @multicloud
   end
 
   def stop_ebs
-    connection.logger("WARNING: Gateway Servers do not support stop_ebs. Ignoring.") if @multicloud
-    @impl.stop_ebs unless @multicloud
+    return connection.logger("WARNING: Gateway Servers do not support stop_ebs. Ignoring.") if @multicloud
+    return @impl.stop_ebs unless @multicloud
   end
 
   # This should be used with v4 images only.
   def run_script(script,opts=nil)
-    connection.logger("WARNING: Gateway Servers do not support run_script. Did you mean run_executable?") if @multicloud
-    @impl.run_script(script,opts) unless @multicloud
+    return connection.logger("WARNING: Gateway Servers do not support run_script. Did you mean run_executable?") if @multicloud
+    return @impl.run_script(script,opts) unless @multicloud
   end 
 
   def attach_volume(params)
-    connection.logger("WARNING: Gateway Servers do not support attach_volume. Ignoring.") if @multicloud
-    @impl.attach_volume(params) unless @multicloud
+    return connection.logger("WARNING: Gateway Servers do not support attach_volume. Ignoring.") if @multicloud
+    return @impl.attach_volume(params) unless @multicloud
   end
 
   def wait_for_state(st,timeout=1200)
@@ -260,14 +260,14 @@ class ServerInterface
 
   def set_inputs(hash = {})
     if @multicloud
-      @impl.set_inputs(hash)
+      return @impl.set_inputs(hash)
     else
       if @impl.current_instance_href and @impl.state != "stopped"
         @impl.reload_as_current
         @impl.set_inputs(hash)
         @impl.reload_as_next
       end
-      @impl.set_inputs(hash)
+      return @impl.set_inputs(hash)
     end
   end
 

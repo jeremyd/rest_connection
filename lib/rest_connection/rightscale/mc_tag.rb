@@ -36,8 +36,10 @@ class McTag
     "tag"
   end
 
-  def self.search(resource_type, tags) #, include_tags_with_prefix = false)
-    result = connection.post("tags/by_tag", :resource_type => resource_type.to_s, :tags => tags)
+  def self.search(resource_name, tags, opts=nil) #, include_tags_with_prefix = false)
+    parameters = { :resource_type => resource_name.to_s, :tags => tags }
+    parameters.merge!(opts) unless opts.nil?
+    result = connection.post("tags/by_tag", parameters)
   end
 
   def self.search_by_href(*resource_hrefs)
