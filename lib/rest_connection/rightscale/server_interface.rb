@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -124,7 +124,7 @@ class ServerInterface
         ret["cloud_id"] = opts["cloud_id"]
       end
     end
-    
+
     fields.each { |hsh|
       next unless hsh[to]
       hsh[to].each { |field|
@@ -232,7 +232,7 @@ class ServerInterface
   def run_script(script,opts=nil)
     return connection.logger("WARNING: Gateway Servers do not support run_script. Did you mean run_executable?") if @multicloud
     return @impl.run_script(script,opts) unless @multicloud
-  end 
+  end
 
   def attach_volume(params)
     return connection.logger("WARNING: Gateway Servers do not support attach_volume. Ignoring.") if @multicloud

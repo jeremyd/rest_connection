@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 
 #This is the v4 image only work status api.
 # was used by Server#run_script (depricating..)
-class Status 
+class Status
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
   def wait_for_completed(audit_link = "no audit link available", timeout = 900)

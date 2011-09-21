@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -13,16 +13,16 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-#    
+#
 # You must have Beta v1.5 API access to use these internal API calls.
-# 
+#
 class McServer < Server
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
   include RightScale::Api::McTaggable
   extend RightScale::Api::McTaggableExtend
   attr_accessor :current_instance, :next_instance, :inputs
-  
+
   def resource_plural_name
     "servers"
   end
@@ -38,11 +38,11 @@ class McServer < Server
   def self.resource_singular_name
     "server"
   end
-  
+
   def self.parse_args(deployment_id=nil)
     deployment_id ? "deployments/#{deployment_id}/" : ""
   end
-  
+
   def launch
     if actions.include?("launch")
       t = URI.parse(self.href)
@@ -68,7 +68,7 @@ class McServer < Server
     connection.post(t.path + '/terminate')
     @current_instance = nil
   end
-  
+
   def start #start_ebs
     raise "You shouldn't be here."
   end
@@ -222,6 +222,14 @@ class McServer < Server
   end
 
   # Override Taggable mixin so that it sets tags on both next and current instances
+  def current_tags(reload=true)
+    ret = []
+    if @current_instance
+      ret = McTag.search_by_href(self.current_instance_href).first["tags"].map { |h| h["name"] }
+    end
+    ret
+  end
+
   def add_tags(*args)
     return false if args.empty?
     args.uniq!
@@ -238,31 +246,25 @@ class McServer < Server
     self.tags(true)
   end
 
-  def get_info_tags(*tag_keys)
+  def get_tags_by_namespace(namespace)
     ret = {}
     tags = {"self" => self.tags(true)}
-    if @current_instance
-      tags["current_instance"] = McTag.search_by_href(self.current_instance_href).first["tags"].map { |h| h["name"] }
-    end
+    tags["current_instance"] = self.current_tags if @current_instance
     tags.each { |res,ary|
       ret[res] ||= {}
       ary.each { |tag|
-        next unless tag.start_with?("info:")
+        next unless tag.start_with?("#{namespace}:")
         key = tag.split("=").first.split(":").last
         value = tag.split(":")[1..-1].join(":").split("=")[1..-1].join("=")
-        if tag_keys.empty?
-          ret[res][key] = value
-        else
-          ret[res][key] = value if tag_keys.include?(key)
-        end
+        ret[res][key] = value
       }
     }
     return ret
   end
 
   def clear_tags(namespace = nil)
-    tags = McTag.search_by_href(self.href).first["tags"].map { |h| h["name"] }
-    tags.deep_merge! McTag.search_by_href(self.current_instance_href).first["tags"].map { |h| h["name"] } if @current_instance
+    tags = self.tags(true)
+    tags.deep_merge! self.current_tags if @current_instance
     tags = tags.select { |tag| tag.start_with?("#{namespace}:") } if namespace
     self.remove_tags(*tags)
   end

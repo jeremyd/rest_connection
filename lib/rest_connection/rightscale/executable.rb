@@ -1,4 +1,4 @@
-class Executable 
+class Executable
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
 
@@ -9,8 +9,8 @@ class Executable
   #    { :recipe =>
   #      :position => 12,
   #      :apply => "operational",
-  #      :right_script => { "href" => "http://blah", 
-  #                         "name" => "blah" 
+  #      :right_script => { "href" => "http://blah",
+  #                         "name" => "blah"
   #                         ...
   #      }
 
@@ -37,7 +37,7 @@ class Executable
   end
 
   def href
-    if right_script? 
+    if right_script?
       return right_script.href
     else
       #recipes do not have hrefs, only names

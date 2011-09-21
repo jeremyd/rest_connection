@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 
 require 'rest_connection/ssh_hax'
 
-class Server 
+class Server
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
   include SshHax
@@ -28,14 +28,14 @@ class Server
     create_options["cloud_id"] = opts[:cloud_id] if opts[:cloud_id]
     create_options[self.resource_singular_name.to_sym][:mci_href] = nil
     create_options[self.resource_singular_name.to_sym][:inputs] = nil
-    location = connection.post(self.resource_plural_name,create_options)    
+    location = connection.post(self.resource_plural_name,create_options)
     newrecord = self.new('href' => location)
     newrecord.reload
     newrecord.parameters #transform the parameters!
     newrecord
   end
 
-  # The RightScale api returns the server parameters as a hash with "name" and "value".  
+  # The RightScale api returns the server parameters as a hash with "name" and "value".
   # This must be transformed into a hash in case we want to PUT this back to the API.
   def transform_parameters(parameters)
     new_params_hash = {}
@@ -96,8 +96,8 @@ class Server
     step = 15
     while(timeout > 0)
       self.settings
-#      break if self['dns-name'] && !self['dns-name'].empty? && self['private-dns-name'] && !self['private-dns-name'].empty? 
-      break if self.reachable_ip 
+#      break if self['dns-name'] && !self['dns-name'].empty? && self['private-dns-name'] && !self['private-dns-name'].empty?
+      break if self.reachable_ip
       connection.logger "waiting for IP for #{self.nickname}"
       sleep step
       timeout -= step
@@ -170,7 +170,7 @@ class Server
     else
       raise "Invalid class passed to run_executable, needs Executable or RightScript, was:#{executable.class}"
     end
-    
+
     if not opts.nil? and opts.has_key?(:ignore_lock)
       script_options[:server][:ignore_lock] = "true"
       opts.delete(:ignore_lock)
@@ -195,7 +195,7 @@ class Server
     script_options[:server][:parameters] = opts unless opts.nil?
     location = connection.post(serv_href.path + '/run_script', script_options)
     Status.new('href' => location)
-  end 
+  end
 
   def set_input(name, value)
     serv_href = URI.parse(self.href)
@@ -223,7 +223,7 @@ class Server
 
   def attach_volume(params)
     hash = {}
-    hash[:server] = params 
+    hash[:server] = params
     serv_href = URI.parse(self.href)
     connection.post(serv_href.path + "/attach_volume", hash)
   end
@@ -243,7 +243,7 @@ class Server
     reload
     old_state = self.state
     serv_href = URI.parse(self.href)
-    connection.post(serv_href.path + "/reboot") 
+    connection.post(serv_href.path + "/reboot")
     if wait_for_state
       wait_for_state_change(old_state)
     end
@@ -252,7 +252,7 @@ class Server
   def relaunch
     self.stop
     self.wait_for_state("stopped")
-    self.start  
+    self.start
   end
 
   def wait_for_state_change(old_state = nil)
@@ -341,6 +341,14 @@ class Server
   end
 
   # Override Taggable mixin so that it sets tags on both next and current instances
+  def current_tags(reload=true)
+    ret = []
+    if self.current_instance_href
+      ret = Tag.search_by_href(self.current_instance_href).map { |h| h["name"] }
+    end
+    ret
+  end
+
   def add_tags(*args)
     return false if args.empty?
     args.uniq!
@@ -357,31 +365,25 @@ class Server
     self.tags(true)
   end
 
-  def get_info_tags(*tag_keys)
+  def get_tags_by_namespace(namespace)
     ret = {}
     tags = {"self" => self.tags(true)}
-    if self.current_instance_href
-      tags["current_instance"] = Tag.search_by_href(self.current_instance_href).map { |h| h["name"] }
-    end
+    tags["current_instance"] = self.current_tags if self.current_instance_href
     tags.each { |res,ary|
       ret[res] ||= {}
       ary.each { |tag|
-        next unless tag.start_with?("info:")
+        next unless tag.start_with?("#{namespace}:")
         key = tag.split("=").first.split(":").last
         value = tag.split(":")[1..-1].join(":").split("=")[1..-1].join("=")
-        if tag_keys.empty?
-          ret[res][key] = value
-        else
-          ret[res][key] = value if tag_keys.include?(key)
-        end
+        ret[res][key] = value
       }
     }
     return ret
   end
 
   def clear_tags(namespace = nil)
-    tags = Tag.search_by_href(self.href).map { |h| h["name"] }
-    tags.deep_merge! Tag.search_by_href(self.current_instance_href).map { |h| h["name"] } if self.current_instance_href
+    tags = self.tags(true)
+    tags.deep_merge! self.current_tags if self.current_instance_href
     tags = tags.select { |tag| tag.start_with?("#{namespace}:") } if namespace
     self.remove_tags(*tags)
   end

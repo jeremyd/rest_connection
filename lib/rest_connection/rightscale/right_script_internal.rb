@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
 
-class RightScriptInternal 
+class RightScriptInternal
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
   include RightScale::Api::Internal
@@ -41,11 +41,11 @@ class RightScriptInternal
     t = URI.parse(self.href)
     RightScript.new(:href => connection.post(t.path + "/commit", :commit_message => message))
   end
-  
+
   # clones a RightScript and returns the new RightScript resource that's been created.
   def clone
     t = URI.parse(self.href)
     RightScript.new(:href => connection.post(t.path + "/clone"))
   end
-    
+
 end

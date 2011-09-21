@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-class ServerTemplateInternal 
+class ServerTemplateInternal
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
   include RightScale::Api::Internal
@@ -39,7 +39,7 @@ class ServerTemplateInternal
     t = URI.parse(self.href)
     connection.put(t.path + "/add_multi_cloud_image", :multi_cloud_image_href => mci_href)
   end
-  
+
   def delete_multi_cloud_image(mci_href)
     t = URI.parse(self.href)
     connection.put(t.path + "/delete_multi_cloud_image", :multi_cloud_image_href => mci_href)
@@ -75,7 +75,7 @@ class ServerTemplateInternal
     connection.post(t.path + "/add_executable", params)
   end
 
-  # <~Executable> executable, an Executable object to delete 
+  # <~Executable> executable, an Executable object to delete
   # <~String> Apply, a string designating the type of executable: "boot", "operational", "decommission".  Default is operational
   def delete_executable(executable, apply="operational")
     t = URI.parse(self.href)

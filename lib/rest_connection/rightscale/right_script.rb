@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
 
-class RightScript 
+class RightScript
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
   def self.from_yaml(yaml)
@@ -23,7 +23,7 @@ class RightScript
     x.keys.each do |script|
       scripts << self.new('href' => "right_scripts/#{script}", 'name' => x[script].ivars['name'])
     end
-    scripts  
+    scripts
   end
 
   def self.from_instance_info(file = "/var/spool/ec2/rs_cache/info.yml")
@@ -38,7 +38,7 @@ class RightScript
     x.keys.each do |script|
       scripts << self.new('href' => "right_scripts/#{script}", 'name' => x[script].ivars['name'])
     end
-    scripts  
+    scripts
   end
 
 end

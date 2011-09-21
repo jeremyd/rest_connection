@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ module RightScale
       def connection()
         @@connection ||= RestConnection::Connection.new
         settings = @@connection.settings
-        settings[:common_headers]["X_API_VERSION"] = "1.0"         
+        settings[:common_headers]["X_API_VERSION"] = "1.0"
         settings[:api_href] = settings[:api_url]
         settings[:extension] = ".js"
         @@connection
@@ -29,7 +29,7 @@ module RightScale
 
       def resource_plural_name
         self.to_s.underscore.pluralize
-      end 
+      end
 
       def resource_singular_name
         self.to_s.underscore
@@ -37,7 +37,7 @@ module RightScale
       # matches using result of block match expression
       # ex: Server.find_by(:nickname) { |n| n =~ /production/ }
       def find_by(attrib, &block)
-        self.find_all.select do |s| 
+        self.find_all.select do |s|
           yield(s[attrib.to_s])
         end
       end
@@ -63,8 +63,8 @@ module RightScale
         self.find_by(:nickname) { |n| n == nickname }
       end
 
-      # the argument can be 
-      # 1) takes href (URI), 
+      # the argument can be
+      # 1) takes href (URI),
       # 2) or id (Integer)
       # 3) or symbol :all, :first, :last
       def find(href, additional_params={}, &block)
@@ -79,7 +79,7 @@ module RightScale
             return results
           elsif href == :first
             return results.first
-          elsif href == :last 
+          elsif href == :last
             return results.last
           end
         elsif uri = URI.parse(href)
@@ -107,8 +107,8 @@ module RightScale
 
 # filter is only implemented on some api endpoints
       def find_with_filter(filter = {})
-        filter_params = [] 
-        filter.each { |key,val| 
+        filter_params = []
+        filter.each { |key,val|
           filter_params << "#{key}=#{val}"
           }
         a = Array.new
@@ -165,12 +165,12 @@ module RightScale
       def connection()
         @@connection ||= RestConnection::Connection.new
         settings = @@connection.settings
-        settings[:common_headers]["X_API_VERSION"] = "1.0"         
+        settings[:common_headers]["X_API_VERSION"] = "1.0"
         settings[:api_href] = settings[:api_url]
         settings[:extension] = ".js"
         @@connection
       end
-   
+
       def resource_plural_name
         self.class.to_s.underscore.pluralize
       end
@@ -204,20 +204,20 @@ module RightScale
             @params[mn] = args[0]
             @params[mn_dash] = args[0]
           end
-          return @params[mn] 
+          return @params[mn]
         elsif @params[mn_dash]
           if assignment
-            @params[mn_dash] = args[0] 
+            @params[mn_dash] = args[0]
             @params[mn] = args[0]
           end
-          return @params[mn_dash] 
+          return @params[mn_dash]
         elsif @params[mn.to_sym]
           return @params[mn.to_sym]
         elsif assignment
           @params[mn] = args[0]
           @params[mn_dash] = args[0]
-          return @params[mn] 
-        else  
+          return @params[mn]
+        else
           return nil
           #raise "called unknown method #{method_name} with #{args.inspect}"
         end

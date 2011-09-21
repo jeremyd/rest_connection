@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -45,4 +45,4 @@ class AuditEntry
   def wait_for_completed(timeout=900)
     wait_for_state("completed", timeout)
   end
-end 
+end

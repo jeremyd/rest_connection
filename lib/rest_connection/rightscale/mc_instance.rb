@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -13,16 +13,16 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-#    
+#
 # You must have Beta v1.5 API access to use these internal API calls.
-# 
+#
 class McInstance
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
   include RightScale::Api::McTaggable
   extend RightScale::Api::McTaggableExtend
   attr_accessor :monitoring_metrics
-  
+
   def resource_plural_name
     "instances"
   end
@@ -38,11 +38,11 @@ class McInstance
   def self.resource_singular_name
     "instance"
   end
-  
+
   def self.parse_args(cloud_id)
     "clouds/#{cloud_id}/"
   end
-  
+
   def show
     inst_href = URI.parse(self.href)
     @params.merge! connection.get(inst_href.path, 'view' => "full")

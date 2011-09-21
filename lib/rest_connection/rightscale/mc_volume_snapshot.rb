@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -13,15 +13,15 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-#    
+#
 # You must have Beta v1.5 API access to use these internal API calls.
-# 
+#
 class McVolumeSnapshot
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
   include RightScale::Api::McTaggable
   extend RightScale::Api::McTaggableExtend
-  
+
   def resource_plural_name
     "volume_snapshots"
   end
@@ -37,7 +37,7 @@ class McVolumeSnapshot
   def self.resource_singular_name
     "volume_snapshot"
   end
-  
+
   def self.parse_args(cloud_id, volume_id=nil)
     return "clouds/#{cloud_id}/" unless volume_id
     return "clouds/#{cloud_id}/volumes/#{volume_id}/" if volume_id

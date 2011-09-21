@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -16,4 +16,4 @@
 class Macro
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
-end 
+end
