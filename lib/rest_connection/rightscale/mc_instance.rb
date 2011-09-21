@@ -21,6 +21,7 @@ class McInstance
   extend RightScale::Api::GatewayExtend
   include RightScale::Api::McTaggable
   extend RightScale::Api::McTaggableExtend
+  include RightScale::Api::McInput
   attr_accessor :monitoring_metrics
 
   def resource_plural_name

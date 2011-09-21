@@ -21,6 +21,7 @@ class McDeployment
   extend RightScale::Api::GatewayExtend
   include RightScale::Api::McTaggable
   extend RightScale::Api::McTaggableExtend
+  include RightScale::Api::McInput
 
   def resource_plural_name
     "deployments"
@@ -36,11 +37,6 @@ class McDeployment
 
   def self.resource_singular_name
     "deployment"
-  end
-
-  def show
-    inst_href = URI.parse(self.href)
-    @params.merge! connection.get(inst_href.path, 'view' => "inputs")
   end
 
   def self.create(opts)

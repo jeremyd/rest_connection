@@ -16,38 +16,17 @@
 #
 # You must have Beta v1.5 API access to use these internal API calls.
 #
-class McServerTemplate
-  include RightScale::Api::Gateway
-  extend RightScale::Api::GatewayExtend
-  include RightScale::Api::McTaggable
-  extend RightScale::Api::McTaggableExtend
-  include RightScale::Api::McInput
+module RightScale
+  module Api
+    module McInput
+      def get_inputs
+        self["inputs"] = connection.get(self.href + "/inputs")
+      end
 
-  def resource_plural_name
-    "server_templates"
-  end
-
-  def resource_singular_name
-    "server_template"
-  end
-
-  def self.resource_plural_name
-    "server_templates"
-  end
-
-  def self.resource_singular_name
-    "server_template"
-  end
-
-  def get_mcis_and_settings
-    @params["multi_cloud_images"] = McMultiCloudImage.find_all(self.rs_id)
-    @params["multi_cloud_images"].each { |mci| mci.get_settings }
-  end
-
-  def multi_cloud_images
-    unless @params["multi_cloud_images"]
-      get_mcis_and_settings
+      def show
+        inst_href = URI.parse(self.href)
+        @params.merge! connection.get(inst_href.path, 'view' => "inputs")
+      end
     end
-    @params["multi_cloud_images"]
   end
 end
