@@ -263,7 +263,7 @@ class McServer < Server
   def clear_tags(namespace = nil)
     tags = McTag.search_by_href(self.href).first["tags"].map { |h| h["name"] }
     tags.deep_merge! McTag.search_by_href(self.current_instance_href).first["tags"].map { |h| h["name"] } if @current_instance
-    tags = tags.select { |hsh| hsh["name"].start_with?("#{namespace}:") } if namespace
+    tags = tags.select { |tag| tag.start_with?("#{namespace}:") } if namespace
     self.remove_tags(*tags)
   end
 end
