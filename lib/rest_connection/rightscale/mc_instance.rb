@@ -159,6 +159,10 @@ class McInstance
     metric.data(params['start'], params['end'])
   end
 
+  def get_data(params)
+    get_sketchy_data(params)
+  end
+
   def reboot
     self.show
     connection.post(URI.parse(self.href).path + '/reboot')

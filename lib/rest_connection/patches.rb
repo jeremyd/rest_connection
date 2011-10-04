@@ -25,7 +25,7 @@ class Hash
     end
     target
   end
-  
+
   # From: http://www.gemtacular.com/gemdocs/cerberus-0.2.2/doc/classes/Hash.html
   # File lib/cerberus/utils.rb, line 42
   # Modified to provide same functionality with Arrays
@@ -73,6 +73,34 @@ class Array
       else
         self << second[k] unless self.include?(second[k])
       end
+    end
+  end
+
+  def *(second)
+    if second.is_a?(Integer)
+      ret = []
+      second.times { |i| ret += dup }
+      return ret
+    elsif second.is_a?(Array)
+      ret = []
+      each { |x| second.each { |y| ret << [x,y].flatten } }
+      return ret
+    else
+      raise TypeError.new("can't convert #{second.class} into Integer")
+    end
+  end
+
+  def **(second)
+    if second.is_a?(Integer)
+      ret = dup
+      (second - 1).times {
+        temp = []
+        ret.each { |x| each { |y| temp << [x,y].flatten } }
+        ret = temp
+      }
+      return ret
+    else
+      raise TypeError.new("can't convert #{second.class} into Integer")
     end
   end
 end

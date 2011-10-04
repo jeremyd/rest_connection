@@ -25,6 +25,7 @@ module RightScale
       def remove_tags(*args)
         return false if args.empty?
         Tag.unset(self.href, args.uniq)
+        @params["tags"] -= args
         self.tags(true)
       end
 
@@ -52,7 +53,7 @@ module RightScale
             rej
           }
         }
-        return ret
+        return tags
       end
 
       def remove_tags_by_namespace(namespace, *tag_keys)
