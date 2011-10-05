@@ -204,11 +204,8 @@ class Server
 
   def set_inputs(hash = {})
     serv_href = URI.parse(self.href)
-    params = self.parameters.deep_merge hash
-    connection.put(serv_href.path, :server => {:parameters => params})
-# TODO Test this!!!
-#    connection.put(serv_href.path, :server => {:parameters => hash})
-#    settings
+    connection.put(serv_href.path, :server => {:parameters => hash})
+    settings
   end
 
   def set_template(href)
@@ -341,7 +338,13 @@ class Server
   end
 
   # Override Taggable mixin so that it sets tags on both next and current instances
+  def tags(*args)
+    self.reload_as_next if self.href =~ /current/
+    super(*args)
+  end
+
   def current_tags(reload=true)
+    self.reload_as_next if self.href =~ /current/
     ret = []
     if self.current_instance_href
       ret = Tag.search_by_href(self.current_instance_href).map { |h| h["name"] }
@@ -350,6 +353,7 @@ class Server
   end
 
   def add_tags(*args)
+    self.reload_as_next if self.href =~ /current/
     return false if args.empty?
     args.uniq!
     Tag.set(self.href, args)
@@ -358,6 +362,7 @@ class Server
   end
 
   def remove_tags(*args)
+    self.reload_as_next if self.href =~ /current/
     return false if args.empty?
     args.uniq!
     Tag.unset(self.href, args)
