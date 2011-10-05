@@ -47,6 +47,8 @@ class McServer < Server
     if actions.include?("launch")
       t = URI.parse(self.href)
       connection.post(t.path + '/launch')
+    elsif self.state == "inactive"
+      raise "FATAL: Server is in an unlaunchable state!"
     else
       connection.logger("WARNING: was in #{self.state} so skipping launch call")
     end
@@ -57,6 +59,8 @@ class McServer < Server
       t = URI.parse(self.href)
       connection.post(t.path + '/terminate')
       @current_instance = nil
+#    elsif self.state != "inactive"
+#      raise "FATAL: Server is in an interminable state!"
     else
       connection.logger("WARNING: was in #{self.state} so skipping terminate call")
     end
