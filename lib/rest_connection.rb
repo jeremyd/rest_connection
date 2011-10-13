@@ -89,7 +89,8 @@ module RestConnection
     def get(href, additional_parameters = "")
       rest_connect do |base_uri,headers|
         href = "#{base_uri}/#{href}" unless begins_with_slash(href)
-        new_path = URI.escape(href + @settings[:extension] + "?") + requestify(additional_parameters)
+        params = requestify(additional_parameters) || ""
+        new_path = URI.escape(href + @settings[:extension] + "?") + params
         Net::HTTP::Get.new(new_path, headers)
       end
     end
