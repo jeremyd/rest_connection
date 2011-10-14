@@ -250,8 +250,6 @@ module RestConnection
       end
     end
 
-    end
-
     # used by requestify to build parameters strings
     def name_with_prefix(prefix, name)
       prefix ? "#{prefix}[#{name}]" : name.to_s
