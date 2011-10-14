@@ -241,7 +241,13 @@ module RestConnection
         @@logger.info(init_message)
       end
 
-      @@logger.info("[API V#{@settings[:common_headers]["X_API_VERSION"]} ]" + message)
+      if @settings.nil?
+        @@logger.info(message)
+      else
+        @@logger.info("[API v#{@settings[:common_headers]['X_API_VERSION']} ]" + message)
+      end
+    end
+
     end
 
     # used by requestify to build parameters strings
