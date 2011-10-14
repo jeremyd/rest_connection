@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -110,23 +110,23 @@ module RestConnection
     end
 
     # Main HTTP connection loop. Common settings are set here, then we yield(BASE_URI, OPTIONAL_HEADERS) to other methods for each type of HTTP request: GET, PUT, POST, DELETE
-    # 
+    #
     # The block must return a Net::HTTP Request. You have a chance to taylor the request inside the block that you pass by modifying the url and headers.
     #
     # rest_connect do |base_uri, headers|
     #   headers.merge! {:my_header => "blah"}
     #   Net::HTTP::Get.new(base_uri, headers)
     # end
-    #   
+    #
     def rest_connect(&block)
       uri = URI.parse(@settings[:api_href])
       http = Net::HTTP.new(uri.host, uri.port)
       if uri.scheme == 'https'
-        http.use_ssl = true 
+        http.use_ssl = true
         http.verify_mode = OpenSSL::SSL::VERIFY_NONE
       end
       headers = @settings[:common_headers]
-      headers.merge!("Cookie" => @cookie) if @cookie 
+      headers.merge!("Cookie" => @cookie) if @cookie
       http.start do |http|
         req = yield(uri, headers)
         unless @cookie
@@ -151,7 +151,7 @@ module RestConnection
         Net::HTTP::Get.new(new_path, headers)
       end
     end
-    
+
     # connection.post(server_url + "/start")
     #
     # href = "/api/base_new" if this begins with a slash then the url will be used as absolute path.
@@ -179,7 +179,7 @@ module RestConnection
       rest_connect do |base_uri, headers|
         href = "#{base_uri}/#{href}" unless begins_with_slash(href)
         new_path = URI.escape(href)
-        req = Net::HTTP::Put.new(new_path, headers) 
+        req = Net::HTTP::Put.new(new_path, headers)
         req.set_content_type('application/json')
         req.body = additional_parameters.to_json
         req
@@ -203,7 +203,7 @@ module RestConnection
     end
 
     # handle_response
-    # res = HTTP response 
+    # res = HTTP response
     #
     # decoding and post processing goes here. This is where you may need some customization if you want to handle the response differently (or not at all!).  Luckily it's easy to modify based on this handler.
     def handle_response(res)
@@ -219,7 +219,7 @@ module RestConnection
         else
           return res
         end
-      else 
+      else
         raise "invalid response HTTP code: #{res.code.to_i}, #{res.code}, #{res.body}"
       end
     end
