@@ -82,6 +82,8 @@ module RestConnection
     # Settings are loaded from a yaml configuration file in users home directory.
     # Copy the example config from the gemhome/config/rest_api_config.yaml.sample to ~/.rest_connection/rest_api_config.yaml
     # OR to /etc/rest_connection/rest_api_config.yaml
+    # Here's an example of overriding the settings in the configuration file:
+    #   Server.connection.settings[:api_url] = "https://my.rightscale.com/api/acct/1234"
     #
     def initialize(config_yaml = File.join(File.expand_path("~"), ".rest_connection", "rest_api_config.yaml"))
       @@logger = nil
