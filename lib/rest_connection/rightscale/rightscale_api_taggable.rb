@@ -82,7 +82,7 @@ module RightScale
           ret[res] ||= {}
           ary.each { |tag|
             next unless tag.start_with?("#{namespace}:")
-            key = tag.split("=").first.split(":").last
+            key = tag.split("=").first.split(":")[1..-1].join(":")
             value = tag.split(":")[1..-1].join(":").split("=")[1..-1].join("=")
             ret[res][key] = value
           }

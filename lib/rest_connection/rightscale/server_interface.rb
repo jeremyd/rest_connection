@@ -258,19 +258,6 @@ class ServerInterface
     @impl.save
   end
 
-  def set_inputs(hash = {})
-    if @multicloud
-      return @impl.set_inputs(hash)
-    else
-      if @impl.current_instance_href and @impl.state != "stopped"
-        @impl.reload_as_current
-        @impl.set_inputs(hash)
-        @impl.reload_as_next
-      end
-      return @impl.set_inputs(hash)
-    end
-  end
-
   def update(new_params = nil)
     save(new_params)
   end

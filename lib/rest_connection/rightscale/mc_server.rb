@@ -113,10 +113,14 @@ class McServer < Server
     @next_instance.multi_update([{'name' => name, 'value' => value}])
   end
 
-  def set_inputs(hash = {})
+  def set_current_inputs(hash = {})
     @current_instance.multi_update(transform_inputs(:to_a, hash)) if @current_instance
+  end
+
+  def set_next_inputs(hash = {})
     @next_instance.multi_update(transform_inputs(:to_a, hash))
   end
+
 
   def settings #show
     serv_href = URI.parse(self.href)
@@ -258,7 +262,7 @@ class McServer < Server
       ret[res] ||= {}
       ary.each { |tag|
         next unless tag.start_with?("#{namespace}:")
-        key = tag.split("=").first.split(":").last
+        key = tag.split("=").first.split(":")[1..-1].join(":")
         value = tag.split(":")[1..-1].join(":").split("=")[1..-1].join("=")
         ret[res][key] = value
       }

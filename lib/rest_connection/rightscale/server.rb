@@ -203,6 +203,21 @@ class Server
   end
 
   def set_inputs(hash = {})
+    set_current_inputs(hash)
+    set_next_inputs(hash)
+  end
+
+  def set_current_inputs(hash = {})
+    if self.current_instance_href and self.state != "stopped"
+      self.reload_as_current
+      serv_href = URI.parse(self.href)
+      connection.put(serv_href.path, :server => {:parameters => hash})
+      settings
+      self.reload_as_next
+    end
+  end
+
+  def set_next_inputs(hash = {})
     serv_href = URI.parse(self.href)
     connection.put(serv_href.path, :server => {:parameters => hash})
     settings
@@ -378,7 +393,7 @@ class Server
       ret[res] ||= {}
       ary.each { |tag|
         next unless tag.start_with?("#{namespace}:")
-        key = tag.split("=").first.split(":").last
+        key = tag.split("=").first.split(":")[1..-1].join(":")
         value = tag.split(":")[1..-1].join(":").split("=")[1..-1].join("=")
         ret[res][key] = value
       }
