@@ -70,13 +70,13 @@ class Server
     reload
     connection.logger("#{nickname} is #{self.state}")
     step = 15
-    catch_early_terminated = 120 / step
+    catch_early_terminated = 60 / step
     while(timeout > 0)
       return true if state =~ /#{st}/
       raise "FATAL error, this server is stranded and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('stranded') && !st.include?('stranded')
       raise "FATAL error, this server went to error state and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('error') && st !~ /error|terminated|stopped/
       connection.logger("waiting for server #{nickname} to go #{st}, state is #{state}")
-      if state =~ /terminated|stopped|error/ and st !~ /terminated|stopped|error/
+      if state =~ /terminated|stopped|inactive|error/ and st !~ /terminated|stopped|inactive|error/
         if catch_early_terminated <= 0
           raise "FATAL error, this server terminated when waiting for #{st}: #{nickname}"
         end
@@ -96,7 +96,6 @@ class Server
     step = 15
     while(timeout > 0)
       self.settings
-#      break if self['dns-name'] && !self['dns-name'].empty? && self['private-dns-name'] && !self['private-dns-name'].empty?
       break if self.reachable_ip
       connection.logger "waiting for IP for #{self.nickname}"
       sleep step
