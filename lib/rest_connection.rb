@@ -82,6 +82,8 @@ module RestConnection
     # Settings are loaded from a yaml configuration file in users home directory.
     # Copy the example config from the gemhome/config/rest_api_config.yaml.sample to ~/.rest_connection/rest_api_config.yaml
     # OR to /etc/rest_connection/rest_api_config.yaml
+    # Here's an example of overriding the settings in the configuration file:
+    #   Server.connection.settings[:api_url] = "https://my.rightscale.com/api/acct/1234"
     #
     def initialize(config_yaml = File.join(File.expand_path("~"), ".rest_connection", "rest_api_config.yaml"))
       @@logger = nil
@@ -241,7 +243,13 @@ module RestConnection
         @@logger.info(init_message)
       end
 
-      @@logger.info("[API V#{@settings[:common_headers]["X_API_VERSION"]} ]" + message)
+      if @settings.nil?
+        @@logger.info(message)
+      else
+        @@logger.info("[API v#{@settings[:common_headers]['X_API_VERSION']} ]" + message)
+      end
+    end
+
     end
 
     # used by requestify to build parameters strings
