@@ -58,10 +58,10 @@ module RightScale
 
       def remove_tags_by_namespace(namespace, *tag_keys)
         tags_to_unset = []
-        tags = get_tags_by_namespace(*(tag_keys.uniq))
+        tags = get_tags_by_namespace(namespace)
         tags.each { |res,hsh|
           hsh.each { |k,v|
-            tags_to_unset << "#{namespace}:#{k}=#{v}"
+            tags_to_unset << "#{namespace}:#{k}=#{v}" if tag_keys.include?(k)
           }
         }
         self.remove_tags(*tags_to_unset)
