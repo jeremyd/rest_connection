@@ -109,15 +109,18 @@ class McServer < Server
   end
 
   def set_input(name, value)
+    settings unless @next_instance
     @current_instance.multi_update([{'name' => name, 'value' => value}]) if @current_instance
     @next_instance.multi_update([{'name' => name, 'value' => value}])
   end
 
   def set_current_inputs(hash = {})
+    settings unless @next_instance
     @current_instance.multi_update(transform_inputs(:to_a, hash)) if @current_instance
   end
 
   def set_next_inputs(hash = {})
+    settings unless @next_instance
     @next_instance.multi_update(transform_inputs(:to_a, hash))
   end
 
