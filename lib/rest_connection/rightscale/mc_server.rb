@@ -171,6 +171,7 @@ class McServer < Server
   end
 
   def cloud_id
+    settings unless @next_instance
     cloud_href = @current_instance.hash_of_links["cloud"] if @current_instance
     cloud_href = @next_instance.hash_of_links["cloud"] unless cloud_href
     return cloud_href.split("/").last.to_i
