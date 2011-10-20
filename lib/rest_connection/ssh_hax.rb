@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ module SshHax
           ch.on_extended_data do |c, type, data|
             #STDERR.print data
           end
-          ch.on_close do 
+          ch.on_close do
           end
           ch.on_process do |c|
             if result
@@ -84,7 +84,7 @@ module SshHax
             end
           end
         end
-      end 
+      end
       cmd_channel.wait
       log_channel.wait
     end
@@ -103,9 +103,9 @@ module SshHax
 
     raise "FATAL: unrecognized format for script.  Must be an Executable or RightScript with href or name attributes" unless (script.is_a?(RightScript)) && (script.href || script.name)
     if script.href
-      run_this = "rs_run_right_script -i #{script.href.split(/\//).last}" 
+      run_this = "rs_run_right_script -i #{script.href.split(/\//).last}"
     elsif script.name
-      run_this = "rs_run_right_script -n #{script.name}" 
+      run_this = "rs_run_right_script -n #{script.name}"
     end
     tail_command ="tail -f -n1 /var/log/messages"
     expect = /RightLink.*RS> ([completed|failed]+:)/
@@ -134,7 +134,7 @@ module SshHax
       result = ssh.exec!(command)
       yield result
     end
-  end 
+  end
 
   # returns true or false based on command success
   def spot_check_command?(command, ssh_key=nil, host_dns=self.reachable_ip)
@@ -152,35 +152,37 @@ module SshHax
     success = false
     retry_count = 0
     while (!success && retry_count < SSH_RETRY_COUNT) do
-    begin
-    Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key), :user_known_hosts_file => "/dev/null") do |ssh|
-      cmd_channel = ssh.open_channel do |ch1|
-        ch1.on_request('exit-status') do |ch, data|
-          status = data.read_long
+      begin
+        # Test for ability to connect; Net::SSH.start sometimes hangs under certain server-side sshd configs
+        test_ssh = `ssh -o \"BatchMode=yes\" -o \"ConnectTimeout 5\" root@#{host_dns} 2>&1`.chomp
+        raise test_ssh unless test_ssh =~ /permission denied/i
+
+        Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key), :user_known_hosts_file => "/dev/null") do |ssh|
+          cmd_channel = ssh.open_channel do |ch1|
+            ch1.on_request('exit-status') do |ch, data|
+              status = data.read_long
+            end
+            ch1.exec(command) do |ch2, success|
+              unless success
+                status = 1
+              end
+              ch2.on_data do |ch, data|
+                output += data
+              end
+              ch2.on_extended_data do |ch, type, data|
+                output += data
+              end
+            end
+          end
         end
-        ch1.exec(command) do |ch2, success|
-          unless success
-            status = 1
-          end
-          ch2.on_data do |ch, data|
-            output += data
-          end
-          ch2.on_extended_data do |ch, type, data|
-            output += data
-          end
-        end
+      rescue Exception => e
+        retry_count += 1 # opening the ssh channel failed -- try again.
+        connection.logger "ERROR during SSH session to #{host_dns}, retrying #{retry_count}: #{e} #{e.backtrace}"
+        sleep 10
       end
-    end
-    rescue Exception => e
-      retry_count += 1 # opening the ssh channel failed -- try again.
-      connection.logger "ERROR during SSH session to #{host_dns}, retrying #{retry_count}: #{e} #{e.backtrace}"
-      sleep 10
-    end
     end
     connection.logger "SSH Run: #{command} on #{host_dns}. Retry was #{retry_count}. Exit status was #{status}. Output below ---\n#{output}\n---" unless do_not_log_result
     return {:status => status, :output => output}
-  end 
+  end
 
 end
-
-
