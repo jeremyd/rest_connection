@@ -154,8 +154,8 @@ module SshHax
     while (!success && retry_count < SSH_RETRY_COUNT) do
       begin
         # Test for ability to connect; Net::SSH.start sometimes hangs under certain server-side sshd configs
-        test_ssh = `ssh -o \"BatchMode=yes\" -o \"ConnectTimeout 5\" root@#{host_dns} 2>&1`.chomp
-        raise test_ssh unless test_ssh =~ /permission denied/i
+        test_ssh = `ssh -o \"BatchMode=yes\" -o \"ConnectTimeout 5\" root@#{host_dns} -C \"exit\" 2>&1`.chomp
+        raise test_ssh unless test_ssh =~ /permission denied/i or test_ssh.empty?
 
         Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key), :user_known_hosts_file => "/dev/null") do |ssh|
           cmd_channel = ssh.open_channel do |ch1|
