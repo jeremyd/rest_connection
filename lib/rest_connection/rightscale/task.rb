@@ -26,7 +26,7 @@ class Task
 
   def show
     url = URI.parse(self.href)
-    @params.merge! connection.get(url.path, 'view' => "extended")
+    @params.merge! connection.get(url.path)#, 'view' => "extended")
   end
 
   def wait_for_state(state, timeout=900)
@@ -34,7 +34,7 @@ class Task
       show
       return true if self.summary.include?(state)
       connection.logger("state is #{self.summary}, waiting for #{state}")
-      raise "FATAL error:\n\n #{self.detail} \n\n" if self.summary.include?('failed')
+      raise "FATAL error:\n\n #{self.summary} \n\n" if self.summary.include?('failed') # TODO #{self.detail}
       sleep 30
       timeout -= 30
     end
