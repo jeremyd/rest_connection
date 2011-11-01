@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -13,9 +13,12 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-class ServerTemplate 
+class ServerTemplate
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+  include RightScale::Api::Taggable
+  extend RightScale::Api::TaggableExtend
+
   def initialize(params)
     @params = params
   end
@@ -42,7 +45,7 @@ class ServerTemplate
     end
     @params["alert_specs"] = as
   end
-    
+
   def multi_cloud_images
     unless @params["multi_cloud_images"]
       fetch_multi_cloud_images
@@ -60,7 +63,15 @@ class ServerTemplate
   end
 
   def fetch_multi_cloud_images
-    @params["multi_cloud_images"] = RsInternal.get_server_template_multi_cloud_images(self.href)
+    @params["multi_cloud_images"] = []
+    ServerTemplateInternal.new(:href => self.href).multi_cloud_images.each { |mci_params|
+      @params["multi_cloud_images"] << MultiCloudImageInternal.new(mci_params)
+    }
+    mcis = McServerTemplate.find(self.rs_id.to_i).multi_cloud_images
+    @params["multi_cloud_images"].each_index { |i|
+      @params["multi_cloud_images"][i]["multi_cloud_image_cloud_settings"] += mcis[i].settings
+    }
+    @params["multi_cloud_images"]
   end
 
   # The RightScale api calls this 'duplicate' but is more popularly known as 'clone' from a users perspective

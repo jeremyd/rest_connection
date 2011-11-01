@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -19,9 +19,56 @@ require 'json'
 require 'yaml'
 require 'cgi'
 require 'rest_connection/rightscale/rightscale_api_resources'
+require 'rest_connection/patches'
 require 'logger'
+require 'highline/import'
 
 module RestConnection
+  AWS_CLOUDS = [{"cloud_id" => 1, "name" => "AWS US-East"},
+                {"cloud_id" => 2, "name" => "AWS EU"},
+                {"cloud_id" => 3, "name" => "AWS US-West"},
+                {"cloud_id" => 4, "name" => "AWS AP-Singapore"},
+                {"cloud_id" => 5, "name" => "AWS AP-Tokyo"}]
+
+    # Check for API 0.1 Access
+  def self.api0_1?
+    unless class_variable_defined?("@@api0_1")
+      begin
+        Ec2SshKeyInternal.find_all
+        @@api0_1 = true
+      rescue
+        @@api0_1 = false
+      end
+    end
+    return @@api0_1
+  end
+
+  # Check for API 1.0 Access
+  def self.api1_0?
+    unless class_variable_defined?("@@api1_0")
+      begin
+        Ec2SecurityGroup.find_all
+        @@api1_0 = true
+      rescue
+        @@api1_0 = false
+      end
+    end
+    return @@api1_0
+  end
+
+  # Check for API 1.5 Beta Access
+  def self.api1_5?
+    unless class_variable_defined?("@@api1_5")
+      begin
+        Cloud.find_all
+        @@api1_5 = true
+      rescue
+        @@api1_5 = false
+      end
+    end
+    return @@api1_5
+  end
+
   class Connection
     # Settings is a hash of options for customizing the connection.
     # settings.merge! {
@@ -35,9 +82,13 @@ module RestConnection
     # Settings are loaded from a yaml configuration file in users home directory.
     # Copy the example config from the gemhome/config/rest_api_config.yaml.sample to ~/.rest_connection/rest_api_config.yaml
     # OR to /etc/rest_connection/rest_api_config.yaml
+    # Here's an example of overriding the settings in the configuration file:
+    #   Server.connection.settings[:api_url] = "https://my.rightscale.com/api/acct/1234"
     #
     def initialize(config_yaml = File.join(File.expand_path("~"), ".rest_connection", "rest_api_config.yaml"))
       @@logger = nil
+      @@user = nil
+      @@pass = nil
       etc_config = File.join("#{File::SEPARATOR}etc", "rest_connection", "rest_api_config.yaml")
       if File.exists?(config_yaml)
         @settings = YAML::load(IO.read(config_yaml))
@@ -50,26 +101,34 @@ module RestConnection
       end
       @settings[:extension] = ".js"
       @settings[:api_href] = @settings[:api_url] unless @settings[:api_href]
+      unless @settings[:user]
+        @@user = ask("Username:") unless @@user
+        @settings[:user] = @@user
+      end
+      unless @settings[:pass]
+        @@pass = ask("Password:") { |q| q.echo = false } unless @@pass
+        @settings[:pass] = @@pass
+      end
     end
 
     # Main HTTP connection loop. Common settings are set here, then we yield(BASE_URI, OPTIONAL_HEADERS) to other methods for each type of HTTP request: GET, PUT, POST, DELETE
-    # 
+    #
     # The block must return a Net::HTTP Request. You have a chance to taylor the request inside the block that you pass by modifying the url and headers.
     #
     # rest_connect do |base_uri, headers|
     #   headers.merge! {:my_header => "blah"}
     #   Net::HTTP::Get.new(base_uri, headers)
     # end
-    #   
+    #
     def rest_connect(&block)
       uri = URI.parse(@settings[:api_href])
       http = Net::HTTP.new(uri.host, uri.port)
       if uri.scheme == 'https'
-        http.use_ssl = true 
+        http.use_ssl = true
         http.verify_mode = OpenSSL::SSL::VERIFY_NONE
       end
       headers = @settings[:common_headers]
-      headers.merge!("Cookie" => @cookie) if @cookie 
+      headers.merge!("Cookie" => @cookie) if @cookie
       http.start do |http|
         req = yield(uri, headers)
         unless @cookie
@@ -89,11 +148,12 @@ module RestConnection
     def get(href, additional_parameters = "")
       rest_connect do |base_uri,headers|
         href = "#{base_uri}/#{href}" unless begins_with_slash(href)
-        new_path = URI.escape(href + @settings[:extension] + "?") + requestify(additional_parameters)
+        params = requestify(additional_parameters) || ""
+        new_path = URI.escape(href + @settings[:extension] + "?") + params
         Net::HTTP::Get.new(new_path, headers)
       end
     end
-    
+
     # connection.post(server_url + "/start")
     #
     # href = "/api/base_new" if this begins with a slash then the url will be used as absolute path.
@@ -121,7 +181,7 @@ module RestConnection
       rest_connect do |base_uri, headers|
         href = "#{base_uri}/#{href}" unless begins_with_slash(href)
         new_path = URI.escape(href)
-        req = Net::HTTP::Put.new(new_path, headers) 
+        req = Net::HTTP::Put.new(new_path, headers)
         req.set_content_type('application/json')
         req.body = additional_parameters.to_json
         req
@@ -145,11 +205,11 @@ module RestConnection
     end
 
     # handle_response
-    # res = HTTP response 
+    # res = HTTP response
     #
     # decoding and post processing goes here. This is where you may need some customization if you want to handle the response differently (or not at all!).  Luckily it's easy to modify based on this handler.
     def handle_response(res)
-      if res.code.to_i == 201
+      if res.code.to_i == 201 or res.code.to_i == 202
         return res['Location']
       elsif [200,203,204,302].detect { |d| d == res.code.to_i }
         if res.body
@@ -161,7 +221,7 @@ module RestConnection
         else
           return res
         end
-      else 
+      else
         raise "invalid response HTTP code: #{res.code.to_i}, #{res.code}, #{res.body}"
       end
     end
@@ -183,7 +243,11 @@ module RestConnection
         @@logger.info(init_message)
       end
 
-      @@logger.info(message)
+      if @settings.nil?
+        @@logger.info(message)
+      else
+        @@logger.info("[API v#{@settings[:common_headers]['X_API_VERSION']} ]" + message)
+      end
     end
 
     # used by requestify to build parameters strings

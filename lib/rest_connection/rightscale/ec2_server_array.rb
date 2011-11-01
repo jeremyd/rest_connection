@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -13,9 +13,11 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-class Ec2ServerArray 
+class Ec2ServerArray
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+  include RightScale::Api::Taggable
+  extend RightScale::Api::TaggableExtend
 
 #  Example:
 #    right_script = @server_template.executables.first
@@ -23,7 +25,7 @@ class Ec2ServerArray
   def run_script_on_all(script, server_template_hrefs, inputs=nil)
      serv_href = URI.parse(self.href)
      options = Hash.new
-     options[:ec2_server_array] = Hash.new 
+     options[:ec2_server_array] = Hash.new
      options[:ec2_server_array][:right_script_href] = script.href
      options[:ec2_server_array][:parameters] = inputs unless inputs.nil?
      options[:ec2_server_array][:server_template_hrefs] = server_template_hrefs
@@ -36,8 +38,8 @@ class Ec2ServerArray
     connection.get("#{serv_href.path}/instances")
     rescue
     [] # raise an error on self.href which we want, it'll just rescue on rackspace and return an empty array.
-  end 
-  
+  end
+
   def terminate_all
     serv_href = URI.parse(self.href)
     connection.post("#{serv_href.path}/terminate_all")

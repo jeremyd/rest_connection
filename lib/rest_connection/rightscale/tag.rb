@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -13,12 +13,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-class Tag 
+class Tag
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
 
-  def self.search(resource_name, tags)
-    result = connection.get("tags/search", :resource_type => resource_name.to_s, :tags => tags )
+  def self.search(resource_name, tags, opts=nil)
+    parameters = { :resource_type => resource_name.to_s, :tags => tags }
+    parameters.merge!(opts) unless opts.nil?
+    result = connection.get("tags/search", parameters)
   end
 
   def self.search_by_href(resource_href)

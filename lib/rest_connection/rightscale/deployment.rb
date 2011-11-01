@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -14,82 +14,38 @@
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
 class Deployment
-  class McDeployment
-    include RightScale::Api::Gateway
-    extend RightScale::Api::GatewayExtend
-  
-    def resource_plural_name
-      "deployments"
-    end 
+  include RightScale::Api::Base
+  extend RightScale::Api::BaseExtend
+  include RightScale::Api::Taggable
+  extend RightScale::Api::TaggableExtend
 
-    def resource_singular_name
-      "deployment"
-    end 
-
-    def self.resource_plural_name
-      "deployments"
-    end 
-
-    def self.resource_singular_name
-      "deployment"
-    end
+  def reload
+    uri = URI.parse(self.href)
+    @params ? @params.merge!(connection.get(uri.path)) : @params = connection.get(uri.path)
+    @params['cloud_id'] = cloud_id
+    @params
   end
 
-  class EC2Deployment
-    include RightScale::Api::Base
-    extend RightScale::Api::BaseExtend
-  
-    def resource_plural_name
-      "deployments"
-    end 
-
-    def resource_singular_name
-      "deployment"
-    end 
-
-    def self.resource_plural_name
-      "deployments"
-    end 
-
-    def self.resource_singular_name
-      "deployment"
-    end
-  end
-
-  def initialize(params = {})
-    if params[:cloud_id].to_i < 10
-      @deploy = Deployment::EC2Deployment.new(params)
-    else
-      @deploy = Deployment::McDeployment.new(params)
-    end
-  end
-
-  def method_missing(method_name, *args)
-    @deploy.method_missing(method_name, *args)
-  end
-
-  def create(opts)
-    location = connection.post(@deploy.resource_plural_name, @deploy.resource_singular_name.to_sym => opts)
+  def self.create(opts)
+    location = connection.post(self.resource_plural_name, self.resource_singular_name.to_sym => opts)
     newrecord = self.new('href' => location)
     newrecord.reload
     newrecord
   end
 
+  def set_inputs(hash = {})
+    deploy_href = URI.parse(self.href)
+    connection.put(deploy_href.path, :deployment => {:parameters => hash })
+  end
+
   def set_input(name, value)
-    deploy_href = URI.parse(@deploy.href)
+    deploy_href = URI.parse(self.href)
     connection.put(deploy_href.path, :deployment => {:parameters => {name => value} })
   end
 
   def servers_no_reload
-    server_list = []
-    @params['servers'].each do |s|
-      if s["server_type"] == "ec2"
-        server_list << Server.new(s)
-      else
-        server_list << McServer.new(s)
-      end
-    end
-    return server_list
+    connection.logger("WARNING: No Servers in the Deployment!") if @params['servers'].empty?
+    @params['servers'].map { |s| ServerInterface.new(self.cloud_id, s, self.rs_id) }
   end
 
   def servers
@@ -104,7 +60,15 @@ class Deployment
   end
 
   def clone
-    deploy_href = URI.parse(@deploy.href)
+    deploy_href = URI.parse(self.href)
     Deployment.new(:href => connection.post(deploy_href.path + "/duplicate"))
+  end
+
+  def destroy(wait_for_servers = nil)
+    deploy_href = URI.parse(self.href)
+    if wait_for_servers
+      servers_no_reload.each { |s| s.wait_for_state("stopped") }
+    end
+    connection.delete(deploy_href.path)
   end
 end

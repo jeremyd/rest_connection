@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -45,4 +45,28 @@ class MultiCloudImageInternal
     MultiCloudImage.new(:href => connection.post(t.path + "/clone"))
   end
 
+  def transform_settings
+    if @params["multi_cloud_image_cloud_settings"] && @params["multi_cloud_image_cloud_settings"].first.is_a?(Hash)
+      @params["multi_cloud_image_cloud_settings"].map! { |setting|
+        # Have to reject because API0.1 returns all clouds
+        next if setting["fingerprint"] || setting["cloud_id"] > 10
+        MultiCloudImageCloudSettingInternal.new(setting)
+      }
+      @params["multi_cloud_image_cloud_settings"].compact!
+    end
+  end
+
+  def initialize(params={})
+    @params = params
+    transform_settings
+  end
+
+  def settings
+    transform_settings
+    @params["multi_cloud_image_cloud_settings"]
+  end
+
+  def supported_cloud_ids
+    @params["multi_cloud_image_cloud_settings"].map { |mcics| mcics.cloud_id }
+  end
 end

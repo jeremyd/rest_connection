@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -16,12 +16,14 @@
 # This is an instance facing api and can only be used with
 # an authentication URL normally found in the instance's userdata called
 # RS_API_URL
-class Instance 
+class Instance
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+  include RightScale::Api::Taggable
+  extend RightScale::Api::TaggableExtend
   #def create_ebs_volume_from_snap(snap_aws_id)
   #  connection.post('create_ebs_volume.js', :aws_id => snap_aws_id )
-  #end 
+  #end
 
   def attach_ebs_volume(params)
     connection.put('attach_ebs_volume.js', params)

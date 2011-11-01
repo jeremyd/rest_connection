@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ module SshHax
     ssh_keys
   end
 
-  def run_and_tail(run_this, tail_command, expect, ssh_key=nil, host_dns=self.dns_name)
+  def run_and_tail(run_this, tail_command, expect, ssh_key=nil, host_dns=self.reachable_ip)
     status = nil
     result = nil
     output = ""
@@ -75,7 +75,7 @@ module SshHax
           ch.on_extended_data do |c, type, data|
             #STDERR.print data
           end
-          ch.on_close do 
+          ch.on_close do
           end
           ch.on_process do |c|
             if result
@@ -84,7 +84,7 @@ module SshHax
             end
           end
         end
-      end 
+      end
       cmd_channel.wait
       log_channel.wait
     end
@@ -96,16 +96,16 @@ module SshHax
 
   # script is an Executable object with minimally nick or id set
   def run_executable_with_ssh(script, options={}, ssh_key=nil)
-    raise "FATAL: run_executable called on a server with no dns_name. You need to run .settings on the server to populate this attribute." unless self.dns_name
+    raise "FATAL: run_executable called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless self.reachable_ip
     if script.is_a?(Executable)
       script = script.right_script
     end
 
     raise "FATAL: unrecognized format for script.  Must be an Executable or RightScript with href or name attributes" unless (script.is_a?(RightScript)) && (script.href || script.name)
     if script.href
-      run_this = "rs_run_right_script -i #{script.href.split(/\//).last}" 
+      run_this = "rs_run_right_script -i #{script.href.split(/\//).last}"
     elsif script.name
-      run_this = "rs_run_right_script -n #{script.name}" 
+      run_this = "rs_run_right_script -n #{script.name}"
     end
     tail_command ="tail -f -n1 /var/log/messages"
     expect = /RightLink.*RS> ([completed|failed]+:)/
@@ -116,9 +116,9 @@ module SshHax
   end
 
   # recipe can be either a String, or an Executable
-  # host_dns is optional and will default to objects self.dns_name
-  def run_recipe_with_ssh(recipe, ssh_key=nil, host_dns=self.dns_name)
-    raise "FATAL: run_script called on a server with no dns_name. You need to run .settings on the server to populate this attribute." unless self.dns_name
+  # host_dns is optional and will default to objects self.reachable_ip
+  def run_recipe_with_ssh(recipe, ssh_key=nil, host_dns=self.reachable_ip)
+    raise "FATAL: run_script called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless self.reachable_ip
     if recipe.is_a?(Executable)
       recipe = recipe.recipe
     end
@@ -128,59 +128,61 @@ module SshHax
     run_and_tail(run_this, tail_command, expect, ssh_key)
   end
 
-  def spot_check(command, ssh_key=nil, host_dns=self.dns_name, &block)
+  def spot_check(command, ssh_key=nil, host_dns=self.reachable_ip, &block)
     connection.logger "SSHing to #{host_dns}"
     Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key)) do |ssh|
       result = ssh.exec!(command)
       yield result
     end
-  end 
+  end
 
   # returns true or false based on command success
-  def spot_check_command?(command, ssh_key=nil, host_dns=self.dns_name)
+  def spot_check_command?(command, ssh_key=nil, host_dns=self.reachable_ip)
     results = spot_check_command(command, ssh_key, host_dns)
     return results[:status] == 0
   end
 
 
   # returns hash of exit_status and output from command
-  def spot_check_command(command, ssh_key=nil, host_dns=self.dns_name)
-    raise "FATAL: spot_check_command called on a server with no dns_name. You need to run .settings on the server to populate this attribute." unless host_dns
+  def spot_check_command(command, ssh_key=nil, host_dns=self.reachable_ip, do_not_log_result=false)
+    raise "FATAL: spot_check_command called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless host_dns
     connection.logger "SSHing to #{host_dns} using key(s) #{ssh_key_config(ssh_key)}"
     status = nil
     output = ""
     success = false
     retry_count = 0
     while (!success && retry_count < SSH_RETRY_COUNT) do
-    begin
-    Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key), :user_known_hosts_file => "/dev/null") do |ssh|
-      cmd_channel = ssh.open_channel do |ch1|
-        ch1.on_request('exit-status') do |ch, data|
-          status = data.read_long
+      begin
+        # Test for ability to connect; Net::SSH.start sometimes hangs under certain server-side sshd configs
+        test_ssh = `ssh -o \"BatchMode=yes\" -o \"ConnectTimeout 5\" root@#{host_dns} -C \"exit\" 2>&1`.chomp
+        raise test_ssh unless test_ssh =~ /permission denied/i or test_ssh.empty?
+
+        Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key), :user_known_hosts_file => "/dev/null") do |ssh|
+          cmd_channel = ssh.open_channel do |ch1|
+            ch1.on_request('exit-status') do |ch, data|
+              status = data.read_long
+            end
+            ch1.exec(command) do |ch2, success|
+              unless success
+                status = 1
+              end
+              ch2.on_data do |ch, data|
+                output += data
+              end
+              ch2.on_extended_data do |ch, type, data|
+                output += data
+              end
+            end
+          end
         end
-        ch1.exec(command) do |ch2, success|
-          unless success
-            status = 1
-          end
-          ch2.on_data do |ch, data|
-            output += data
-          end
-          ch2.on_extended_data do |ch, type, data|
-            output += data
-          end
-        end
+      rescue Exception => e
+        retry_count += 1 # opening the ssh channel failed -- try again.
+        connection.logger "ERROR during SSH session to #{host_dns}, retrying #{retry_count}: #{e} #{e.backtrace}"
+        sleep 10
       end
     end
-    rescue Exception => e
-      retry_count += 1 # opening the ssh channel failed -- try again.
-      connection.logger "ERROR during SSH session to #{host_dns}, retrying #{retry_count}: #{e} #{e.backtrace}"
-      sleep 10
-    end
-    end
-    connection.logger "SSH Run: #{command} on #{host_dns}. Retry was #{retry_count}. Exit status was #{status}. Output below ---\n#{output}\n---"
+    connection.logger "SSH Run: #{command} on #{host_dns}. Retry was #{retry_count}. Exit status was #{status}. Output below ---\n#{output}\n---" unless do_not_log_result
     return {:status => status, :output => output}
-  end 
+  end
 
 end
-
-

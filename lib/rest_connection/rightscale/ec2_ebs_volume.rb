@@ -1,4 +1,4 @@
-#    This file is part of RestConnection 
+#    This file is part of RestConnection
 #
 #    RestConnection is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
 class Ec2EbsVolume
   include  RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+  include RightScale::Api::Taggable
+  extend RightScale::Api::TaggableExtend
 
   def attach(params)
     connection.post('component_ec2_ebs_volumes.js' , :component_ec2_ebs_volume => params)
