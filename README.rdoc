@@ -4,7 +4,7 @@
   "gem install rest_connection"
 
 ==== Installing from source
-  "git clone http://github.com/jeremyd/rest_connection.git"
+  "git clone http://github.com/twrodriguez/rest_connection.git"
   "gem install jeweler rspec"
   "rake check_dependencies" <- Install any gems listed.
   "rake install"
@@ -40,8 +40,8 @@ Copy the example from GEMHOME/rest_connection/examples/rest_api_config.yaml.samp
   my_servers.each { |s| s.wait_for_state("stopped") }
 
 === Activate an Ec2ServerArray / Display instances IPs
-  
-  my_array = Ec2ServerArray.find(opts[:href])  
+
+  my_array = Ec2ServerArray.find(opts[:href])
   my_array.active = true
   my_array.save
 
