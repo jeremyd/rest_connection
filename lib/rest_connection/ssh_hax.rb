@@ -179,6 +179,7 @@ module SshHax
         retry_count += 1 # opening the ssh channel failed -- try again.
         connection.logger "ERROR during SSH session to #{host_dns}, retrying #{retry_count}: #{e} #{e.backtrace}"
         sleep 10
+        raise e unless retry_count < SSH_RETRY_COUNT
       end
     end
     connection.logger "SSH Run: #{command} on #{host_dns}. Retry was #{retry_count}. Exit status was #{status}. Output below ---\n#{output}\n---" unless do_not_log_result

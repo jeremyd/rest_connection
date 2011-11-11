@@ -23,6 +23,14 @@ class ServerTemplate
     @params = params
   end
 
+  def reload
+    ret = connection.get(URI.parse(self.href).path, :include_mcis => true)
+    @params ? @params.merge!(ret) : @params = ret
+    @params["multi_cloud_images"].map! { |mci_params| MultiCloudImage.new(mci_params) }
+    @params["default_multi_cloud_image"] = MultiCloudImage.new(@params["default_multi_cloud_image"])
+    @params
+  end
+
   def executables
     unless @params["executables"]
       fetch_executables
