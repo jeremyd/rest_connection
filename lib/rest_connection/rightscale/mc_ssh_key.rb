@@ -40,6 +40,10 @@ class McSshKey
     "clouds/#{cloud_id}/"
   end
 
+  def self.filters
+    [:resource_uid]
+  end
+
   def self.create(opts)
     create_opts = { self.resource_singular_name.to_sym => opts }
     location = connection.post("clouds/#{opts['cloud_id']}/#{self.resource_plural_name}", create_opts)

@@ -43,6 +43,10 @@ class McMultiCloudImage
     server_template_id ? "server_templates/#{server_template_id}/" : ""
   end
 
+  def self.filters
+    [:description, :name, :revision]
+  end
+
   def supported_cloud_ids
     @settings.map { |mcics| mcics.cloud_id }
   end

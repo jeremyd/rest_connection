@@ -19,6 +19,10 @@ class Deployment
   include RightScale::Api::Taggable
   extend RightScale::Api::TaggableExtend
 
+  def self.filters
+    [:description, :nickname]
+  end
+
   def reload
     uri = URI.parse(self.href)
     @params ? @params.merge!(connection.get(uri.path)) : @params = connection.get(uri.path)
@@ -45,7 +49,10 @@ class Deployment
 
   def servers_no_reload
     connection.logger("WARNING: No Servers in the Deployment!") if @params['servers'].empty?
-    @params['servers'].map { |s| ServerInterface.new(self.cloud_id, s, self.rs_id) }
+    unless @params['servers'].reduce(true) { |bool,s| bool && s.is_a?(ServerInterface) }
+      @params['servers'].map! { |s| ServerInterface.new(self.cloud_id, s, self.rs_id) }
+    end
+    @params['servers']
   end
 
   def servers
@@ -70,5 +77,15 @@ class Deployment
       servers_no_reload.each { |s| s.wait_for_state("stopped") }
     end
     connection.delete(deploy_href.path)
+  end
+
+  def start_all
+    deploy_href = URI.parse(self.href)
+    connection.post(deploy_href.path + "/start_all")
+  end
+
+  def stop_all
+    deploy_href = URI.parse(self.href)
+    connection.post(deploy_href.path + "/stop_all")
   end
 end

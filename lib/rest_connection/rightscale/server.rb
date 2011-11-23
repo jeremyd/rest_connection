@@ -22,6 +22,18 @@ class Server
   include RightScale::Api::Taggable
   extend RightScale::Api::TaggableExtend
 
+  def self.filters
+    [
+      :aws_id,
+      :created_at,
+      :deployment_href,
+      :ip_address,
+      :nickname,
+      :private_ip_address,
+      :updated_at
+    ]
+  end
+
   def self.create(opts)
     create_options = Hash.new
     create_options[self.resource_singular_name.to_sym] = opts
@@ -144,13 +156,25 @@ class Server
 
 # Uses ServerInternal api to start and stop EBS based instances
   def start_ebs
-    @server_internal = ServerInternal.new(:href => self.href)
-    @server_internal.start
+#    @server_internal = ServerInternal.new(:href => self.href)
+#    @server_internal.start
+    if self.state == "stopped"
+      t = URI.parse(self.href)
+      return connection.post(t.path + '/start_ebs')
+    else
+      connection.logger("WARNING: was in #{self.state} so skiping start_ebs call")
+    end
   end
 
   def stop_ebs
-    @server_internal = ServerInternal.new(:href => self.href)
-    @server_internal.stop
+#    @server_internal = ServerInternal.new(:href => self.href)
+#    @server_internal.stop
+    if self.current_instance_href
+      t = URI.parse(self.href)
+      connection.post(t.path + '/stop_ebs')
+    else
+      connection.logger("WARNING: was in #{self.state} and had a current_instance_href so skiping stop_ebs call")
+    end
   end
 
   # Works on v4 and v5 images.
@@ -258,6 +282,10 @@ class Server
     if wait_for_state
       wait_for_state_change(old_state)
     end
+  end
+
+  def alert_specs
+    # TODO
   end
 
   def relaunch

@@ -40,6 +40,10 @@ class McMultiCloudImageSetting
     "multi_cloud_images/#{multi_cloud_image_id}/"
   end
 
+  def self.filters
+    [:cloud_href, :multi_cloud_image_href]
+  end
+
   def cloud_id
     self.cloud.split(/\//).last.to_i
   end

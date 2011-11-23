@@ -39,4 +39,8 @@ class McSecurityGroup
   def self.parse_args(cloud_id)
     "clouds/#{cloud_id}/"
   end
+
+  def self.filters
+    [:name, :resource_uid]
+  end
 end

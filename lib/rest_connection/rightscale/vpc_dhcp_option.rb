@@ -13,34 +13,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-#
-# You must have Beta v1.5 API access to use these internal API calls.
-#
-class McImage
-  include RightScale::Api::Gateway
-  extend RightScale::Api::GatewayExtend
-
-  def resource_plural_name
-    "images"
-  end
-
-  def resource_singular_name
-    "image"
-  end
-
-  def self.resource_plural_name
-    "images"
-  end
-
-  def self.resource_singular_name
-    "image"
-  end
-
-  def self.filters
-    [:cpu_architecture, :description, :image_type, :name, :os_platform, :resource_uid, :visibility]
-  end
-
-  def self.parse_args(cloud_id)
-    "clouds/#{cloud_id}/"
-  end
+class VpcDhcpOption
+  include RightScale::Api::Base
+  extend RightScale::Api::BaseExtend
 end

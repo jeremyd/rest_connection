@@ -42,6 +42,10 @@ class McVolume
     "clouds/#{cloud_id}/"
   end
 
+  def self.filters
+    [:datacenter_href, :description, :name, :parent_volume_snapshot_href, :resource_uid]
+  end
+
   def show
     inst_href = URI.parse(self.href)
     @params.merge! connection.get(inst_href.path, 'view' => 'extended')

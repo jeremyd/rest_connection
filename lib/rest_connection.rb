@@ -28,9 +28,10 @@ module RestConnection
                 {"cloud_id" => 2, "name" => "AWS EU"},
                 {"cloud_id" => 3, "name" => "AWS US-West"},
                 {"cloud_id" => 4, "name" => "AWS AP-Singapore"},
-                {"cloud_id" => 5, "name" => "AWS AP-Tokyo"}]
+                {"cloud_id" => 5, "name" => "AWS AP-Tokyo"},
+                {"cloud_id" => 6, "name" => "AWS US-Oregon"}]
 
-    # Check for API 0.1 Access
+  # Check for API 0.1 Access
   def self.api0_1?
     unless class_variable_defined?("@@api0_1")
       begin

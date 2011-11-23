@@ -41,6 +41,10 @@ class McVolumeAttachment
     return "clouds/#{cloud_id}/volumes/#{instance_id}/" if instance_id
   end
 
+  def self.filters
+    [:instance_href, :resource_uid, :volume_href]
+  end
+
   def show
     inst_href = URI.parse(self.href)
     @params.merge! connection.get(inst_href.path)

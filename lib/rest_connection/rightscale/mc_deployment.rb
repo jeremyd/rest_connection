@@ -39,6 +39,10 @@ class McDeployment
     "deployment"
   end
 
+  def self.filters
+    [:description, :name]
+  end
+
   def self.create(opts)
     location = connection.post(resource_plural_name, opts)
     newrecord = self.new('href' => location)

@@ -24,4 +24,8 @@
 class User
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
+
+  def self.filters
+    [:email, :first_name, :last_name]
+  end
 end

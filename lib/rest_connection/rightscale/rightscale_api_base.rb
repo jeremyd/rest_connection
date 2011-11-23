@@ -109,13 +109,20 @@ module RightScale
       def find_with_filter(filter = {})
         filter_params = []
         filter.each { |key,val|
+          unless self.filters.include?(key.to_sym)
+            raise ArgumentError.new("#{key} is not a valid filter for resource #{self.resource_singular_name}")
+          end
           filter_params << "#{key}=#{val}"
-          }
+        }
         a = Array.new
         connection.get(self.resource_plural_name, :filter => filter_params).each do |object|
           a << self.new(object)
         end
         return a
+      end
+
+      def filters()
+        []
       end
 
       def [](*args)

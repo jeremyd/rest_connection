@@ -40,6 +40,10 @@ class McInstanceType
     "clouds/#{cloud_id}/"
   end
 
+  def self.filters
+    [:cpu_architecture, :description, :name, :resource_uid]
+  end
+
   def show
     inst_href = URI.parse(self.href)
     @params.merge! connection.get(inst_href.path, 'view' => "default")

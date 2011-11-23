@@ -43,6 +43,10 @@ class McVolumeSnapshot
     return "clouds/#{cloud_id}/volumes/#{volume_id}/" if volume_id
   end
 
+  def self.filters
+    [:description, :name, :parent_volume_href, :resource_uid]
+  end
+
   def show
     inst_href = URI.parse(self.href)
     @params.merge! connection.get(inst_href.path)

@@ -24,4 +24,8 @@
 class ChildAccount
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
+
+  def self.filters
+    [:name]
+  end
 end

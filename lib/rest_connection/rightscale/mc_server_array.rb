@@ -41,4 +41,10 @@ class McServerArray
   def self.parse_args(deployment_id=nil)
     (deployment_id ? "deployments/#{deployment_id}/" : "")
   end
+
+  def self.filters
+    [:deployment_href, :name]
+  end
+
+  # TODO
 end

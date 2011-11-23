@@ -40,6 +40,10 @@ class McVolumeType
     "clouds/#{cloud_id}/"
   end
 
+  def self.filters
+    [:name, :resource_uid]
+  end
+
   def show
     inst_href = URI.parse(self.href)
     @params.merge! connection.get(inst_href.path)

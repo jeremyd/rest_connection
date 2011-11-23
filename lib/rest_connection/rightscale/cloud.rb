@@ -20,6 +20,10 @@ class Cloud
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
 
+  def self.filters
+    [:description, :name]
+  end
+
   def cloud_id
     self.href.split("/").last
   end

@@ -44,6 +44,23 @@ class McInstance
     "clouds/#{cloud_id}/"
   end
 
+  def self.filters
+    [
+      :datacenter_href,
+      :deployment_href,
+      :name,
+      :os_platform,
+      :parent_href,
+      :private_dns_name,
+      :private_ip_address,
+      :public_dns_name,
+      :public_ip_address,
+      :resource_uid,
+      :server_template_href,
+      :state
+    ]
+  end
+
   def show
     inst_href = URI.parse(self.href)
     @params.merge! connection.get(inst_href.path, 'view' => "full")

@@ -180,6 +180,16 @@ module RightScale
         end
       end
 
+      def find(*args)
+        if args.length > 1
+          id = args.pop
+          url = "#{parse_args(*args)}#{self.resource_plural_name}/#{id}"
+          return self.new(connection.get(url))
+        else
+          return super(*args)
+        end
+      end
+
       def find_all(*args)
 #        self.find_with_filter(*args, {})
         a = Array.new
@@ -195,6 +205,9 @@ module RightScale
         filter = {}
         filter = args.pop if args.last.is_a?(Hash)
         filter.each { |key,val|
+          unless self.filters.include?(key.to_sym)
+            raise ArgumentError.new("#{key} is not a valid filter for resource #{self.resource_singular_name}")
+          end
           filter_params << "#{key}==#{val}"
         }
         a = Array.new
@@ -219,6 +232,10 @@ module RightScale
 
       def parse_args()
         nil
+      end
+
+      def filters()
+        []
       end
 
       def create(opts)

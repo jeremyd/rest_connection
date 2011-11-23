@@ -43,6 +43,10 @@ class McServer < Server
     deployment_id ? "deployments/#{deployment_id}/" : ""
   end
 
+  def self.filters
+    [:deployment_href, :name]
+  end
+
   def launch
     if actions.include?("launch")
       t = URI.parse(self.href)
