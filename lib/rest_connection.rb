@@ -24,12 +24,15 @@ require 'logger'
 require 'highline/import'
 
 module RestConnection
-  AWS_CLOUDS = [{"cloud_id" => 1, "name" => "AWS US-East"},
+  AWS_CLOUDS = [
+                {"cloud_id" => 1, "name" => "AWS US-East"},
                 {"cloud_id" => 2, "name" => "AWS EU"},
                 {"cloud_id" => 3, "name" => "AWS US-West"},
                 {"cloud_id" => 4, "name" => "AWS AP-Singapore"},
                 {"cloud_id" => 5, "name" => "AWS AP-Tokyo"},
-                {"cloud_id" => 6, "name" => "AWS US-Oregon"}]
+                {"cloud_id" => 6, "name" => "AWS US-Oregon"},
+                {"cloud_id" => 7, "name" => "AWS SA-Sao Paulo"},
+               ]
 
   # Check for API 0.1 Access
   def self.api0_1?

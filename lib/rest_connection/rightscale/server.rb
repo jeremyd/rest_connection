@@ -85,6 +85,7 @@ class Server
     catch_early_terminated = 60 / step
     while(timeout > 0)
       return true if state =~ /#{st}/
+      return true if state =~ /terminated|stopped/ && st =~ /terminated|stopped/
       raise "FATAL error, this server is stranded and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('stranded') && !st.include?('stranded')
       raise "FATAL error, this server went to error state and needs to be #{st}: #{nickname}, see audit: #{self.audit_link}" if state.include?('error') && st !~ /error|terminated|stopped/
       connection.logger("waiting for server #{nickname} to go #{st}, state is #{state}")
