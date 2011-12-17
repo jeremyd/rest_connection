@@ -20,6 +20,8 @@ class Cloud
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
 
+  deny_methods :create, :destroy, :update
+
   def self.filters
     [:description, :name]
   end

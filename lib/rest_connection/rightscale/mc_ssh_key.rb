@@ -20,6 +20,8 @@ class McSshKey
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
 
+  deny_methods :update
+
   def resource_plural_name
     "ssh_keys"
   end

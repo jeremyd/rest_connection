@@ -20,6 +20,8 @@ class InstanceType
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
 
+  deny_methods :create, :destroy, :update
+
   def self.parse_args(cloud_id)
     "clouds/#{cloud_id}/"
   end

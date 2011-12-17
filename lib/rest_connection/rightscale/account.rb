@@ -24,4 +24,6 @@
 class Account
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
+
+  deny_methods :index, :create, :destroy, :update
 end

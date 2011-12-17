@@ -23,6 +23,8 @@ class McMultiCloudImage
   extend RightScale::Api::McTaggableExtend
   attr_reader :settings
 
+  deny_methods :create, :destroy, :update
+
   def resource_plural_name
     "multi_cloud_images"
   end

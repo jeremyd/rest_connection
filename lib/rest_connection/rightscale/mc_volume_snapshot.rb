@@ -22,6 +22,8 @@ class McVolumeSnapshot
   include RightScale::Api::McTaggable
   extend RightScale::Api::McTaggableExtend
 
+  deny_methods :update
+
   def resource_plural_name
     "volume_snapshots"
   end

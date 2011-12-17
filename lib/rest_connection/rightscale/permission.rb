@@ -25,6 +25,8 @@ class Permission
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
 
+  deny_methods :update
+
   def self.filters
     [:user_href]
   end

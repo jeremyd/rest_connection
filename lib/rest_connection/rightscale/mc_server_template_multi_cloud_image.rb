@@ -21,6 +21,8 @@ class McServerTemplateMultiCloudImage
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
 
+  deny_methods :update
+
   def resource_plural_name
     "server_template_multi_cloud_images"
   end

@@ -20,6 +20,8 @@ class Task
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
 
+  deny_methods :index, :create, :destroy, :update
+
   def self.parse_args(cloud_id, instance_id)
     "clouds/#{cloud_id}/instances/#{instance_id}/live/"
   end

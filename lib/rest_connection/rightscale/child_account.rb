@@ -25,6 +25,8 @@ class ChildAccount
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
 
+  deny_methods :destroy, :update, :show
+
   def self.filters
     [:name]
   end

@@ -59,7 +59,7 @@ module RightScale
       end
 
       def find_by_nickname(nickname)
-        connection.logger("DEPRICATION WARNING: use of find_by_nickname is depricated, please use find_by(:nickname) { |n| n == '#{nickname}' } ")
+        connection.logger("DEPRECATION WARNING: use of find_by_nickname is deprecated, please use find_by(:nickname) { |n| n == '#{nickname}' } ")
         self.find_by(:nickname) { |n| n == nickname }
       end
 
@@ -89,7 +89,7 @@ module RightScale
       end
 
       def find_by_id(id)
-        connection.logger("DEPRICATION WARNING: use of find_by_id is depricated, please use find(id) ")
+        connection.logger("DEPRECATION WARNING: use of find_by_id is deprecated, please use find(id) ")
         self.find(id)
       end
 

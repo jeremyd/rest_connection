@@ -24,6 +24,8 @@ class McInstance
   include RightScale::Api::McInput
   attr_accessor :monitoring_metrics
 
+  deny_methods :create, :destroy
+
   def resource_plural_name
     "instances"
   end

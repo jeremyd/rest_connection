@@ -20,6 +20,8 @@ class CloudAccount
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
 
+  deny_methods :update
+
   def cloud_id
     self.cloud.split("/").last
   end

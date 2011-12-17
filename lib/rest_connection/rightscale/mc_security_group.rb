@@ -20,6 +20,8 @@ class McSecurityGroup
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
 
+  deny_methods :create, :destroy, :update
+
   def resource_plural_name
     "security_groups"
   end

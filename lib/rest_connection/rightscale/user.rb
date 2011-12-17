@@ -25,6 +25,8 @@ class User
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
 
+  deny_methods :destroy, :update
+
   def self.filters
     [:email, :first_name, :last_name]
   end
