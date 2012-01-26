@@ -1,39 +1,119 @@
 #!/bin/bash
 
+lod_message() {
+  cat <<EOS
+
+                 OMM                                              MM$
+                 MMMM                                             MMMM
+                   MMM                                              MMO
+                   =MM                                              MMM
+                   MMM                                              MMD
+MMMMMMMMMMMMMMMMMMMMM                           NMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMM                            NMMMMMMMMMMMMMMMMMMM,
+   MMMM?      ?MMMM                                =MMMM       MMMMD
+ =MMM           ?MMM                              MMMM           MMMN
+:MMM              MMM                            NMM=             =MMD
+MMM               ,MMO                           MMM               DMM
+MMM      MMMD      MMM                          DMM?     ,MMM,      MMD
+MMM      MMM$      MMM                          NMM?      MMM       MMN
+MMM                MMM                          OMMM               =MMO
+MMMN              NMM$                           MMM               MMM
+ MMM?            MMMM                            DMMM             MMM$
+  MMMM:        :MMMM                              DMMMM         MMMM$
+   =MMMMMMMMMMMMMM?                                 MMMMMMMMMMMMMMM
+     MMMMMMMMMMM                                      MMMMMMMMMMM
+
+
+
+
+                       DMMMMMMMMMMMMMMMMMMMMMMM
+
+EOS
+}
+
 whitespace=""
+echo "Checking for syntax errors..."
 for FILE in `git diff-index --name-only HEAD --` ; do
-  if test -e $FILE; then
-    if [[ -n `grep "\\s\\s*$" $FILE` ]]; then whitespace="$whitespace $FILE"; fi
-    # Remove trailing whitespace
-    sed -i "s/\\s\\s*$//g" $FILE
-    # Remove tabs
-    sed -i "s/\t/  /g" $FILE
-    # If a file is ruby, check for syntax errors
-    if [[ -n `find $FILE -regex ".*\.rb$"` ]]; then
+  if test -f $FILE; then
+    filetype=`file -b $FILE`
+    if [[ "$filetype" =~ "text" ]]; then
+      if [[ -n `grep "\\s\\s*$" $FILE` ]]; then whitespace="$whitespace $FILE"; fi
+      # Remove trailing whitespace
+      sed -i "s/\\s\\s*$//g" $FILE
+      # Remove tabs
+      sed -i "s/\t/  /g" $FILE
+    fi
+
+    # If a file is ruby, check for syntax errors using ruby
+    if [[ "$FILE" =~ .*\.rb$ ]]; then
       if [[ "$fail" -eq 0 || -z "$fail" ]]; then
-        `ruby -c $FILE 1> /dev/null`; fail=$?
+        ruby -c "$FILE" 1> /dev/null; fail=$?
+        if [[ "$fail" -ne 0 ]]; then echo "Syntax Error found in '$FILE'"; fi
       else
-        `ruby -c $FILE 1> /dev/null`
+        ruby -c "$FILE" 1> /dev/null
+        if [[ "$?" -ne 0 ]]; then echo "Syntax Error found in '$FILE'"; fi
+      fi
+    fi
+
+    # If a file is json, check for syntax errors
+    if [[ "$FILE" =~ .*\.json$ ]]; then
+      if [[ "$fail" -eq 0 || -z "$fail" ]]; then
+        ruby -e "require 'rubygems'; require 'json'; JSON::parse(IO.read('$FILE'))" 1> /dev/null; fail=$?
+        if [[ "$fail" -ne 0 ]]; then echo "Syntax Error found in '$FILE'"; fi
+      else
+        ruby -e "require 'rubygems'; require 'json'; JSON::parse(IO.read('$FILE'))" 1> /dev/null
+        if [[ "$?" -ne 0 ]]; then echo "Syntax Error found in '$FILE'"; fi
+      fi
+    fi
+
+    # If a file is yaml, check for syntax errors
+    if [[ "$FILE" =~ .*\.yaml$ ]]; then
+      if [[ "$fail" -eq 0 || -z "$fail" ]]; then
+        ruby -e "require 'rubygems'; require 'yaml'; YAML::load(IO.read('$FILE'))" 1> /dev/null; fail=$?
+        if [[ "$fail" -ne 0 ]]; then echo "Syntax Error found in '$FILE'"; fi
+      else
+        ruby -e "require 'rubygems'; require 'yaml'; YAML::load(IO.read('$FILE'))" 1> /dev/null
+        if [[ "$?" -ne 0 ]]; then echo "Syntax Error found in '$FILE'"; fi
       fi
     fi
   fi
 done
+echo "Syntax check complete."
 
 # Built-in git checks
 git diff-index --check HEAD --
 
 if [[ "$fail" -ne 0 && -n "$fail" ]]; then
   echo "Syntax Errors Found. Aborting commit"
+  lod_message
+  exit 1
+fi
+
+# Check for warnings
+fail=0
+for FILE in `git diff-index --name-only HEAD --` ; do
+  if test -e $FILE; then
+    # If a file is ruby, check for syntax errors
+    if [[ -n `find $FILE -regex ".*\.rb$"` ]]; then
+      warnings=`ruby -c "$FILE" 2>&1 | grep -i warn`
+      if [[ -n "$warnings" ]]; then fail=1; fi
+    fi
+  fi
+done
+
+if [[ "$fail" -ne 0 && -n "$fail" ]]; then
+  echo "Syntax Warnings Found. Aborting commit"
+  lod_message
   exit 1
 fi
 
 for FILE in $whitespace; do
   echo "Whitespace problem fixed. Please re-add '$FILE' to your commit"
 done
-if [[ -n "$whitespace" ]]; then exit 1; fi
+if [[ -n "$whitespace" ]]; then lod_message; exit 1; fi
 
 # Check that project metadata files exist
-for FILE in "Rakefile" "README.rdoc" "VERSION" ".gitignore" "rest_connection.gemspec"; do
+for FILE in "README.rdoc" "VERSION" ".gitignore" "Rakefile"; do
   if test ! -e $FILE; then
     echo "$FILE not present. Aborting commit"
     exit 1
@@ -44,10 +124,14 @@ done
 username=`git config --get user.name`
 useremail=`git config --get user.email`
 emaildomain=`echo $useremail | grep -o "[^@]*$"`
-if [[ "$username" == "" ]]; then
+if [[ "$username" == "Put Your Name Here" || "$username" == "" ]]; then
   echo "Please set your git user.name by running 'git config user.name <your github username>'"
+  lod_message
   exit 1
-elif [[ "$useremail" == "" ]] || ! host "$emaildomain" &> /dev/null; then
+elif [[ "$useremail" == "setyouremail@rightscale.com" || "$useremail" == "" ]] || ! host "$emaildomain" &> /dev/null; then
   echo "Please set your git user.email by running 'git config user.email <your github email>'"
+  lod_message
   exit 1
 fi
+
+exit 0

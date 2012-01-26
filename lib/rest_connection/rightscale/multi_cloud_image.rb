@@ -17,6 +17,8 @@ class MultiCloudImage
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
 
+  deny_methods :create, :destroy, :update
+
   def supported_cloud_ids
     @params["multi_cloud_image_cloud_settings"].map { |mcics| mcics.cloud_id }
   end

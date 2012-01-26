@@ -17,4 +17,6 @@
 class Ec2ElasticIp
   include  RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+
+  deny_methods :update
 end

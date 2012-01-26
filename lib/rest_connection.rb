@@ -132,17 +132,48 @@ module RestConnection
         http.verify_mode = OpenSSL::SSL::VERIFY_NONE
       end
       headers = @settings[:common_headers]
-      headers.merge!("Cookie" => @cookie) if @cookie
       http.start do |http|
-        req = yield(uri, headers)
-        unless @cookie
-          req.basic_auth(@settings[:user], @settings[:pass]) if @settings[:user]
+        @max_retries = 3
+        ret = nil
+        begin
+          headers.delete("Cookie")
+          headers.merge!("Cookie" => @cookie) if @cookie
+          req = yield(uri, headers)
+          logger("#{req.method}: #{req.path}")
+          logger("\trequest body: #{req.body}") if req.body and req.body !~ /password/
+          req.basic_auth(@settings[:user], @settings[:pass]) if @settings[:user] unless @cookie
+
+          response, body = http.request(req)
+          ret = handle_response(response)
+        rescue Exception => e
+          raise unless error_handler(e)
+          retry
         end
-        logger("#{req.method}: #{req.path}")
-        logger("\trequest body: #{req.body}") if req.body and req.body !~ /password/
-        response, body = http.request(req)
-        handle_response(response)
+        ret
       end
+    end
+
+    def error_handler(e)
+      case e
+      when EOFError, Timeout::Error
+        if @max_retries >= 0
+          logger("Caught #{e}. Retrying...")
+          @max_retries -= 1
+          return true
+        end
+      when RestConnection::Errors::Forbidden
+        if @max_retries >= 0
+          if e.response.body =~ /(session|cookie).*(invalid|expired)/i
+            logger("Caught '#{e.response.body}'. Refreshing cookie...")
+            refresh_cookie if respond_to?(:refresh_cookie)
+          else
+            return false
+          end
+          @max_retries -= 1
+          return true
+        end
+      end
+      return false
     end
 
     # connection.get("/root/login", :test_header => "x", :test_header2 => "y")
@@ -151,9 +182,9 @@ module RestConnection
     # additional_parameters = Hash or String of parameters to pass to HTTP::Get
     def get(href, additional_parameters = "")
       rest_connect do |base_uri,headers|
-        href = "#{base_uri}/#{href}" unless begins_with_slash(href)
+        new_href = (href =~ /^\// ? href : "#{base_uri}/#{href}")
         params = requestify(additional_parameters) || ""
-        new_path = URI.escape(href + @settings[:extension] + "?") + params
+        new_path = URI.escape(new_href + @settings[:extension] + "?") + params
         Net::HTTP::Get.new(new_path, headers)
       end
     end
@@ -165,8 +196,8 @@ module RestConnection
     # additional_parameters = Hash or String of parameters to pass to HTTP::Post
     def post(href, additional_parameters = {})
       rest_connect do |base_uri, headers|
-        href = "#{base_uri}/#{href}" unless begins_with_slash(href)
-        res = Net::HTTP::Post.new(href , headers)
+        new_href = (href =~ /^\// ? href : "#{base_uri}/#{href}")
+        res = Net::HTTP::Post.new(new_href , headers)
         unless additional_parameters.empty?
           res.set_content_type('application/json')
           res.body = additional_parameters.to_json
@@ -183,8 +214,8 @@ module RestConnection
     # additional_parameters = Hash or String of parameters to pass to HTTP::Put
     def put(href, additional_parameters = {})
       rest_connect do |base_uri, headers|
-        href = "#{base_uri}/#{href}" unless begins_with_slash(href)
-        new_path = URI.escape(href)
+        new_href = (href =~ /^\// ? href : "#{base_uri}/#{href}")
+        new_path = URI.escape(new_href)
         req = Net::HTTP::Put.new(new_path, headers)
         req.set_content_type('application/json')
         req.body = additional_parameters.to_json
@@ -199,8 +230,8 @@ module RestConnection
     # additional_parameters = Hash or String of parameters to pass to HTTP::Delete
     def delete(href, additional_parameters = {})
       rest_connect do |base_uri, headers|
-        href = "#{base_uri}/#{href}" unless begins_with_slash(href)
-        new_path = URI.escape(href)
+        new_href = (href =~ /^\// ? href : "#{base_uri}/#{href}")
+        new_path = URI.escape(new_href)
         req = Net::HTTP::Delete.new(href, headers)
         req.set_content_type('application/json')
         req.body = additional_parameters.to_json
@@ -226,12 +257,8 @@ module RestConnection
           return res
         end
       else
-        raise "invalid response HTTP code: #{res.code.to_i}, #{res.code}, #{res.body}"
+        raise RestConnection::Errors.status_error(res)
       end
-    end
-
-    def begins_with_slash(href)
-      href =~ /^\//
     end
 
     def logger(message)
@@ -250,7 +277,7 @@ module RestConnection
       if @settings.nil?
         @@logger.info(message)
       else
-        @@logger.info("[API v#{@settings[:common_headers]['X_API_VERSION']} ]" + message)
+        @@logger.info("[API v#{@settings[:common_headers]['X_API_VERSION']}] " + message)
       end
     end
 
@@ -272,6 +299,107 @@ module RestConnection
         "#{prefix}=#{CGI.escape(parameters.to_s)}"
       end
     end
+  end
 
+  module Errors
+    # HTTPStatusErrors, borrowed lovingly from the excon gem <3
+    class HTTPStatusError < StandardError
+      attr_reader :request, :response
+
+      def initialize(msg, response = nil, request = nil)
+        super(msg)
+        @request = request
+        @response = response
+      end
+    end
+
+    class Continue < HTTPStatusError; end                     # 100
+    class SwitchingProtocols < HTTPStatusError; end           # 101
+    class OK < HTTPStatusError; end                           # 200
+    class Created < HTTPStatusError; end                      # 201
+    class Accepted < HTTPStatusError; end                     # 202
+    class NonAuthoritativeInformation < HTTPStatusError; end  # 203
+    class NoContent < HTTPStatusError; end                    # 204
+    class ResetContent < HTTPStatusError; end                 # 205
+    class PartialContent < HTTPStatusError; end               # 206
+    class MultipleChoices < HTTPStatusError; end              # 300
+    class MovedPermanently < HTTPStatusError; end             # 301
+    class Found < HTTPStatusError; end                        # 302
+    class SeeOther < HTTPStatusError; end                     # 303
+    class NotModified < HTTPStatusError; end                  # 304
+    class UseProxy < HTTPStatusError; end                     # 305
+    class TemporaryRedirect < HTTPStatusError; end            # 307
+    class BadRequest < HTTPStatusError; end                   # 400
+    class Unauthorized < HTTPStatusError; end                 # 401
+    class PaymentRequired < HTTPStatusError; end              # 402
+    class Forbidden < HTTPStatusError; end                    # 403
+    class NotFound < HTTPStatusError; end                     # 404
+    class MethodNotAllowed < HTTPStatusError; end             # 405
+    class NotAcceptable < HTTPStatusError; end                # 406
+    class ProxyAuthenticationRequired < HTTPStatusError; end  # 407
+    class RequestTimeout < HTTPStatusError; end               # 408
+    class Conflict < HTTPStatusError; end                     # 409
+    class Gone < HTTPStatusError; end                         # 410
+    class LengthRequired < HTTPStatusError; end               # 411
+    class PreconditionFailed < HTTPStatusError; end           # 412
+    class RequestEntityTooLarge < HTTPStatusError; end        # 413
+    class RequestURITooLong < HTTPStatusError; end            # 414
+    class UnsupportedMediaType < HTTPStatusError; end         # 415
+    class RequestedRangeNotSatisfiable < HTTPStatusError; end # 416
+    class ExpectationFailed < HTTPStatusError; end            # 417
+    class UnprocessableEntity < HTTPStatusError; end          # 422
+    class InternalServerError < HTTPStatusError; end          # 500
+    class NotImplemented < HTTPStatusError; end               # 501
+    class BadGateway < HTTPStatusError; end                   # 502
+    class ServiceUnavailable < HTTPStatusError; end           # 503
+    class GatewayTimeout < HTTPStatusError; end               # 504
+
+    # Messages for nicer exceptions, from rfc2616
+    def self.status_error(response)
+      @errors ||= {
+        100 => [RestConnection::Errors::Continue, 'Continue'],
+        101 => [RestConnection::Errors::SwitchingProtocols, 'Switching Protocols'],
+        200 => [RestConnection::Errors::OK, 'OK'],
+        201 => [RestConnection::Errors::Created, 'Created'],
+        202 => [RestConnection::Errors::Accepted, 'Accepted'],
+        203 => [RestConnection::Errors::NonAuthoritativeInformation, 'Non-Authoritative Information'],
+        204 => [RestConnection::Errors::NoContent, 'No Content'],
+        205 => [RestConnection::Errors::ResetContent, 'Reset Content'],
+        206 => [RestConnection::Errors::PartialContent, 'Partial Content'],
+        300 => [RestConnection::Errors::MultipleChoices, 'Multiple Choices'],
+        301 => [RestConnection::Errors::MovedPermanently, 'Moved Permanently'],
+        302 => [RestConnection::Errors::Found, 'Found'],
+        303 => [RestConnection::Errors::SeeOther, 'See Other'],
+        304 => [RestConnection::Errors::NotModified, 'Not Modified'],
+        305 => [RestConnection::Errors::UseProxy, 'Use Proxy'],
+        307 => [RestConnection::Errors::TemporaryRedirect, 'Temporary Redirect'],
+        400 => [RestConnection::Errors::BadRequest, 'Bad Request'],
+        401 => [RestConnection::Errors::Unauthorized, 'Unauthorized'],
+        402 => [RestConnection::Errors::PaymentRequired, 'Payment Required'],
+        403 => [RestConnection::Errors::Forbidden, 'Forbidden'],
+        404 => [RestConnection::Errors::NotFound, 'Not Found'],
+        405 => [RestConnection::Errors::MethodNotAllowed, 'Method Not Allowed'],
+        406 => [RestConnection::Errors::NotAcceptable, 'Not Acceptable'],
+        407 => [RestConnection::Errors::ProxyAuthenticationRequired, 'Proxy Authentication Required'],
+        408 => [RestConnection::Errors::RequestTimeout, 'Request Timeout'],
+        409 => [RestConnection::Errors::Conflict, 'Conflict'],
+        410 => [RestConnection::Errors::Gone, 'Gone'],
+        411 => [RestConnection::Errors::LengthRequired, 'Length Required'],
+        412 => [RestConnection::Errors::PreconditionFailed, 'Precondition Failed'],
+        413 => [RestConnection::Errors::RequestEntityTooLarge, 'Request Entity Too Large'],
+        414 => [RestConnection::Errors::RequestURITooLong, 'Request-URI Too Long'],
+        415 => [RestConnection::Errors::UnsupportedMediaType, 'Unsupported Media Type'],
+        416 => [RestConnection::Errors::RequestedRangeNotSatisfiable, 'Request Range Not Satisfiable'],
+        417 => [RestConnection::Errors::ExpectationFailed, 'Expectation Failed'],
+        422 => [RestConnection::Errors::UnprocessableEntity, 'Unprocessable Entity'],
+        500 => [RestConnection::Errors::InternalServerError, 'InternalServerError'],
+        501 => [RestConnection::Errors::NotImplemented, 'Not Implemented'],
+        502 => [RestConnection::Errors::BadGateway, 'Bad Gateway'],
+        503 => [RestConnection::Errors::ServiceUnavailable, 'Service Unavailable'],
+        504 => [RestConnection::Errors::GatewayTimeout, 'Gateway Timeout']
+      }
+      error, message = @errors[response.code.to_i] || [RestConnection::Errors::HTTPStatusError, 'Unknown']
+      error.new("Invalid response HTTP code: #{response.code.to_i}: #{response.body}", response)
+    end
   end
 end

@@ -16,4 +16,28 @@
 class Ec2SecurityGroup
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+
+  # NOTE - Create, Destroy, and Update require "security_manager" permissions
+  # NOTE - Can't remove rules, can only add
+  def add_rule(opts={})
+    opts.each { |k,v| opts["#{k}".to_sym] = v }
+    update_types = [
+      :name => [:owner, :group],
+      :cidr_ips => [:cidr_ip, :protocol, :from_port, :to_port],
+      :group => [:owner, :group, :protocol, :from_port, :to_port],
+    ]
+    type = (opts[:protocol] ? (opts[:cidr_ip] ? :cidr_ips : :group) : :name)
+    unless update_types[type].reduce(true) { |b,field| b && opts[field] }
+      arg_expectation = update_types.values.pretty_inspect
+      raise ArgumentError.new("add_rule requires one of these groupings: #{arg_expectation}")
+    end
+
+    params = {}
+    update_types[type].each { |field| params[field] = opts[field] }
+
+    uri = URI.parse(self.href)
+    connection.put(uri.path, params)
+
+    self.reload
+  end
 end

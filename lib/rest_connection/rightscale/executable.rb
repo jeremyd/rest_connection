@@ -2,6 +2,8 @@ class Executable
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
 
+  deny_methods :index, :create, :destroy, :update
+
   # executable can be EITHER a right_script or recipe
   # executable example params format:
   # can have recipes AND right_scripts

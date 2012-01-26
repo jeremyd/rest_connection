@@ -21,6 +21,10 @@ class Ec2EbsVolume
   extend RightScale::Api::TaggableExtend
 
   def attach(params)
-    connection.post('component_ec2_ebs_volumes.js' , :component_ec2_ebs_volume => params)
+    @link = ServerEc2EbsVolume.create(params)
+  end
+
+  def detach
+    @link.destroy if @link
   end
 end

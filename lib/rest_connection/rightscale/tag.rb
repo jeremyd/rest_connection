@@ -17,6 +17,8 @@ class Tag
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
 
+  deny_methods :index, :create, :destroy, :update, :show
+
   def self.search(resource_name, tags, opts=nil)
     parameters = { :resource_type => resource_name.to_s, :tags => tags }
     parameters.merge!(opts) unless opts.nil?

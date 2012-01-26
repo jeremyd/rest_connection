@@ -17,6 +17,9 @@
 class RightScript
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+
+  deny_methods :create, :destroy, :update
+
   def self.from_yaml(yaml)
     scripts = []
     x = YAML.load(yaml)

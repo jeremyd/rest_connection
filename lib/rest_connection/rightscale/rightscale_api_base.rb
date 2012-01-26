@@ -17,6 +17,19 @@ require 'active_support/inflector'
 
 module RightScale
   module Api
+    BASE_COOKIE_REFRESH = proc do
+      def refresh_cookie
+        # login
+        @cookie = nil
+        resp = get("login")
+        unless resp.code == "302" || resp.code == "204"
+          raise "ERROR: Login failed. #{resp.message}. Code:#{resp.code}"
+        end
+        @cookie = resp.response['set-cookie']
+        true
+      end
+    end
+
     module BaseExtend
       def connection()
         @@connection ||= RestConnection::Connection.new
@@ -24,6 +37,12 @@ module RightScale
         settings[:common_headers]["X_API_VERSION"] = "1.0"
         settings[:api_href] = settings[:api_url]
         settings[:extension] = ".js"
+
+        unless @@connection.respond_to?(:refresh_cookie)
+          @@connection.instance_exec(&(RightScale::Api::BASE_COOKIE_REFRESH))
+        end
+
+        @@connection.refresh_cookie unless @@connection.cookie
         @@connection
       end
 
@@ -100,12 +119,12 @@ module RightScale
         newrecord
       end
 
-# filter is only implemented on some api endpoints
+      # filter is only implemented on some api endpoints
       def find_by_nickname_speed(nickname)
         self.find_with_filter('nickname' => nickname)
       end
 
-# filter is only implemented on some api endpoints
+      # filter is only implemented on some api endpoints
       def find_with_filter(filter = {})
         filter_params = []
         filter.each { |key,val|
@@ -160,6 +179,28 @@ module RightScale
         }
         return (args.empty? ? find_all : ret.flatten.uniq)
       end
+
+      def deny_methods(*symbols)
+        symbols.map! { |sym| sym.to_sym }
+        if symbols.delete(:index)
+          symbols |= [:find_all, :find_by, :find_by_cloud_id, :find_by_nickname, :find_by_nickname_speed, :find_with_filter]
+        end
+        if symbols.delete(:show)
+          symbols |= [:show, :reload, :find, :find_by_id]
+        end
+        if symbols.delete(:update)
+          symbols |= [:save, :update]
+        end
+        symbols.each do |sym|
+          sym = sym.to_sym
+          eval_str = "undef #{sym.inspect}"
+          if self.respond_to?(sym)
+            instance_eval(eval_str)
+          elsif self.new.respond_to?(sym)
+            class_eval(eval_str)
+          end
+        end
+      end
     end
 
     module Base
@@ -175,6 +216,12 @@ module RightScale
         settings[:common_headers]["X_API_VERSION"] = "1.0"
         settings[:api_href] = settings[:api_url]
         settings[:extension] = ".js"
+
+        unless @@connection.respond_to?(:refresh_cookie)
+          @@connection.instance_exec(&(RightScale::Api::BASE_COOKIE_REFRESH))
+        end
+
+        @@connection.refresh_cookie unless @@connection.cookie
         @@connection
       end
 

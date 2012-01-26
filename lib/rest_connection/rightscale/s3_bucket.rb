@@ -17,6 +17,8 @@ class S3Bucket
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
 
+  deny_methods :update
+
   def self.resource_singular_name
     "s3_bucket"
   end
@@ -32,5 +34,4 @@ class S3Bucket
   def resource_plural_name
     "s3_buckets"
   end
-
 end

@@ -13,11 +13,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 #
-class AlertSpec
+
+class SqsQueue
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
 
-  def attach(params)
-    AlertSpecSubject.create(params)
-  end
+  deny_methods :update
 end

@@ -17,6 +17,8 @@ class Ec2SshKey
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
 
+  deny_methods :index, :update
+
   def self.create(opts)
     create_opts = { self.resource_singular_name.to_sym => opts }
     create_opts['cloud_id'] = opts['cloud_id'] if opts['cloud_id']

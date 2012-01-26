@@ -1,5 +1,29 @@
 module RightScale
   module Api
+    GATEWAY_COOKIE_REFRESH = proc do
+      def refresh_cookie
+        # login
+        ignored, account = @settings[:api_url].split(/\/acct\//) if @settings[:api_url].include?("acct")
+        params = {
+          "email" => @settings[:user],
+          "password" => @settings[:pass],
+          "account_href" => "/api/accounts/#{account}"
+        }
+        @cookie = nil
+        resp = post("session", params)
+        unless resp.code == "302" || resp.code == "204"
+          raise "ERROR: Login failed. #{resp.message}. Code:#{resp.code}"
+        end
+        # TODO: handle 302 redirects
+        @cookie = resp.response['set-cookie']
+
+        # test session
+        resp = get("session")
+        raise "ERROR: Invalid session. #{resp["message"]}." unless resp.is_a?(Hash)
+        true
+      end
+    end
+
     module Gateway
       include RightScale::Api::Base
 
@@ -17,17 +41,12 @@ module RightScale
         settings[:common_headers]["X_API_VERSION"] = "1.5"
         settings[:api_href], account = settings[:api_url].split(/\/acct\//) if settings[:api_url].include?("acct")
         settings[:extension] = ".json"
-        unless @@gateway_connection.cookie
-          # login
-          params = { "email" => settings[:user], "password" => settings[:pass], "account_href" => "/api/accounts/#{account}" }
-          resp = @@gateway_connection.post("session", params)
-          raise "ERROR: Login failed. #{resp.message}. Code:#{resp.code}" unless resp.code == "302" || resp.code == "204"
-          @@gateway_connection.cookie = resp.response['set-cookie']
 
-          # test session
-          resp = @@gateway_connection.get("session")
-          raise "ERROR: Invalid session. #{resp["message"]}." unless resp.is_a?(Hash)
+        unless @@gateway_connection.respond_to?(:refresh_cookie)
+          @@gateway_connection.instance_exec(&(RightScale::Api::GATEWAY_COOKIE_REFRESH))
         end
+
+        @@gateway_connection.refresh_cookie unless @@gateway_connection.cookie
         @@gateway_connection
       end
 
@@ -130,23 +149,30 @@ module RightScale
       end
 
       def load(resource)
-        if resource.is_a?(Class)
-          param_string = resource.resource_singular_name
-          class_name = resource
+        mod = RightScale::Api::GatewayExtend
+        @@gateway_resources ||= Object.constants.map do |const|
+          klass = Object.const_get(const)
+          (mod === klass ? klass : nil)
+        end.compact
+        pp @@gateway_resources
+        if mod === resource
+          klass = resource
         elsif resource.is_a?(String) or resource.is_a?(Symbol)
-          param_string = resource
-          begin
-            class_name = Kernel.const_get(resource.singularize.camelize)
-          rescue
-            class_name = Kernel.const_get("Mc#{resource.singularize.camelize}")
+          klass = @@gateway_resources.detect do |const|
+            [const.resource_singular_name, const.resource_plural_name].include?(resource.to_s)
           end
-        end
-        if self[param_string].nil?
-          return class_name.load_all(self[param_string.pluralize])
-        elsif param_string.pluralize == param_string
-          return class_name.load_all(self[param_string])
+        elsif Class === resource
+          raise TypeError.new("#{resource} doesn't extend #{mod}")
         else
-          return class_name.load(self[param_string])
+          raise TypeError.new("can't convert #{resource.class} into supported Class")
+        end
+
+        if self[klass.resource_singular_name]
+          return klass.load(self[klass.resource_singular_name])
+        elsif self[klass.resource_plural_name]
+          return klass.load_all(self[klass.resource_plural_name])
+        else
+          raise NameError.new("no resource_hrefs found for #{klass}")
         end
       end
     end
@@ -159,17 +185,12 @@ module RightScale
         settings[:common_headers]["X_API_VERSION"] = "1.5"
         settings[:api_href], account = settings[:api_url].split(/\/acct\//) if settings[:api_url].include?("acct")
         settings[:extension] = ".json"
-        unless @@gateway_connection.cookie
-          # login
-          params = { "email" => settings[:user], "password" => settings[:pass], "account_href" => "/api/accounts/#{account}" }
-          resp = @@gateway_connection.post("session", params)
-          raise "ERROR: Login failed. #{resp.message}. Code:#{resp.code}" unless resp.code == "302" || resp.code == "204"
-          @@gateway_connection.cookie = resp.response['set-cookie']
 
-          # test session
-          resp = @@gateway_connection.get("session")
-          raise "ERROR: Invalid session. #{resp["message"]}." unless resp.is_a?(Hash)
+        unless @@gateway_connection.respond_to?(:refresh_cookie)
+          @@gateway_connection.instance_exec(&(RightScale::Api::GATEWAY_COOKIE_REFRESH))
         end
+
+        @@gateway_connection.refresh_cookie unless @@gateway_connection.cookie
         @@gateway_connection
       end
 
@@ -238,30 +259,17 @@ module RightScale
         []
       end
 
-      def create(opts)
-        location = connection.post(self.resource_plural_name, self.resource_singular_name.to_sym => opts)
+      def create(*args)
+        if args.last.is_a?(Hash)
+          opts = args.pop
+        else
+          raise ArgumentError.new("create requires the last argument to be a Hash")
+        end
+        url = "#{parse_args(*args)}#{self.resource_plural_name}"
+        location = connection.post(url, self.resource_singular_name.to_sym => opts)
         newrecord = self.new('links' => [ {'rel' => 'self', 'href' => location } ])
         newrecord.reload
         newrecord
-      end
-
-      def deny_methods(*symbols)
-        symbols.map! { |sym| sym.to_sym }
-        if symbols.delete(:index)
-          symbols |= [:find_all, :find_by, :find_by_cloud_id, :find_by_nickname, :find_by_nickname_speed, :find_with_filter]
-        end
-        if symbols.delete(:show)
-          symbols |= [:show, :reload, :find, :find_by_id]
-        end
-        symbols.each do |sym|
-          sym = sym.to_sym
-          eval_str = "undef #{sym.inspect}"
-          if self.respond_to?(sym)
-            instance_eval(eval_str)
-          elsif self.new.respond_to?(sym)
-            class_eval(eval_str)
-          end
-        end
       end
     end
   end

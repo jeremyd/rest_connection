@@ -12,12 +12,20 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
-#
-class AlertSpec
-  include RightScale::Api::Base
-  extend RightScale::Api::BaseExtend
 
-  def attach(params)
-    AlertSpecSubject.create(params)
+#
+# You must have Beta v1.5 API access to use these internal API calls.
+#
+class SecurityGroupRule
+  include RightScale::Api::Gateway
+  extend RightScale::Api::GatewayExtend
+
+  deny_methods :update
+
+  def self.parse_args(cloud_id=nil, security_group_id=nil)
+    if cloud_id.nil? ^ security_group_id.nil?
+      raise ArgumentError.new("#{self} requires either 0 arguments, or 2 arguments")
+    end
+    "clouds/#{cloud_id}/security_groups/#{security_group_id}/"
   end
 end

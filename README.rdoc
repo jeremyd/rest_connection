@@ -19,7 +19,7 @@ Copy the example from GEMHOME/rest_connection/examples/rest_api_config.yaml.samp
   "gem install gemedit"
   "gem edit rest_connection"
 
-== Usage: some IRB samples
+== Usage: some IRB samples for the RightScale API module
 
   $ irb
   ruby> require 'rubygems'; require 'rest_connection'

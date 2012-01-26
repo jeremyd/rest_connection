@@ -28,6 +28,8 @@ class AuditEntry
   include  RightScale::Api::Base
   extend RightScale::Api::BaseExtend
 
+  deny_methods :index, :create, :destroy, :update
+
   def wait_for_state(state, timeout=900)
     while(timeout > 0)
       reload
