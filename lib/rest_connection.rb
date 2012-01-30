@@ -94,12 +94,16 @@ module RestConnection
       @@user = nil
       @@pass = nil
       etc_config = File.join("#{File::SEPARATOR}etc", "rest_connection", "rest_api_config.yaml")
-      if File.exists?(config_yaml)
+      app_bin_dir = File.expand_path(File.dirname(caller.last))
+      app_yaml = File.join(app_bin_dir,"..","config","rest_api_config.yaml")
+      if File.exists?(app_yaml)
+        @settings = YAML::load(IO.read(app_yaml))
+      elsif File.exists?(config_yaml)
         @settings = YAML::load(IO.read(config_yaml))
       elsif File.exists?(etc_config)
         @settings = YAML::load(IO.read(etc_config))
       else
-        logger("\nWARNING:  you must setup config file rest_api_config.yaml in #{config_yaml} or #{etc_config}")
+        logger("\nWARNING:  you must setup config file rest_api_config.yaml in #{app_yaml} or #{config_yaml} or #{etc_config}")
         logger("WARNING:  see GEM_HOME/rest_connection/config/rest_api_config.yaml for example config")
         @settings = {}
       end
