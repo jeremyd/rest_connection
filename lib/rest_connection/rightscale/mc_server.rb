@@ -200,18 +200,24 @@ class McServer < Server
 
   def dns_name
     self.settings
+    ret = nil
     if @current_instance
-      return @current_instance.public_ip_addresses.first || @current_instance.public_dns_names.first
+      ret ||= @current_instance.public_ip_addresses.first
+      ret ||= @current_instance.public_dns_names.first
+      ret ||= get_tags_by_namespace("server")["current_instance"]["public_ip_0"]
     end
-    nil
+    ret
   end
 
   def private_ip
     self.settings
+    ret = nil
     if @current_instance
-      return @current_instance.private_ip_addresses.first || @current_instance.private_dns_names.first
+      ret ||= @current_instance.private_ip_addresses.first
+      ret ||= @current_instance.private_dns_names.first
+      ret ||= get_tags_by_namespace("server")["current_instance"]["private_ip_0"]
     end
-    nil
+    ret
   end
 
   def save

@@ -366,17 +366,26 @@ class Server
 
   def dns_name
     self.settings unless self["dns_name"]
+    if self.current_instance_href
+      self["dns_name"] ||= get_tags_by_namespace("server")["current_instance"]["public_ip_0"]
+    end
     self["dns_name"]
   end
 
   def private_ip
     self.settings unless @params["private-ip-address"]
+    if self.current_instance_href
+      self["private-ip-address"] ||= get_tags_by_namespace("server")["current_instance"]["private_ip_0"]
+    end
     @params["private-ip-address"]
   end
 
   def reachable_ip
-    return self.dns_name if self.dns_name
-    return self.private_ip if self.private_ip
+    if ret = self.dns_name
+      return ret
+    elsif ret = self.private_ip
+      return ret
+    end
     nil
   end
 
