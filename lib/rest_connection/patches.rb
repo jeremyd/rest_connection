@@ -13,6 +13,9 @@ class Hash
   def deep_merge(second)
     target = dup
     return target unless second
+    unless self.class === second
+      raise TypeError.new("can't convert #{second.class} into #{self.class}")
+    end
     second.keys.each do |k|
       if second[k].is_a? Array and self[k].is_a? Array
         target[k] = target[k].deep_merge(second[k])
@@ -32,6 +35,9 @@ class Hash
 
   def deep_merge!(second)
     return nil unless second
+    unless self.class === second
+      raise TypeError.new("can't convert #{second.class} into #{self.class}")
+    end
     second.each_pair do |k,v|
       if self[k].is_a?(Array) and second[k].is_a?(Array)
         self[k].deep_merge!(second[k])
@@ -50,6 +56,9 @@ class Array
   def deep_merge(second)
     target = dup
     return target unless second
+    unless self.class === second
+      raise TypeError.new("can't convert #{second.class} into #{self.class}")
+    end
     second.each_index do |k|
       if second[k].is_a? Array and self[k].is_a? Array
         target[k] = target[k].deep_merge(second[k])
@@ -65,6 +74,9 @@ class Array
 
   def deep_merge!(second)
     return nil unless second
+    unless self.class === second
+      raise TypeError.new("can't convert #{second.class} into #{self.class}")
+    end
     second.each_index do |k|
       if self[k].is_a?(Array) and second[k].is_a?(Array)
         self[k].deep_merge!(second[k])

@@ -17,6 +17,17 @@ require 'active_support/inflector'
 
 module RightScale
   module Api
+    DATETIME_FMT = "%Y/%m/%d %H:%M:%S +0000"
+    AWS_CLOUDS = [
+      {"cloud_id" => 1, "name" => "AWS US-East"},
+      {"cloud_id" => 2, "name" => "AWS EU"},
+      {"cloud_id" => 3, "name" => "AWS US-West"},
+      {"cloud_id" => 4, "name" => "AWS AP-Singapore"},
+      {"cloud_id" => 5, "name" => "AWS AP-Tokyo"},
+      {"cloud_id" => 6, "name" => "AWS US-Oregon"},
+      {"cloud_id" => 7, "name" => "AWS SA-Sao Paulo"},
+    ]
+
     BASE_COOKIE_REFRESH = proc do
       def refresh_cookie
         # login
@@ -30,9 +41,65 @@ module RightScale
       end
     end
 
-    module BaseExtend
-      def connection()
-        @@connection ||= RestConnection::Connection.new
+    # Pass no arguments to reset to the default configuration,
+    # pass a hash to update the settings for all API Versions
+    def self.update_connection_settings(*settings)
+      if settings.size > 1
+        raise ArgumentError.new("wrong number of arguments (#{settings.size} for 1)")
+      end
+      konstants = constants.map { |c| const_get(c) }
+      konstants.reject! { |c| !(Module === c) }
+      konstants.reject! { |c| !(c.instance_methods.include?("connection")) }
+      konstants.each do |c|
+        c.instance_exec(settings) do |opts|
+          class_variable_set("@@connection", RestConnection::Connection.new(*opts))
+        end
+      end
+      true
+    end
+
+    # Check for API 0.1 Access
+    def self.api0_1?
+      unless class_variable_defined?("@@api0_1")
+        begin
+          Ec2SshKeyInternal.find_all
+          @@api0_1 = true
+        rescue
+          @@api0_1 = false
+        end
+      end
+      return @@api0_1
+    end
+
+    # Check for API 1.0 Access
+    def self.api1_0?
+      unless class_variable_defined?("@@api1_0")
+        begin
+          Ec2SecurityGroup.find_all
+          @@api1_0 = true
+        rescue
+          @@api1_0 = false
+        end
+      end
+      return @@api1_0
+    end
+
+    # Check for API 1.5 Beta Access
+    def self.api1_5?
+      unless class_variable_defined?("@@api1_5")
+        begin
+          Cloud.find_all
+          @@api1_5 = true
+        rescue
+          @@api1_5 = false
+        end
+      end
+      return @@api1_5
+    end
+
+    module BaseConnection
+      def connection(*opts)
+        @@connection ||= RestConnection::Connection.new(*opts)
         settings = @@connection.settings
         settings[:common_headers]["X_API_VERSION"] = "1.0"
         settings[:api_href] = settings[:api_url]
@@ -45,6 +112,10 @@ module RightScale
         @@connection.refresh_cookie unless @@connection.cookie
         @@connection
       end
+    end
+
+    module BaseExtend
+      include RightScale::Api::BaseConnection
 
       def resource_plural_name
         self.to_s.underscore.pluralize
@@ -56,6 +127,10 @@ module RightScale
       # matches using result of block match expression
       # ex: Server.find_by(:nickname) { |n| n =~ /production/ }
       def find_by(attrib, &block)
+        attrib = attrib.to_sym
+        if self.filters.include?(attrib)
+          connection.logger("#{self} includes the filter '#{attrib}', you might be able to speed up this API call")
+        end
         self.find_all.select do |s|
           yield(s[attrib.to_s])
         end
@@ -204,25 +279,12 @@ module RightScale
     end
 
     module Base
+      include RightScale::Api::BaseConnection
+
       # The params hash of attributes for direct manipulation
       attr_accessor :params
       def initialize(params = {})
         @params = params
-      end
-
-      def connection()
-        @@connection ||= RestConnection::Connection.new
-        settings = @@connection.settings
-        settings[:common_headers]["X_API_VERSION"] = "1.0"
-        settings[:api_href] = settings[:api_url]
-        settings[:extension] = ".js"
-
-        unless @@connection.respond_to?(:refresh_cookie)
-          @@connection.instance_exec(&(RightScale::Api::BASE_COOKIE_REFRESH))
-        end
-
-        @@connection.refresh_cookie unless @@connection.cookie
-        @@connection
       end
 
       def resource_plural_name

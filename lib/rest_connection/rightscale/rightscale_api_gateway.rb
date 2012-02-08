@@ -24,19 +24,9 @@ module RightScale
       end
     end
 
-    module Gateway
-      include RightScale::Api::Base
-
-      def initialize(params = {})
-        @params = parse_params(params)
-      end
-
-      def parse_params(params = {})
-        params
-      end
-
-      def connection
-        @@gateway_connection ||= RestConnection::Connection.new
+    module GatewayConnection
+      def connection(*opts)
+        @@gateway_connection ||= RestConnection::Connection.new(*opts)
         settings = @@gateway_connection.settings
         settings[:common_headers]["X_API_VERSION"] = "1.5"
         settings[:api_href], account = settings[:api_url].split(/\/acct\//) if settings[:api_url].include?("acct")
@@ -49,13 +39,37 @@ module RightScale
         @@gateway_connection.refresh_cookie unless @@gateway_connection.cookie
         @@gateway_connection
       end
+    end
+
+    module Gateway
+      include RightScale::Api::Base
+      include RightScale::Api::GatewayConnection
+
+      def initialize(params = {})
+        @params = parse_params(params)
+      end
+
+      def parse_params(params = {})
+        params
+      end
+
+      def nickname
+        @params["nickname"] || @params["name"]
+      end
+
+      def rediscover
+        self.reload if @params['href']
+        raise "Cannot find attribute 'nickname' or 'name' in #{self.inspect}. Aborting." unless self.nickname
+        if self.class.filters.include?(:name)
+          @params = self.class.find_with_filter(:name => self.nickname).first.params
+        else
+          @params = self.class.find_by(:name) { |n| n == self.nickname }.first.params
+        end
+      end
 
       def hash_of_links
         ret = {}
-        unless @params['links']# and not (@params['nickname'] or @params['name'])
-          @params = Kernel.const_get(self.class.to_s).find_by(:name) { |n| n == self.nickname }.first.params
-          connection.logger("in hash_of_links: @params = #{@params.inspect}") if ENV['REST_CONNECT_DEBUG']
-        end
+        self.rediscover unless @params['links']
         @params['links'].each { |link| ret[link['rel']] = link['href'] } if @params['links']
         ret
       end
@@ -63,22 +77,14 @@ module RightScale
       def href
         return @params['href'] if @params['href']
         ret = nil
-        unless @params['links']
-          raise "Cannot find attribute 'nickname' or 'name' in #{self.inspect}. Aborting." unless self.nickname
-          @params = Kernel.const_get(self.class.to_s).find_by(:name) { |n| n == self.nickname }.first.params
-          connection.logger("in href: @params = #{@params.inspect}") if ENV['REST_CONNECT_DEBUG']
-        end
+        self.rediscover unless @params['links']
         @params['links'].each { |link| ret = link['href'] if link['rel'] == 'self' }
         ret
       end
 
       def actions
         ret = []
-        unless @params['actions']
-          raise "Cannot find attribute 'nickname' or 'name' in #{self.inspect}. Aborting." unless self.nickname
-          @params = Kernel.const_get(self.class.to_s).find_by(:name) { |n| n == self.nickname }.first.params
-          connection.logger("in actions: @params = #{@params.inspect}") if ENV['REST_CONNECT_DEBUG']
-        end
+        self.rediscover unless @params['actions']
         @params['actions'].each { |action| ret << action['rel'] }
         ret
       end
@@ -179,23 +185,14 @@ module RightScale
 
     module GatewayExtend
       include RightScale::Api::BaseExtend
-      def connection
-        @@gateway_connection ||= RestConnection::Connection.new
-        settings = @@gateway_connection.settings
-        settings[:common_headers]["X_API_VERSION"] = "1.5"
-        settings[:api_href], account = settings[:api_url].split(/\/acct\//) if settings[:api_url].include?("acct")
-        settings[:extension] = ".json"
-
-        unless @@gateway_connection.respond_to?(:refresh_cookie)
-          @@gateway_connection.instance_exec(&(RightScale::Api::GATEWAY_COOKIE_REFRESH))
-        end
-
-        @@gateway_connection.refresh_cookie unless @@gateway_connection.cookie
-        @@gateway_connection
-      end
+      include RightScale::Api::GatewayConnection
 
       def find_by(attrib, *args, &block)
+        attrib = attrib.to_sym
         attrib = :name if attrib == :nickname
+        if self.filters.include?(attrib)
+          connection.logger("#{self} includes the filter '#{attrib}', you might be able to speed up this API call")
+        end
         self.find_all(*args).select do |s|
           yield(s[attrib.to_s])
         end
@@ -212,7 +209,6 @@ module RightScale
       end
 
       def find_all(*args)
-#        self.find_with_filter(*args, {})
         a = Array.new
         url = "#{parse_args(*args)}#{self.resource_plural_name}"
         connection.get(url).each do |object|

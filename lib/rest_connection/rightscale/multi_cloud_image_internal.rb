@@ -58,7 +58,6 @@ class MultiCloudImageInternal
 
   def initialize(params={})
     @params = params
-    transform_settings
   end
 
   def settings

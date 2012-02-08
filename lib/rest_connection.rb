@@ -24,55 +24,6 @@ require 'logger'
 require 'highline/import'
 
 module RestConnection
-  AWS_CLOUDS = [
-                {"cloud_id" => 1, "name" => "AWS US-East"},
-                {"cloud_id" => 2, "name" => "AWS EU"},
-                {"cloud_id" => 3, "name" => "AWS US-West"},
-                {"cloud_id" => 4, "name" => "AWS AP-Singapore"},
-                {"cloud_id" => 5, "name" => "AWS AP-Tokyo"},
-                {"cloud_id" => 6, "name" => "AWS US-Oregon"},
-                {"cloud_id" => 7, "name" => "AWS SA-Sao Paulo"},
-               ]
-
-  # Check for API 0.1 Access
-  def self.api0_1?
-    unless class_variable_defined?("@@api0_1")
-      begin
-        Ec2SshKeyInternal.find_all
-        @@api0_1 = true
-      rescue
-        @@api0_1 = false
-      end
-    end
-    return @@api0_1
-  end
-
-  # Check for API 1.0 Access
-  def self.api1_0?
-    unless class_variable_defined?("@@api1_0")
-      begin
-        Ec2SecurityGroup.find_all
-        @@api1_0 = true
-      rescue
-        @@api1_0 = false
-      end
-    end
-    return @@api1_0
-  end
-
-  # Check for API 1.5 Beta Access
-  def self.api1_5?
-    unless class_variable_defined?("@@api1_5")
-      begin
-        Cloud.find_all
-        @@api1_5 = true
-      rescue
-        @@api1_5 = false
-      end
-    end
-    return @@api1_5
-  end
-
   class Connection
     # Settings is a hash of options for customizing the connection.
     # settings.merge! {
@@ -94,7 +45,9 @@ module RestConnection
       @@user = nil
       @@pass = nil
       etc_config = File.join("#{File::SEPARATOR}etc", "rest_connection", "rest_api_config.yaml")
-      if File.exists?(config_yaml)
+      if config_yaml.is_a?(Hash)
+        @settings = config_yaml
+      elsif File.exists?(config_yaml)
         @settings = YAML::load(IO.read(config_yaml))
       elsif File.exists?(etc_config)
         @settings = YAML::load(IO.read(etc_config))
@@ -103,6 +56,8 @@ module RestConnection
         logger("WARNING:  see GEM_HOME/rest_connection/config/rest_api_config.yaml for example config")
         @settings = {}
       end
+      @settings.keys.each { |k| @settings[k.to_sym] = @settings[k] if String === k }
+
       @settings[:extension] = ".js"
       @settings[:api_href] = @settings[:api_url] unless @settings[:api_href]
       unless @settings[:user]

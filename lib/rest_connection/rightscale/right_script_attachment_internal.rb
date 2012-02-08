@@ -13,26 +13,38 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-class MultiCloudImage
+class RightScriptAttachmentInternal
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+  include RightScale::Api::Internal
+  extend RightScale::Api::InternalExtend
 
-  deny_methods :create, :destroy, :update
-
-  def supported_cloud_ids
-    @params["multi_cloud_image_cloud_settings"].map { |mcics| mcics.cloud_id }
+  def resource_plural_name
+    "right_script_attachments"
   end
 
-  # You must have access to multiple APIs for this (0.1, and 1.5)
-  def find_and_flatten_settings()
-    internal = MultiCloudImageInternal.new("href" => self.href)
-    internal.reload
-    total_image_count = internal.multi_cloud_image_cloud_settings.size
-    # The .settings call filters out non-ec2 images
-    if total_image_count > internal.settings.size
-      more_settings = McMultiCloudImage.find(rs_id.to_i).get_settings
-    end
-    @params["multi_cloud_image_cloud_settings"] = internal.settings + more_settings
+  def resource_singular_name
+    "right_script_attachment"
   end
 
+  def self.resource_plural_name
+    "right_script_attachments"
+  end
+
+  def self.resource_singular_name
+    "right_script_attachment"
+  end
+
+  def self.get_s3_upload_params(right_script_href)
+    url = self.resource_plural_name + "/get_s3_upload_params"
+    connection.get(url, {"right_script_href" => right_script_href})
+  end
+
+=begin
+  def self.upload(filedata, right_script_href) # TODO
+  end
+
+  def download # TODO
+  end
+=end
 end

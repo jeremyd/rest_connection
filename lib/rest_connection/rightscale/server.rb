@@ -328,16 +328,10 @@ class Server
     if self.state == "operational"
       return self["cloud_id"]
     end
-    cloud_ids = RestConnection::AWS_CLOUDS.map { |hsh| hsh["cloud_id"] }
-
-    api0_1 = false
-    begin
-      api0_1 = true if Ec2SshKeyInternal.find_all
-    rescue
-    end
+    cloud_ids = RightScale::Api::AWS_CLOUDS.map { |hsh| hsh["cloud_id"] }
 
     # Try ssh keys
-    if self.ec2_ssh_key_href and api0_1
+    if self.ec2_ssh_key_href and RightScale::Api::api0_1?
       ref = self.ec2_ssh_key_href
       cloud_ids.each { |cloud|
         if Ec2SshKeyInternal.find_by_cloud_id(cloud.to_s).select { |o| o.href == ref }.first
