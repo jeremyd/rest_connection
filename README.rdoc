@@ -4,7 +4,7 @@
   "gem install rest_connection"
 
 ==== Installing from source
-  "git clone http://github.com/twrodriguez/rest_connection.git"
+  "git clone http://github.com/rightscale/rest_connection.git"
   "gem install jeweler rspec"
   "rake check_dependencies" <- Install any gems listed.
   "rake install"
