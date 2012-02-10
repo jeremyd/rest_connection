@@ -19,6 +19,8 @@ class MultiCloudImage
 
   deny_methods :create, :destroy, :update
 
+  attr_accessor :internal
+
   def supported_cloud_ids
     @params["multi_cloud_image_cloud_settings"].map { |mcics| mcics.cloud_id }
   end
@@ -34,6 +36,13 @@ class MultiCloudImage
       more_settings = McMultiCloudImage.find(rs_id.to_i).get_settings
     end
     @params["multi_cloud_image_cloud_settings"] = internal.settings + more_settings
+  end
+
+  def initialize(*args, &block)
+    super(*args, &block)
+    if RightScale::Api::api0_1?
+      @internal = MultiCloudImageInternal.new(*args, &block)
+    end
   end
 
 end

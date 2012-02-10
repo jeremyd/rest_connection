@@ -20,6 +20,8 @@ class RightScript
 
   deny_methods :create, :destroy, :update
 
+  attr_accessor :internal
+
   def self.from_yaml(yaml)
     scripts = []
     x = YAML.load(yaml)
@@ -44,4 +46,10 @@ class RightScript
     scripts
   end
 
+  def initialize(*args, &block)
+    super(*args, &block)
+    if RightScale::Api::api0_1?
+      @internal = RightScriptInternal.new(*args, &block)
+    end
+  end
 end

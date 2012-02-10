@@ -55,46 +55,41 @@ module RightScale
           class_variable_set("@@connection", RestConnection::Connection.new(*opts))
         end
       end
+      @@api0_1, @@api1_0, @@api1_5 = nil, nil, nil
       true
     end
 
     # Check for API 0.1 Access
     def self.api0_1?
-      unless class_variable_defined?("@@api0_1")
-        begin
-          Ec2SshKeyInternal.find_all
-          @@api0_1 = true
-        rescue
-          @@api0_1 = false
-        end
+      if class_variable_defined?("@@api0_1")
+        return @@api0_1 unless @@api0_1.nil?
       end
-      return @@api0_1
+      Ec2SshKeyInternal.find_all
+      @@api0_1 = true
+    rescue RestConnection::Errors::Forbidden
+      @@api0_1 = false
     end
 
     # Check for API 1.0 Access
     def self.api1_0?
-      unless class_variable_defined?("@@api1_0")
-        begin
-          Ec2SecurityGroup.find_all
-          @@api1_0 = true
-        rescue
-          @@api1_0 = false
-        end
+      if class_variable_defined?("@@api1_0")
+        return @@api1_0 unless @@api1_0.nil?
       end
-      return @@api1_0
+      Ec2SecurityGroup.find_all
+      @@api1_0 = true
+    rescue RestConnection::Errors::Forbidden
+      @@api1_0 = false
     end
 
     # Check for API 1.5 Beta Access
     def self.api1_5?
-      unless class_variable_defined?("@@api1_5")
-        begin
-          Cloud.find_all
-          @@api1_5 = true
-        rescue
-          @@api1_5 = false
-        end
+      if class_variable_defined?("@@api1_5")
+        return @@api1_5 unless @@api1_5.nil?
       end
-      return @@api1_5
+      Cloud.find_all
+      @@api1_5 = true
+    rescue RestConnection::Errors::Forbidden
+      @@api1_5 = false
     end
 
     module BaseConnection

@@ -16,9 +16,10 @@
 class Ec2SshKeyInternal
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
-
   include RightScale::Api::Internal
   extend RightScale::Api::InternalExtend
+
+  deny_methods :show, :create, :update, :destroy
 
   def resource_plural_name
     "ec2_ssh_keys"
@@ -35,5 +36,4 @@ class Ec2SshKeyInternal
   def self.resource_singular_name
     "ec2_ssh_key"
   end
-
 end

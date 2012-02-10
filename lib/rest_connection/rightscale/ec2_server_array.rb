@@ -19,6 +19,15 @@ class Ec2ServerArray
   include RightScale::Api::Taggable
   extend RightScale::Api::TaggableExtend
 
+  attr_accessor :internal
+
+  def initialize(*args, &block)
+    super(*args, &block)
+    if RightScale::Api::api0_1?
+      @internal = Ec2ServerArrayInternal.new(*args, &block)
+    end
+  end
+
 #  Example:
 #    right_script = @server_template.executables.first
 #    result = @my_array.run_script_on_all(right_script, [@server_template.href])

@@ -13,14 +13,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-require 'rest_connection/ssh_hax'
-
 class Server
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
   include SshHax
   include RightScale::Api::Taggable
   extend RightScale::Api::TaggableExtend
+
+  attr_accessor :internal
 
   def self.filters
     [
@@ -45,6 +45,13 @@ class Server
     newrecord.reload
     newrecord.parameters #transform the parameters!
     newrecord
+  end
+
+  def initialize(*args, &block)
+    super(*args, &block)
+    if RightScale::Api::api0_1?
+      @internal = ServerInternal.new(*args, &block)
+    end
   end
 
   # The RightScale api returns the server parameters as a hash with "name" and "value".

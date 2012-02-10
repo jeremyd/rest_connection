@@ -20,9 +20,10 @@ class ServerInternal
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
   include SshHax
-
   include RightScale::Api::Internal
   extend RightScale::Api::InternalExtend
+
+  deny_methods :index, :show, :create, :destroy, :update
 
   def resource_plural_name
     "servers"

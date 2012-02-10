@@ -19,6 +19,8 @@ class Ec2SshKey
 
   deny_methods :index, :update
 
+  attr_accessor :internal
+
   def self.create(opts)
     create_opts = { self.resource_singular_name.to_sym => opts }
     create_opts['cloud_id'] = opts['cloud_id'] if opts['cloud_id']
@@ -26,5 +28,12 @@ class Ec2SshKey
     newrecord = self.new('href' => location)
     newrecord.reload
     newrecord
+  end
+
+  def initialize(*args, &block)
+    super(*args, &block)
+    if RightScale::Api::api0_1?
+      @internal = Ec2SshKeyInternal.new(*args, &block)
+    end
   end
 end

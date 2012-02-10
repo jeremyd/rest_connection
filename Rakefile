@@ -11,5 +11,6 @@ Jeweler::Tasks.new do |gemspec|
   gemspec.add_dependency('net-ssh', "=2.1.4")
   gemspec.add_dependency('json')
   gemspec.add_dependency('highline')
+  gemspec.add_dependency('rest-client')
 end
 Jeweler::GemcutterTasks.new

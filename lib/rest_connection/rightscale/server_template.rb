@@ -19,8 +19,13 @@ class ServerTemplate
   include RightScale::Api::Taggable
   extend RightScale::Api::TaggableExtend
 
-  def initialize(params)
-    @params = params
+  attr_accessor :internal
+
+  def initialize(*args, &block)
+    super(*args, &block)
+    if RightScale::Api::api0_1?
+      @internal = ServerTemplateInternal.new(*args, &block)
+    end
   end
 
   def reload

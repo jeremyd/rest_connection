@@ -20,6 +20,8 @@ class RightScriptInternal
   include RightScale::Api::Internal
   extend RightScale::Api::InternalExtend
 
+  deny_methods :index, :show
+
   def resource_plural_name
     "right_scripts"
   end

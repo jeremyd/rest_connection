@@ -19,6 +19,8 @@ class ServerTemplateInternal
   include RightScale::Api::Internal
   extend RightScale::Api::InternalExtend
 
+  deny_methods :index, :create, :show, :update, :destroy
+
   def resource_plural_name
     "server_templates"
   end

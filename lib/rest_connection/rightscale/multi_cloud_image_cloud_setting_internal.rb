@@ -19,6 +19,8 @@ class MultiCloudImageCloudSettingInternal
   include RightScale::Api::Internal
   extend RightScale::Api::InternalExtend
 
+  deny_methods :index, :show, :update
+
   def resource_plural_name
     "multi_cloud_image_cloud_settings"
   end
