@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Deininger", "Timothy Rodriguez"]
   s.date = "2012-02-27"
-  s.description = "provides rest_connection"
+  s.description = "A Modular RESTful API library. Current implemented modules: RightScale API"
   s.email = ["daniel.onorato@rightscale.com"]
   s.extra_rdoc_files = [
     "README.rdoc"
@@ -29,6 +29,7 @@ Gem::Specification.new do |s|
     "examples/cucumber/step_definitions/spot_check_steps.rb",
     "examples/relaunch_deployment.rb",
     "examples/right_scale_ec2_instances_api_test.rb",
+    "git_hooks/post-commit",
     "git_hooks/post-commit.disabled",
     "git_hooks/post-merge.disabled",
     "git_hooks/pre-commit",
@@ -36,9 +37,12 @@ Gem::Specification.new do |s|
     "lib/rest_connection/patches.rb",
     "lib/rest_connection/rightscale/account.rb",
     "lib/rest_connection/rightscale/alert_spec.rb",
+    "lib/rest_connection/rightscale/alert_spec_subject.rb",
     "lib/rest_connection/rightscale/audit_entry.rb",
+    "lib/rest_connection/rightscale/backup.rb",
     "lib/rest_connection/rightscale/child_account.rb",
     "lib/rest_connection/rightscale/cloud.rb",
+    "lib/rest_connection/rightscale/cloud_account.rb",
     "lib/rest_connection/rightscale/credential.rb",
     "lib/rest_connection/rightscale/deployment.rb",
     "lib/rest_connection/rightscale/ec2_ebs_snapshot.rb",
@@ -46,12 +50,14 @@ Gem::Specification.new do |s|
     "lib/rest_connection/rightscale/ec2_elastic_ip.rb",
     "lib/rest_connection/rightscale/ec2_security_group.rb",
     "lib/rest_connection/rightscale/ec2_server_array.rb",
+    "lib/rest_connection/rightscale/ec2_server_array_internal.rb",
     "lib/rest_connection/rightscale/ec2_ssh_key.rb",
     "lib/rest_connection/rightscale/ec2_ssh_key_internal.rb",
     "lib/rest_connection/rightscale/executable.rb",
     "lib/rest_connection/rightscale/instance.rb",
     "lib/rest_connection/rightscale/instance_type.rb",
     "lib/rest_connection/rightscale/macro.rb",
+    "lib/rest_connection/rightscale/mc_audit_entry.rb",
     "lib/rest_connection/rightscale/mc_datacenter.rb",
     "lib/rest_connection/rightscale/mc_deployment.rb",
     "lib/rest_connection/rightscale/mc_image.rb",
@@ -63,6 +69,7 @@ Gem::Specification.new do |s|
     "lib/rest_connection/rightscale/mc_server.rb",
     "lib/rest_connection/rightscale/mc_server_array.rb",
     "lib/rest_connection/rightscale/mc_server_template.rb",
+    "lib/rest_connection/rightscale/mc_server_template_multi_cloud_image.rb",
     "lib/rest_connection/rightscale/mc_ssh_key.rb",
     "lib/rest_connection/rightscale/mc_tag.rb",
     "lib/rest_connection/rightscale/mc_volume.rb",
@@ -75,6 +82,7 @@ Gem::Specification.new do |s|
     "lib/rest_connection/rightscale/multi_cloud_image_internal.rb",
     "lib/rest_connection/rightscale/permission.rb",
     "lib/rest_connection/rightscale/right_script.rb",
+    "lib/rest_connection/rightscale/right_script_attachment_internal.rb",
     "lib/rest_connection/rightscale/right_script_internal.rb",
     "lib/rest_connection/rightscale/rightscale_api_base.rb",
     "lib/rest_connection/rightscale/rightscale_api_gateway.rb",
@@ -85,15 +93,20 @@ Gem::Specification.new do |s|
     "lib/rest_connection/rightscale/rightscale_api_taggable.rb",
     "lib/rest_connection/rightscale/rs_internal.rb",
     "lib/rest_connection/rightscale/s3_bucket.rb",
+    "lib/rest_connection/rightscale/security_group_rule.rb",
     "lib/rest_connection/rightscale/server.rb",
+    "lib/rest_connection/rightscale/server_ec2_ebs_volume.rb",
     "lib/rest_connection/rightscale/server_interface.rb",
     "lib/rest_connection/rightscale/server_internal.rb",
     "lib/rest_connection/rightscale/server_template.rb",
     "lib/rest_connection/rightscale/server_template_internal.rb",
+    "lib/rest_connection/rightscale/session.rb",
+    "lib/rest_connection/rightscale/sqs_queue.rb",
     "lib/rest_connection/rightscale/status.rb",
     "lib/rest_connection/rightscale/tag.rb",
     "lib/rest_connection/rightscale/task.rb",
     "lib/rest_connection/rightscale/user.rb",
+    "lib/rest_connection/rightscale/vpc_dhcp_option.rb",
     "lib/rest_connection/ssh_hax.rb",
     "rest_connection.gemspec",
     "spec/ec2_server_array_spec.rb",
@@ -110,10 +123,10 @@ Gem::Specification.new do |s|
     "spec/spec_helper.rb",
     "spec/tag_spec.rb"
   ]
-  s.homepage = "http://github.com/rigthscale/rest_connection"
+  s.homepage = "http://github.com/rightscale/rest_connection"
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.7.2"
-  s.summary = "lib for restful connections to the rightscale api"
+  s.rubygems_version = "1.8.17"
+  s.summary = "Modular RESTful API library"
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
@@ -123,17 +136,20 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<net-ssh>, ["= 2.1.4"])
       s.add_runtime_dependency(%q<json>, [">= 0"])
       s.add_runtime_dependency(%q<highline>, [">= 0"])
+      s.add_runtime_dependency(%q<rest-client>, [">= 0"])
     else
       s.add_dependency(%q<activesupport>, ["= 2.3.10"])
       s.add_dependency(%q<net-ssh>, ["= 2.1.4"])
       s.add_dependency(%q<json>, [">= 0"])
       s.add_dependency(%q<highline>, [">= 0"])
+      s.add_dependency(%q<rest-client>, [">= 0"])
     end
   else
     s.add_dependency(%q<activesupport>, ["= 2.3.10"])
     s.add_dependency(%q<net-ssh>, ["= 2.1.4"])
     s.add_dependency(%q<json>, [">= 0"])
     s.add_dependency(%q<highline>, [">= 0"])
+    s.add_dependency(%q<rest-client>, [">= 0"])
   end
 end
 
