@@ -54,6 +54,7 @@ module RightScale
       end
 
       def nickname
+        raise TypeError.new("@params isn't a Hash! @params.to_s=#{@params.to_s}") unless @params.is_a?(Hash)
         @params["nickname"] || @params["name"]
       end
 
@@ -94,7 +95,7 @@ module RightScale
       end
 
       def method_missing(method_name, *args)
-        puts "DEBUG: method_missing in #{self.class.to_s}: #{method_name}" if ENV['REST_CONNECT_DEBUG']
+        puts "DEBUG: method_missing in #{self.class.to_s}: #{method_name.to_s}" if ENV['REST_CONNECT_DEBUG']
         mn = method_name.to_s
         assignment = mn.gsub!(/=/,"")
         mn_dash = mn.gsub(/_/,"-")
@@ -118,7 +119,8 @@ module RightScale
           return self[mn]
         else
           return nil
-          #raise "called unknown method #{method_name} with #{args.inspect}"
+          warn "!!!! WARNING - called unknown method #{method_name.to_s}# with #{args.inspect}"
+          #raise "called unknown method #{method_name.to_s}# with #{args.inspect}"
         end
       end
 

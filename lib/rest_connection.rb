@@ -205,7 +205,7 @@ module RestConnection
     def handle_response(res)
       if res.code.to_i == 201 or res.code.to_i == 202
         return res['Location']
-      elsif [200,203,204,302].detect { |d| d == res.code.to_i }
+      elsif [200,203,204].detect { |d| d == res.code.to_i }
         if res.body
           begin
             return JSON.load(res.body)
