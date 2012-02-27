@@ -5,13 +5,13 @@
 
 Gem::Specification.new do |s|
   s.name = "rest_connection"
-  s.version = "0.1.0"
+  s.version = "0.1.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Deininger", "Timothy Rodriguez"]
-  s.date = "2011-11-01"
+  s.date = "2012-02-27"
   s.description = "provides rest_connection"
-  s.email = ["jeremy@rubyonlinux.org", "tw.rodriguez@gmail.com"]
+  s.email = ["daniel.onorato@rightscale.com"]
   s.extra_rdoc_files = [
     "README.rdoc"
   ]
@@ -110,7 +110,7 @@ Gem::Specification.new do |s|
     "spec/spec_helper.rb",
     "spec/tag_spec.rb"
   ]
-  s.homepage = "http://github.com/twrodriguez/rest_connection"
+  s.homepage = "http://github.com/rigthscale/rest_connection"
   s.require_paths = ["lib"]
   s.rubygems_version = "1.7.2"
   s.summary = "lib for restful connections to the rightscale api"
