@@ -13,7 +13,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with RestConnection.  If not, see <http://www.gnu.org/licenses/>.
 
-class Ec2ServerArray
+class Ec2ServerArrayInternal
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
   include RightScale::Api::Taggable
