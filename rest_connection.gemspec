@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "rest_connection"
-  s.version = "0.1.5"
+  s.version = "0.1.6"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jeremy Deininger", "Timothy Rodriguez"]
-  s.date = "2012-02-27"
+  s.date = "2012-03-06"
   s.description = "A Modular RESTful API library. Current implemented modules: RightScale API"
   s.email = ["daniel.onorato@rightscale.com"]
   s.extra_rdoc_files = [
