@@ -47,3 +47,10 @@ Copy the example from GEMHOME/rest_connection/examples/rest_api_config.yaml.samp
 
   puts my_array.instances.map { |i| i['ip-address'] }
 
+=== To cut a new gem and push to rubygems.org
+
+  Edit VERSION and bump the number
+  rake gemspec
+  rake install
+  visit www.rubygems.org
+    gem push pkg/rest_connection-0.0.0.gem (use your new version number in this command)
