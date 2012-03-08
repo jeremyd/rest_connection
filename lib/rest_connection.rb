@@ -22,6 +22,7 @@ require 'rest_connection/rightscale/rightscale_api_resources'
 require 'rest_connection/patches'
 require 'logger'
 require 'highline/import'
+require 'nokogiri'
 
 module RestConnection
   class Connection
@@ -204,8 +205,21 @@ module RestConnection
     # decoding and post processing goes here. This is where you may need some customization if you want to handle the response differently (or not at all!).  Luckily it's easy to modify based on this handler.
     def handle_response(res)
       if res.code.to_i == 201 or res.code.to_i == 202
-        return res['Location']
+        #
+        # In most cases, it's safe to return the location
+        #
+      	if res['Location']
+      	  return res['Location']
+      	else
+      	  #
+      	  # Ec2ServerArrayInternal.run_script_on_instances returns XML.
+      	  # We need to parse it to retrieve the href's to audit entries.
+      	  #
+          xml_response = Nokogiri::XML(res.body)
+          return xml_response.xpath('audit-entries/audit-entry/href').map { |href| href.content }
+        end
       elsif [200,203,204].detect { |d| d == res.code.to_i }
+
         if res.body
           begin
             return JSON.load(res.body)
