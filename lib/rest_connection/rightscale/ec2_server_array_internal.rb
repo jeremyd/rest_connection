@@ -16,9 +16,9 @@
 class Ec2ServerArrayInternal
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
-  include RightScale::Api::Taggable
-  extend RightScale::Api::TaggableExtend
-
+  include RightScale::Api::Internal
+  extend RightScale::Api::InternalExtend
+  
   deny_methods :index, :show, :create, :update, :destroy
 
   def run_script_on_instances(script, ec2_instance_hrefs=[], opts={})
@@ -28,7 +28,7 @@ class Ec2ServerArrayInternal
     when String then script = RightScript.new('href' => script)
     end
 
-    params = {:right_script_href => script.href}
+    params = {:right_script_href => script.href, :format => 'js'}
     unless ec2_instance_hrefs.nil? || ec2_instance_hrefs.empty?
       params[:ec2_instance_hrefs] = ec2_instance_hrefs
     end
@@ -37,7 +37,7 @@ class Ec2ServerArrayInternal
     end
     params = {:ec2_server_array => params}
     connection.post(uri.path + "/run_script_on_instances", params).map do |work_unit|
-      Status.new('href' => location)
+      Status.new('href' => work_unit)
     end
   end
 end
