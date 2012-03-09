@@ -28,7 +28,7 @@ class Ec2ServerArrayInternal
     when String then script = RightScript.new('href' => script)
     end
 
-    params = {:right_script_href => script.href, :format => 'js'}
+    params = {:right_script_href => script.href }
     unless ec2_instance_hrefs.nil? || ec2_instance_hrefs.empty?
       params[:ec2_instance_hrefs] = ec2_instance_hrefs
     end
@@ -36,8 +36,10 @@ class Ec2ServerArrayInternal
       params[:parameters] = opts
     end
     params = {:ec2_server_array => params}
+    status_array=[]
     connection.post(uri.path + "/run_script_on_instances", params).map do |work_unit|
-      Status.new('href' => work_unit)
+      status_array.push Status.new('href' => work_unit)
     end
+    return(status_array)
   end
 end
