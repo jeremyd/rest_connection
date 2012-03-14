@@ -12,5 +12,6 @@ Jeweler::Tasks.new do |gemspec|
   gemspec.add_dependency('json')
   gemspec.add_dependency('highline')
   gemspec.add_dependency('rest-client')
+  gemspec.add_dependency('nokogiri')
 end
 Jeweler::GemcutterTasks.new
