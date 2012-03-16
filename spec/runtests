@@ -1,0 +1,9 @@
+#!/bin/bash
+for file in ./*.rb
+do
+  if [ "${file}" != "./spec_helper.rb" ]
+  then
+    echo "**** Running ${file}..."
+    rspec ${file}
+  fi
+done

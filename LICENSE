@@ -20,22 +20,3 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
-
-#
-# You must have Beta v1.5 API access to use these internal API calls.
-#
-
-#
-# ChildAccount Resource requires 'enterprise_manager' role and 'enterprise_master' account setting
-#
-
-class ChildAccount
-  include RightScale::Api::Gateway
-  extend RightScale::Api::GatewayExtend
-
-  deny_methods :destroy, :update, :show
-
-  def self.filters
-    [:name]
-  end
-end

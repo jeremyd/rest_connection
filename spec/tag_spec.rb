@@ -1,6 +1,5 @@
 require 'rubygems'
 require 'rest_connection'
-require 'spec'
 require 'ruby-debug'
 
 describe Tag, "tags" do
