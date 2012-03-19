@@ -153,7 +153,7 @@ module SshHax
   # returns hash of exit_status and output from command
   def spot_check_command(command, ssh_key=nil, host_dns=self.reachable_ip, do_not_log_result=false)
     raise "FATAL: spot_check_command called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless host_dns
-    connection.logger "SSHing to #{host_dns} using key(s) #{ssh_key_config(ssh_key)}"
+    connection.logger "SSHing to #{host_dns} using key(s) #{ssh_key_config(ssh_key).inspect}"
     status = nil
     output = ""
     success = false
@@ -163,7 +163,7 @@ module SshHax
         # Test for ability to connect; Net::SSH.start sometimes hangs under certain server-side sshd configs
         test_ssh = ""
         [5, 15, 60].each { |timeout_max|
-          test_ssh = `ssh -o \"BatchMode=yes\" -o \"ConnectTimeout #{timeout_max}\" root@#{host_dns} -C \"exit\" 2>&1`.chomp
+          test_ssh = `ssh -o \"BatchMode=yes\" -o \"StrictHostKeyChecking=no\" -o \"ConnectTimeout #{timeout_max}\" root@#{host_dns} -C \"exit\" 2>&1`.chomp
           break if test_ssh =~ /permission denied/i or test_ssh.empty?
         }
         raise test_ssh unless test_ssh =~ /permission denied/i or test_ssh.empty?
