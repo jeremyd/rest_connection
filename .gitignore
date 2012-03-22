@@ -1,3 +1,4 @@
 *.swp
 *.swo
 pkg/*
+rest_connection.gemspec
