@@ -41,7 +41,7 @@ class MultiCloudImage
     # The .settings call filters out non-ec2 images
     more_settings = []
     if total_image_count > internal.settings.size
-      more_settings = McMultiCloudImage.find(rs_id.to_i).get_settings
+      more_settings = McMultiCloudImage.find(rs_id.to_i).settings
     end
     @params["multi_cloud_image_cloud_settings"] = internal.settings + more_settings
   end

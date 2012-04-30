@@ -53,7 +53,7 @@ class McServerTemplate
 
   def get_mcis_and_settings
     @params["multi_cloud_images"] = McMultiCloudImage.find_all(self.rs_id)
-    @params["multi_cloud_images"].each { |mci| mci.get_settings }
+    @params["multi_cloud_images"].each { |mci| mci.settings } # Eager load
     @mci_links = McServerTemplateMultiCloudImage.find_with_filter(:server_template_href => self.href)
   end
 

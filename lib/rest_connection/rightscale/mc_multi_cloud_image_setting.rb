@@ -28,7 +28,7 @@ class McMultiCloudImageSetting
   include RightScale::Api::Gateway
   extend RightScale::Api::GatewayExtend
 
-  deny_methods :create, :destroy, :update
+  deny_methods :update #supported in API, not imp'd in code yet
 
   def resource_plural_name
     "settings"
@@ -56,5 +56,12 @@ class McMultiCloudImageSetting
 
   def cloud_id
     self.cloud.split(/\//).last.to_i
+  end
+
+  # API 1.5 MultiCloudImageSetting is posted to url
+  # /api/multi_cloud_images/:id/settings but the object it posts to the
+  # API is named :multi_cloud_image_setting => { attrs }
+  def self.resource_post_name
+    "multi_cloud_image_setting"
   end
 end

@@ -280,6 +280,11 @@ module RightScale
         []
       end
 
+      # Hack for McMultiCloudImageSetting class to fix a API quirk
+      def resource_post_name
+        self.resource_singular_name
+      end
+
       def create(*args)
         if args.last.is_a?(Hash)
           opts = args.pop
@@ -287,7 +292,7 @@ module RightScale
           raise ArgumentError.new("create requires the last argument to be a Hash")
         end
         url = "#{parse_args(*args)}#{self.resource_plural_name}"
-        location = connection.post(url, self.resource_singular_name.to_sym => opts)
+        location = connection.post(url, self.resource_post_name.to_sym => opts)
         newrecord = self.new('links' => [ {'rel' => 'self', 'href' => location } ])
         newrecord.reload
         newrecord

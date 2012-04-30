@@ -29,9 +29,8 @@ class McMultiCloudImage
   extend RightScale::Api::GatewayExtend
   include RightScale::Api::McTaggable
   extend RightScale::Api::McTaggableExtend
-  attr_reader :settings
 
-  deny_methods :create, :destroy, :update
+  deny_methods :update #supported in API, not imp'd in code yet
 
   def resource_plural_name
     "multi_cloud_images"
@@ -58,10 +57,17 @@ class McMultiCloudImage
   end
 
   def supported_cloud_ids
-    @settings.map { |mcics| mcics.cloud_id }
+    settings.map { |mcics| mcics.cloud_id }
   end
 
-  def get_settings
+  def reload
+    @settings = nil
+    super
+  end
+
+  # Note, only returns API 1.5 clouds, API 1.0 omitted
+  def settings
+    return @settings if @settings
     @settings = []
     url = URI.parse(self.href)
     connection.get(url.path + '/settings').each { |s|
@@ -69,4 +75,6 @@ class McMultiCloudImage
     }
     @settings
   end
+  def get_settings; settings; end
+
 end
