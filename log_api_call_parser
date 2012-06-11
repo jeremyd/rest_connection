@@ -1,0 +1,81 @@
+#!/usr/bin/ruby
+
+#--
+# Copyright (c) 2012 RightScale, Inc, All Rights Reserved Worldwide.
+#
+# THIS PROGRAM IS CONFIDENTIAL AND PROPRIETARY TO RIGHTSCALE
+# AND CONSTITUTES A VALUABLE TRADE SECRET.  Any unauthorized use,
+# reproduction, modification, or disclosure of this program is
+# strictly prohibited.  Any use of this program by an authorized
+# licensee is strictly subject to the terms and conditions,
+# including confidentiality obligations, set forth in the applicable
+# License Agreement between RightScale, Inc. and
+# the licensee.
+#++
+
+########################################################################################################################
+# rest_connection API Call Parser Main program
+#
+# This program will parse a log produced from any given monkey run and display the:
+#		- API version
+#		- Request Type
+#		- Request
+#	in tabular format on STDOUT. It will also generate the csv file odf the same information.
+########################################################################################################################
+
+# Third party requires
+require 'rubygems'
+require 'trollop'
+require 'terminal-table'
+require 'tempfile'
+require 'csv'
+
+#
+# Parse and validate command line arguments
+#
+opts = Trollop::options do
+	banner <<-EOS
+Usage:
+log_api_call_parser [options]
+ where [options] are:
+	EOS
+	opt :input,  		"Path to the input file in standard rest_connection logger format", :short => "-i", :type => String, :required => true
+	opt :csv_file,  "Path to the csv output file", 																			:short => "-o", :type => String, :required => true
+end
+
+# Open the input file and read it into an array
+input_file = File.open(opts[:input])
+log_file_array = input_file.readlines
+input_file.close
+
+# open the output CSV file
+csv_file = File.open(opts[:csv_file], "w")
+csv_file_name = csv_file.path()
+
+# Loop over the array and for each row, parse out the api version, Get/Put and the url
+log_file_array.each { |element|
+	if element[0..2] == "I, "
+		element = element[50..-1]
+		#puts element
+		version = element[5..8]
+		request_type = element[11..13]
+		if request_type == "GET" || request_type == "PUT"
+			request = element[16..-1]
+			output_string = "#{version},#{request_type},#{request}"
+			csv_file.puts output_string
+		end
+	end
+}
+
+# close the output file
+csv_file.close
+
+# Generate a table version and write that out to STDOUT
+csv_array = CSV.read(csv_file_name)
+table = Terminal::Table.new
+csv_array.collect do |line|
+	table << line
+	table << :separator
+end
+puts table
+
