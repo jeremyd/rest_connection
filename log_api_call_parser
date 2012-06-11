@@ -52,7 +52,9 @@ input_file.close
 csv_file = File.open(opts[:csv_file], "w")
 csv_file_name = csv_file.path()
 
-# Loop over the array and for each row, parse out the api version, Get/Put and the url
+# Loop over the array and for each row, parse out the api version, request type and the request
+# and add them to output_array for later sorting and writing.
+output_array = []
 log_file_array.each { |element|
 	if element[0..2] == "I, "
 		element = element[50..-1]
@@ -61,11 +63,19 @@ log_file_array.each { |element|
 		request_type = element[11..13]
 		if request_type == "GET" || request_type == "PUT"
 			request = element[16..-1]
-			output_string = "#{version},#{request_type},#{request}"
-			csv_file.puts output_string
+			output_array.push "#{version},#{request_type},#{request}"
 		end
 	end
 }
+
+# Sort the output array by API version
+output_array.sort! {|a,b| a <=> b}
+
+# Remove duplicates
+output_array.uniq!
+
+# Write out the CSV file
+output_array.each { |element| csv_file.puts element }
 
 # close the output file
 csv_file.close
