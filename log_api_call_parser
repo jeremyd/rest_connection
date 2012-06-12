@@ -48,17 +48,18 @@ input_file = File.open(opts[:input])
 log_file_array = input_file.readlines
 input_file.close
 
-# open the output CSV file
-csv_file = File.open(opts[:csv_file], "w")
-csv_file_name = csv_file.path()
-
 # Loop over the array and for each row, parse out the api version, request type and the request
 # and add them to output_array for later sorting and writing.
 output_array = []
+search_string = "INFO -- :"
 log_file_array.each { |element|
 	if element[0..2] == "I, "
-		element = element[50..-1]
-		#puts element
+		# Find the API version start column as this can vary at least per log file and maybe even per line
+		api_version_start_column = element.index(search_string)
+		api_version_start_column = api_version_start_column + search_string.length + 1
+
+		# Get the elements
+		element = element[api_version_start_column..-1]
 		version = element[5..8]
 		request_type = element[11..13]
 		if request_type == "GET" || request_type == "PUT"
@@ -75,9 +76,9 @@ output_array.sort! {|a,b| a <=> b}
 output_array.uniq!
 
 # Write out the CSV file
+csv_file = File.open(opts[:csv_file], "w")
+csv_file_name = csv_file.path()
 output_array.each { |element| csv_file.puts element }
-
-# close the output file
 csv_file.close
 
 # Generate a table version and write that out to STDOUT
