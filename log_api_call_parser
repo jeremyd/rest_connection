@@ -16,7 +16,7 @@
 ########################################################################################################################
 # rest_connection API Call Parser Main program
 #
-# This program will parse a log produced from any given monkey run and display the:
+# This program will parse a rest_connection.log produced from any given monkey run and display the:
 #		- API version
 #		- Request Type
 #		- Request
