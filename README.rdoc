@@ -13,7 +13,7 @@
 
 You must setup ~/.rest_connection/rest_api_config.yaml or /etc/rest_connection/rest_api_config.yaml
 
-Copy the example from GEMHOME/rest_connection/examples/rest_api_config.yaml.sample and fill in your connection info.
+Copy the example from GEMHOME/rest_connection/config/rest_api_config.yaml.sample and fill in your connection info.
 
   Pro Tip: to find a GEMHOME, use gemedit
   "gem install gemedit"
