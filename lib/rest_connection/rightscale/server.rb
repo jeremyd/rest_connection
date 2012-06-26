@@ -455,4 +455,25 @@ class Server
     tags = tags.select { |tag| tag.start_with?("#{namespace}:") } if namespace
     self.remove_tags(*tags)
   end
+
+  def lock
+    unless self.settings['locked']
+      serv_href = URI.parse(self.href)
+      res = connection.put(serv_href.path, :server => {:lock => 'true'})
+      res.is_a?(Net::HTTPSuccess) ? true : false
+    else
+      connection.logger("Server is already locked")
+    end
+  end
+
+  def unlock
+    if self.settings['locked']
+      serv_href = URI.parse(self.href)
+      res = connection.put(serv_href.path, :server => {:lock => 'false'})
+      res.is_a?(Net::HTTPSuccess) ? true : false
+    else
+      connection.logger("Server is already unlocked")
+    end
+  end
+
 end
