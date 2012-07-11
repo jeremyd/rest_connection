@@ -70,23 +70,23 @@ class McServer < Server
 
         # Retry on 422 conflict exception (ONLY MS AZURE WILL GENERATE THIS EXCEPTION)
         target_error_message = "Invalid response HTTP code: 422: CloudException: ConflictError:"
-        if e.message =~ target_error_message
+        if e.message =~ /#{target_error_message}/
           puts "************* In mcserver.launch() exception matched **********************"
           if connection.settings[:azure_hack_on]
             azure_hack_retry_count = connection.settings[:azure_hack_retry_count]
-            warn "McServer.launch() caught Azure exception: Invalid response HTTP code: 422: CloudException: ConflictError:"
+            connection.logger("McServer.launch(): Caught Azure exception: #{target_error_message}")
 
             retry_count = 1
             loop do
               # sleep for azure_hack_sleep_seconds seconds
-              warn  "Sleeping for #{connection.settings[:azure_hack_sleep_seconds]} seconds and then retrying launch (retry count = #{retry_count})..."
+              connection.logger("McServer.launch(): Sleeping for #{connection.settings[:azure_hack_sleep_seconds]} seconds and then retrying (#{retry_count}) launch...")
               sleep(connection.settings[:azure_hack_sleep_seconds])
 
               # retry the launch
               begin
                 connection.post(t.path + '/launch')
               rescue Exception => e2
-                if e2.message =~ target_error_message
+                if e2.message =~ /#{target_error_message}/
                   azure_hack_retry_count -= 1
                   if azure_hack_retry_count > 0
                     retry_count += 1
