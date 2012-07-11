@@ -9,4 +9,5 @@
 :common_headers:
   X_API_VERSION: "1.0"
 :azure_hack_on: true
+:azure_hack_retry_count: 5
 :azure_hack_sleep_seconds: 60

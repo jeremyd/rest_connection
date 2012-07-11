@@ -56,24 +56,45 @@ class McServer < Server
 
   def launch
     if actions.include?("launch")
+      t = URI.parse(self.href)
       begin
-        t = URI.parse(self.href)
+        puts "************* In mcserver.launch() attempting launch **********************"
         connection.post(t.path + '/launch')
       rescue RestConnection::Errors => e
+        puts "************* In mcserver.launch() caught exception #{e.inspect} **********************"
+        puts "************* @settings[:azure_hack_on] = #{@settings[:azure_hack_on]} **********************"
+        puts "************* @settings[:azure_hack_retry_count] = #{@settings[:azure_hack_retry_count]} **********************"
+        puts "************* @settings[:azure_hack_sleep_seconds] = #{@settings[:azure_hack_sleep_seconds]} **********************"
         # THIS IS A TEMPORARY HACK TO GET AROUND AZURE SERVER LAUNCH PROBLEMS AND SHOULD BE REMOVED ONCE MICROSOFT
         # FIXES THIS BUG ON THEIR END!
 
         # Retry on 422 conflict exception (ONLY MS AZURE WILL GENERATE THIS EXCEPTION)
-        if e.message =~ "Invalid response HTTP code: 422: CloudException: ConflictError:"
+        target_error_message = "Invalid response HTTP code: 422: CloudException: ConflictError:"
+        if e.message =~ target_error_message
+          puts "************* In mcserver.launch() exception matched **********************"
           if @settings[:azure_hack_on]
-            warn "McServer.launch() caught Azure exception: Invalid response HTTP code: 422: CloudException: ConflictError: sleeping for #{@settings[:azure_hack_sleep_seconds]} seconds and then retrying server launch..."
+            azure_hack_retry_count = @settings[:azure_hack_retry_count]
+            warn "McServer.launch() caught Azure exception: Invalid response HTTP code: 422: CloudException: ConflictError: sleeping for #{@settings[:azure_hack_sleep_seconds]} seconds and then retrying server launch #{} times..."
 
-            # sleep for azure_hack_sleep_seconds seconds
-            sleep(@settings[:azure_hack_sleep_seconds])
+            loop do
+              # sleep for azure_hack_sleep_seconds seconds
+              sleep(@settings[:azure_hack_sleep_seconds])
 
-            # retry the launch
-            t = URI.parse(self.href)
-            connection.post(t.path + '/launch')
+              # retry the launch
+              begin
+                connection.post(t.path + '/launch')
+              rescue => e
+                if e.message =~ target_error_message
+                  azure_hack_retry_count -= 1
+                  if azure_hack_retry_count > 0
+                    next
+                  else
+                    raise
+                  end
+                end
+              end
+              break
+            end
           else
             raise
           end

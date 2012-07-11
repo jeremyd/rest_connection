@@ -82,6 +82,7 @@ module RestConnection
         @settings[:pass] = @@pass
       end
       @settings[:azure_hack_on] ||= true
+      @settings[:azure_hack_retry_count] ||= 5
       @settings[:azure_hack_sleep_seconds] ||= 60
     end
 
