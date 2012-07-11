@@ -74,10 +74,12 @@ class McServer < Server
           puts "************* In mcserver.launch() exception matched **********************"
           if @settings[:azure_hack_on]
             azure_hack_retry_count = @settings[:azure_hack_retry_count]
-            warn "McServer.launch() caught Azure exception: Invalid response HTTP code: 422: CloudException: ConflictError: sleeping for #{@settings[:azure_hack_sleep_seconds]} seconds and then retrying server launch #{} times..."
+            warn "McServer.launch() caught Azure exception: Invalid response HTTP code: 422: CloudException: ConflictError:"
 
+            retry_count = 1
             loop do
               # sleep for azure_hack_sleep_seconds seconds
+              warn  "Sleeping for #{@settings[:azure_hack_sleep_seconds]} seconds and then retrying launch (retry count = #{retry_count})..."
               sleep(@settings[:azure_hack_sleep_seconds])
 
               # retry the launch
@@ -87,6 +89,7 @@ class McServer < Server
                 if e2.message =~ target_error_message
                   azure_hack_retry_count -= 1
                   if azure_hack_retry_count > 0
+                    retry_count += 1
                     next
                   else
                     raise
