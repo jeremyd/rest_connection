@@ -56,8 +56,27 @@ class McServer < Server
 
   def launch
     if actions.include?("launch")
-      t = URI.parse(self.href)
-      connection.post(t.path + '/launch')
+      begin
+        t = URI.parse(self.href)
+        connection.post(t.path + '/launch')
+      rescue RestConnection::Errors => e
+        # THIS IS A TEMPORARY HACK TO GET AROUND AZURE SERVER LAUNCH PROBLEMS AND SHOULD BE REMOVED ONCE MICROSOFT
+        # FIXES THIS BUG ON THEIR END!
+
+        # Retry on 422 conflict exception (ONLY MS AZURE WILL GENERATE THIS EXCEPTION)
+        if e.message =~ "Invalid response HTTP code: 422: CloudException: ConflictError:"
+          if @settings[:azure_hack_on]
+            # sleep for azure_hack_sleep_seconds seconds
+            sleep(@settings[:azure_hack_sleep_seconds])
+
+            # retry the launch
+            t = URI.parse(self.href)
+            connection.post(t.path + '/launch')
+          else
+            raise
+          end
+        end
+      end
     elsif self.state == "inactive"
       raise "FATAL: Server is in an unlaunchable state!"
     else

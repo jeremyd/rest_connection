@@ -81,6 +81,8 @@ module RestConnection
         @@pass = ask("Password:") { |q| q.echo = false } unless @@pass
         @settings[:pass] = @@pass
       end
+      @settings[:azure_hack_on] ||= true
+      @settings[:azure_hack_sleep_seconds] ||= 60
     end
 
     # Main HTTP connection loop. Common settings are set here, then we yield(BASE_URI, OPTIONAL_HEADERS) to other methods for each type of HTTP request: GET, PUT, POST, DELETE
