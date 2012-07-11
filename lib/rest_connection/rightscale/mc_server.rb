@@ -62,9 +62,9 @@ class McServer < Server
         connection.post(t.path + '/launch')
       rescue Exception => e
         puts "************* In mcserver.launch() caught exception #{e.inspect} **********************"
-        puts "************* @settings[:azure_hack_on] = #{@settings[:azure_hack_on]} **********************"
-        puts "************* @settings[:azure_hack_retry_count] = #{@settings[:azure_hack_retry_count]} **********************"
-        puts "************* @settings[:azure_hack_sleep_seconds] = #{@settings[:azure_hack_sleep_seconds]} **********************"
+        puts "************* connection.settings[:azure_hack_on] = #{connection.settings[:azure_hack_on]} **********************"
+        puts "************* connection.settings[:azure_hack_retry_count] = #{connection.settings[:azure_hack_retry_count]} **********************"
+        puts "************* connection.settings[:azure_hack_sleep_seconds] = #{connection.settings[:azure_hack_sleep_seconds]} **********************"
         # THIS IS A TEMPORARY HACK TO GET AROUND AZURE SERVER LAUNCH PROBLEMS AND SHOULD BE REMOVED ONCE MICROSOFT
         # FIXES THIS BUG ON THEIR END!
 
@@ -72,15 +72,15 @@ class McServer < Server
         target_error_message = "Invalid response HTTP code: 422: CloudException: ConflictError:"
         if e.message =~ target_error_message
           puts "************* In mcserver.launch() exception matched **********************"
-          if @settings[:azure_hack_on]
-            azure_hack_retry_count = @settings[:azure_hack_retry_count]
+          if connection.settings[:azure_hack_on]
+            azure_hack_retry_count = connection.settings[:azure_hack_retry_count]
             warn "McServer.launch() caught Azure exception: Invalid response HTTP code: 422: CloudException: ConflictError:"
 
             retry_count = 1
             loop do
               # sleep for azure_hack_sleep_seconds seconds
-              warn  "Sleeping for #{@settings[:azure_hack_sleep_seconds]} seconds and then retrying launch (retry count = #{retry_count})..."
-              sleep(@settings[:azure_hack_sleep_seconds])
+              warn  "Sleeping for #{connection.settings[:azure_hack_sleep_seconds]} seconds and then retrying launch (retry count = #{retry_count})..."
+              sleep(connection.settings[:azure_hack_sleep_seconds])
 
               # retry the launch
               begin
