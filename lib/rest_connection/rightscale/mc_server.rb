@@ -79,7 +79,7 @@ class McServer < Server
             retry_count = 1
             loop do
               # sleep for azure_hack_sleep_seconds seconds
-              sleep_message = "McServer.launch(): Sleeping for #{connection.settings[:azure_hack_sleep_seconds]} seconds and then retrying (#{retry_count}) launch..."
+              sleep_message = "************* McServer.launch(): Sleeping for #{connection.settings[:azure_hack_sleep_seconds]} seconds and then retrying (#{retry_count}) launch..."
               puts(sleep_message)
               connection.logger(sleep_message)
               sleep(connection.settings[:azure_hack_sleep_seconds])
