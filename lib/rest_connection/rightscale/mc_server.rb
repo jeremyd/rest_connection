@@ -66,6 +66,8 @@ class McServer < Server
         # Retry on 422 conflict exception (ONLY MS AZURE WILL GENERATE THIS EXCEPTION)
         if e.message =~ "Invalid response HTTP code: 422: CloudException: ConflictError:"
           if @settings[:azure_hack_on]
+            warn "McServer.launch() caught Azure exception: Invalid response HTTP code: 422: CloudException: ConflictError: sleeping for #{@settings[:azure_hack_sleep_seconds]} seconds and then retrying server launch..."
+
             # sleep for azure_hack_sleep_seconds seconds
             sleep(@settings[:azure_hack_sleep_seconds])
 
