@@ -60,7 +60,7 @@ class McServer < Server
       begin
         puts "************* In mcserver.launch() attempting launch **********************"
         connection.post(t.path + '/launch')
-      rescue RestConnection::Errors => e
+      rescue Exception => e
         puts "************* In mcserver.launch() caught exception #{e.inspect} **********************"
         puts "************* @settings[:azure_hack_on] = #{@settings[:azure_hack_on]} **********************"
         puts "************* @settings[:azure_hack_retry_count] = #{@settings[:azure_hack_retry_count]} **********************"
@@ -83,8 +83,8 @@ class McServer < Server
               # retry the launch
               begin
                 connection.post(t.path + '/launch')
-              rescue => e
-                if e.message =~ target_error_message
+              rescue Exception => e2
+                if e2.message =~ target_error_message
                   azure_hack_retry_count -= 1
                   if azure_hack_retry_count > 0
                     next
