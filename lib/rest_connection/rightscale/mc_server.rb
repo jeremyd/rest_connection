@@ -58,28 +58,30 @@ class McServer < Server
     if actions.include?("launch")
       t = URI.parse(self.href)
       begin
-        puts "************* In mcserver.launch() attempting launch **********************"
         connection.post(t.path + '/launch')
       rescue Exception => e
-        puts "************* In mcserver.launch() caught exception #{e.inspect} **********************"
-        puts "************* connection.settings[:azure_hack_on] = #{connection.settings[:azure_hack_on]} **********************"
-        puts "************* connection.settings[:azure_hack_retry_count] = #{connection.settings[:azure_hack_retry_count]} **********************"
-        puts "************* connection.settings[:azure_hack_sleep_seconds] = #{connection.settings[:azure_hack_sleep_seconds]} **********************"
+        puts "************* McServer.launch(): Caught exception #{e.inspect}"
+        puts "************* McServer.launch(): connection.settings[:azure_hack_on] = #{connection.settings[:azure_hack_on]}"
+        puts "************* McServer.launch(): connection.settings[:azure_hack_retry_count] = #{connection.settings[:azure_hack_retry_count]}"
+        puts "************* McServer.launch(): connection.settings[:azure_hack_sleep_seconds] = #{connection.settings[:azure_hack_sleep_seconds]}"
         # THIS IS A TEMPORARY HACK TO GET AROUND AZURE SERVER LAUNCH PROBLEMS AND SHOULD BE REMOVED ONCE MICROSOFT
         # FIXES THIS BUG ON THEIR END!
 
         # Retry on 422 conflict exception (ONLY MS AZURE WILL GENERATE THIS EXCEPTION)
         target_error_message = "Invalid response HTTP code: 422: CloudException: ConflictError:"
         if e.message =~ /#{target_error_message}/
-          puts "************* In mcserver.launch() exception matched **********************"
           if connection.settings[:azure_hack_on]
             azure_hack_retry_count = connection.settings[:azure_hack_retry_count]
-            connection.logger("McServer.launch(): Caught Azure exception: #{target_error_message}")
+            exception_matched_message = "************* McServer.launch(): Matched Azure exception: \"#{target_error_message}\""
+            puts(exception_matched_message)
+            connection.logger(exception_matched_message)
 
             retry_count = 1
             loop do
               # sleep for azure_hack_sleep_seconds seconds
-              connection.logger("McServer.launch(): Sleeping for #{connection.settings[:azure_hack_sleep_seconds]} seconds and then retrying (#{retry_count}) launch...")
+              sleep_message = "McServer.launch(): Sleeping for #{connection.settings[:azure_hack_sleep_seconds]} seconds and then retrying (#{retry_count}) launch..."
+              puts(sleep_message)
+              connection.logger(sleep_message)
               sleep(connection.settings[:azure_hack_sleep_seconds])
 
               # retry the launch
@@ -94,6 +96,8 @@ class McServer < Server
                   else
                     raise
                   end
+                else
+                  raise
                 end
               end
               break
