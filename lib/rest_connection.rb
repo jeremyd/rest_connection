@@ -154,6 +154,7 @@ module RestConnection
     def get(href, additional_parameters = "")
       rest_connect do |base_uri,headers|
         new_href = (href =~ /^\// ? href : "#{base_uri}/#{href}")
+        puts("DEBUG: new_href get : #{new_href.inspect}")
         params = requestify(additional_parameters) || ""
         new_path = URI.escape(new_href + @settings[:extension] + "?") + params
         Net::HTTP::Get.new(new_path, headers)
@@ -168,6 +169,7 @@ module RestConnection
     def post(href, additional_parameters = {})
       rest_connect do |base_uri, headers|
         new_href = (href =~ /^\// ? href : "#{base_uri}/#{href}")
+        puts("DEBUG: new_href post : #{new_href.inspect}")
         res = Net::HTTP::Post.new(new_href , headers)
         unless additional_parameters.empty?
           res.set_content_type('application/json')
@@ -187,7 +189,9 @@ module RestConnection
       rest_connect do |base_uri, headers|
         new_href = (href =~ /^\// ? href : "#{base_uri}/#{href}")
         new_path = URI.escape(new_href)
+        puts("DEBUG: new_href put : #{new_href.inspect}")
         req = Net::HTTP::Put.new(new_path, headers)
+        puts("DEBUG: req  put : #{req.inspect}")
         req.set_content_type('application/json')
         req.body = additional_parameters.to_json
         req
