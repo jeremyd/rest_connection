@@ -68,11 +68,17 @@ class McServer < Server
         # FIXES THIS BUG ON THEIR END!
 
         # Retry on 422 conflict exception (ONLY MS AZURE WILL GENERATE THIS EXCEPTION)
-        target_error_message = "Invalid response HTTP code: 422: CloudException: ConflictError:"
-        if e.message =~ /#{target_error_message}/
+        target_422_conflict_error_message = "Invalid response HTTP code: 422: CloudException: ConflictError:"
+        target_504_gateway_timeout_error_message = "504 Gateway Time-out"
+        if e.message =~ /#{target_504_gateway_timeout_error_message}/
+          exception_matched_message = "McServer.launch(): Caught #{e.message}, treating as a successful launch..."
+          puts(exception_matched_message)
+          connection.logger(exception_matched_message)
+          true
+        elsif e.message =~ /#{target_422_conflict_error_message}/
           if connection.settings[:azure_hack_on]
             azure_hack_retry_count = connection.settings[:azure_hack_retry_count]
-            exception_matched_message = "************* McServer.launch(): Matched Azure exception: \"#{target_error_message}\""
+            exception_matched_message = "************* McServer.launch(): Matched Azure exception: \"#{target_422_conflict_error_message}\""
             puts(exception_matched_message)
             connection.logger(exception_matched_message)
 
@@ -88,7 +94,7 @@ class McServer < Server
               begin
                 connection.post(t.path + '/launch')
               rescue Exception => e2
-                if e2.message =~ /#{target_error_message}/
+                if e2.message =~ /#{target_422_conflict_error_message}/
                   azure_hack_retry_count -= 1
                   if azure_hack_retry_count > 0
                     retry_count += 1
