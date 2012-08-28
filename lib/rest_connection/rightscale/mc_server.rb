@@ -57,7 +57,62 @@ class McServer < Server
   def launch
     if actions.include?("launch")
       t = URI.parse(self.href)
-      connection.post(t.path + '/launch')
+      begin
+        connection.post(t.path + '/launch')
+      rescue Exception => e
+        puts "************* McServer.launch(): Caught exception #{e.inspect}"
+        puts "************* McServer.launch(): connection.settings[:azure_hack_on] = #{connection.settings[:azure_hack_on]}"
+        puts "************* McServer.launch(): connection.settings[:azure_hack_retry_count] = #{connection.settings[:azure_hack_retry_count]}"
+        puts "************* McServer.launch(): connection.settings[:azure_hack_sleep_seconds] = #{connection.settings[:azure_hack_sleep_seconds]}"
+        # THIS IS A TEMPORARY HACK TO GET AROUND AZURE SERVER LAUNCH PROBLEMS AND SHOULD BE REMOVED ONCE MICROSOFT
+        # FIXES THIS BUG ON THEIR END!
+
+        # Retry on 422 conflict exception (ONLY MS AZURE WILL GENERATE THIS EXCEPTION)
+        target_422_conflict_error_message = "Invalid response HTTP code: 422: CloudException: ConflictError:"
+        target_504_gateway_timeout_error_message = "504 Gateway Time-out"
+        if e.message =~ /#{target_504_gateway_timeout_error_message}/
+          exception_matched_message = "McServer.launch(): Caught #{e.message}, treating as a successful launch..."
+          puts(exception_matched_message)
+          connection.logger(exception_matched_message)
+          true
+        elsif e.message =~ /#{target_422_conflict_error_message}/
+          if connection.settings[:azure_hack_on]
+            azure_hack_retry_count = connection.settings[:azure_hack_retry_count]
+            exception_matched_message = "************* McServer.launch(): Matched Azure exception: \"#{target_422_conflict_error_message}\""
+            puts(exception_matched_message)
+            connection.logger(exception_matched_message)
+
+            retry_count = 1
+            loop do
+              # sleep for azure_hack_sleep_seconds seconds
+              sleep_message = "************* McServer.launch(): Sleeping for #{connection.settings[:azure_hack_sleep_seconds]} seconds and then retrying (#{retry_count}) launch..."
+              puts(sleep_message)
+              connection.logger(sleep_message)
+              sleep(connection.settings[:azure_hack_sleep_seconds])
+
+              # retry the launch
+              begin
+                connection.post(t.path + '/launch')
+              rescue Exception => e2
+                if e2.message =~ /#{target_422_conflict_error_message}/
+                  azure_hack_retry_count -= 1
+                  if azure_hack_retry_count > 0
+                    retry_count += 1
+                    next
+                  else
+                    raise
+                  end
+                else
+                  raise
+                end
+              end
+              break
+            end
+          else
+            raise
+          end
+        end
+      end
     elsif self.state == "inactive"
       raise "FATAL: Server is in an unlaunchable state!"
     else
