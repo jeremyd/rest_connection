@@ -173,6 +173,11 @@ module SshHax
             ch1.on_request('exit-status') do |ch, data|
               status = data.read_long
             end
+            # Request a pseudo-tty, this is needed if sudo is used
+            ch1.request_pty do |ch, success|
+              raise "Could not obtain a pseudo-tty!" if !success
+            end
+            # Now execute the command
             ch1.exec(command) do |ch2, success|
               unless success
                 status = 1
