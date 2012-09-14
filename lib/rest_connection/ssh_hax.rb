@@ -83,6 +83,11 @@ module SshHax
       # Now run the tail on it
       connection.logger("Now tailing #{run_this} with: sudo -i #{tail_command}")
       log_channel = ssh.open_channel do |ch2|
+        # Request a pseudo-tty, this is needed as all calls use sudo to support RightLink 5.8
+        ch2.request_pty do |ch, success|
+          raise "Could not obtain a pseudo-tty!" if !success
+        end
+        # Now execute the tail command with "sudo -i" prepended to it
         ch2.exec "sudo -i #{tail_command}" do |ch, success|
           raise "could not execute command" unless success
           # "on_data" is called when the process writes something to stdout
