@@ -46,6 +46,79 @@ module SshHax
 
 
 
+  def spot_check(command, ssh_key=nil, host_dns=self.reachable_ip, &block)
+    puts "SshHax::Probe method #{__method__}() entered..."
+    results = spot_check_command(command, ssh_key, host_dns)
+    yield results[:output]
+  end
+
+
+
+  # returns true or false based on command success
+  def spot_check_command?(command, ssh_key=nil, host_dns=self.reachable_ip)
+    puts "SshHax::Probe method #{__method__}() entered..."
+    results = spot_check_command(command, ssh_key, host_dns)
+    return results[:status] == 0
+  end
+
+
+
+  # returns hash of exit_status and output from command
+  # Note that "sudo -i" is prepended to <command> and the 'rightscale' user is used.
+  def spot_check_command(command, ssh_key=nil, host_dns=self.reachable_ip, do_not_log_result=false)
+    puts "SshHax::Probe method #{__method__}() entered..."
+    raise "FATAL: spot_check_command called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless host_dns
+    connection.logger "SSHing to #{host_dns} using key(s) #{ssh_key_config(ssh_key).inspect}"
+    status = nil
+    output = ""
+    success = false
+    retry_count = 0
+    while (!success && retry_count < SSH_RETRY_COUNT) do
+      begin
+        # Test for ability to connect; Net::SSH.start sometimes hangs under certain server-side sshd configs
+        test_ssh = ""
+        [5, 15, 60].each { |timeout_max|
+          test_ssh = `ssh -o \"BatchMode=yes\" -o \"StrictHostKeyChecking=no\" -o \"ConnectTimeout #{timeout_max}\" rightscale@#{host_dns} -C \"exit\" 2>&1`.chomp
+          break if test_ssh =~ /permission denied/i or test_ssh.empty?
+        }
+        raise test_ssh unless test_ssh =~ /permission denied/i or test_ssh.empty?
+
+        Net::SSH.start(host_dns, 'rightscale', :keys => ssh_key_config(ssh_key), :user_known_hosts_file => "/dev/null") do |ssh|
+          cmd_channel = ssh.open_channel do |ch1|
+            ch1.on_request('exit-status') do |ch, data|
+              status = data.read_long
+            end
+            # Request a pseudo-tty, this is needed as all calls use sudo to support RightLink 5.8
+            ch1.request_pty do |ch, success|
+              raise "Could not obtain a pseudo-tty!" if !success
+            end
+            # Now execute the command with "sudo -i" prepended to it
+            ch1.exec("sudo -i #{command}") do |ch2, success|
+              unless success
+                status = 1
+              end
+              ch2.on_data do |ch, data|
+                output += data
+              end
+              ch2.on_extended_data do |ch, type, data|
+                output += data
+              end
+            end
+          end
+        end
+      rescue Exception => e
+        retry_count += 1 # opening the ssh channel failed -- try again.
+        connection.logger "ERROR during SSH session to #{host_dns}, retrying #{retry_count}: #{e} #{e.backtrace}"
+        sleep 10
+        raise e unless retry_count < SSH_RETRY_COUNT
+      end
+    end
+    connection.logger "SSH Run: #{command} on #{host_dns}. Retry was #{retry_count}. Exit status was #{status}. Output below ---\n#{output}\n---" unless do_not_log_result
+    return {:status => status, :output => output}
+  end
+
+
+=begin
   # Note that "sudo -i" is prepended to <run_this> and the 'rightscale' user is used.
   def run_and_tail(run_this, tail_command, expect, ssh_key=nil, host_dns=self.reachable_ip)
     puts "SshHax::Probe method #{__method__}() entered..."
@@ -159,78 +232,6 @@ module SshHax
     run_this = "rs_run_recipe -n '#{recipe}'"
     run_and_tail(run_this, tail_command, expect, ssh_key)
   end
-
-
-
-  def spot_check(command, ssh_key=nil, host_dns=self.reachable_ip, &block)
-    puts "SshHax::Probe method #{__method__}() entered..."
-    results = spot_check_command(command, ssh_key, host_dns)
-    yield results[:output]
-  end
-
-
-
-  # returns true or false based on command success
-  def spot_check_command?(command, ssh_key=nil, host_dns=self.reachable_ip)
-    puts "SshHax::Probe method #{__method__}() entered..."
-    results = spot_check_command(command, ssh_key, host_dns)
-    return results[:status] == 0
-  end
-
-
-
-  # returns hash of exit_status and output from command
-  # Note that "sudo -i" is prepended to <command> and the 'rightscale' user is used.
-  def spot_check_command(command, ssh_key=nil, host_dns=self.reachable_ip, do_not_log_result=false)
-    puts "SshHax::Probe method #{__method__}() entered..."
-    raise "FATAL: spot_check_command called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless host_dns
-    connection.logger "SSHing to #{host_dns} using key(s) #{ssh_key_config(ssh_key).inspect}"
-    status = nil
-    output = ""
-    success = false
-    retry_count = 0
-    while (!success && retry_count < SSH_RETRY_COUNT) do
-      begin
-        # Test for ability to connect; Net::SSH.start sometimes hangs under certain server-side sshd configs
-        test_ssh = ""
-        [5, 15, 60].each { |timeout_max|
-          test_ssh = `ssh -o \"BatchMode=yes\" -o \"StrictHostKeyChecking=no\" -o \"ConnectTimeout #{timeout_max}\" rightscale@#{host_dns} -C \"exit\" 2>&1`.chomp
-          break if test_ssh =~ /permission denied/i or test_ssh.empty?
-        }
-        raise test_ssh unless test_ssh =~ /permission denied/i or test_ssh.empty?
-
-        Net::SSH.start(host_dns, 'rightscale', :keys => ssh_key_config(ssh_key), :user_known_hosts_file => "/dev/null") do |ssh|
-          cmd_channel = ssh.open_channel do |ch1|
-            ch1.on_request('exit-status') do |ch, data|
-              status = data.read_long
-            end
-            # Request a pseudo-tty, this is needed as all calls use sudo to support RightLink 5.8
-            ch1.request_pty do |ch, success|
-              raise "Could not obtain a pseudo-tty!" if !success
-            end
-            # Now execute the command with "sudo -i" prepended to it
-            ch1.exec("sudo -i #{command}") do |ch2, success|
-              unless success
-                status = 1
-              end
-              ch2.on_data do |ch, data|
-                output += data
-              end
-              ch2.on_extended_data do |ch, type, data|
-                output += data
-              end
-            end
-          end
-        end
-      rescue Exception => e
-        retry_count += 1 # opening the ssh channel failed -- try again.
-        connection.logger "ERROR during SSH session to #{host_dns}, retrying #{retry_count}: #{e} #{e.backtrace}"
-        sleep 10
-        raise e unless retry_count < SSH_RETRY_COUNT
-      end
-    end
-    connection.logger "SSH Run: #{command} on #{host_dns}. Retry was #{retry_count}. Exit status was #{status}. Output below ---\n#{output}\n---" unless do_not_log_result
-    return {:status => status, :output => output}
-  end
+=end
 
 end
