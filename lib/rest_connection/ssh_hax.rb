@@ -44,17 +44,28 @@ module SshHax
     ssh_keys
   end
 
+
+
+  # Note that "sudo -i" is prepended to <run_this> and the 'rightscale' user is used.
   def run_and_tail(run_this, tail_command, expect, ssh_key=nil, host_dns=self.reachable_ip)
+    puts "SshHax::Probe method #{__method__}() entered..."
     status = nil
     result = nil
     output = ""
-    connection.logger("Running: #{run_this}")
+
+    # Run the main program
+    connection.logger("Running: sudo -i #{run_this}")
     Net::SSH.start(host_dns, 'rightscale', :keys => ssh_key_config(ssh_key), :user_known_hosts_file => "/dev/null") do |ssh|
       cmd_channel = ssh.open_channel do |ch1|
         ch1.on_request('exit-status') do |ch, data|
           status = data.read_long
         end
-        ch1.exec(run_this) do |ch2, success|
+        # Request a pseudo-tty, this is needed as all calls use sudo to support RightLink 5.8
+        ch1.request_pty do |ch, success|
+          raise "Could not obtain a pseudo-tty!" if !success
+        end
+        # Now execute the command with "sudo -i" prepended to it
+        ch1.exec("sudo -i #{run_this}") do |ch2, success|
           unless success
             output = "ERROR: SSH cmd failed to exec"
             status = 1
@@ -68,8 +79,11 @@ module SshHax
 
         end
       end
+
+      # Now run the tail on it
+      connection.logger("Now tailing #{run_this} with: sudo -i #{tail_command}")
       log_channel = ssh.open_channel do |ch2|
-        ch2.exec tail_command do |ch, success|
+        ch2.exec "sudo -i #{tail_command}" do |ch, success|
           raise "could not execute command" unless success
           # "on_data" is called when the process writes something to stdout
           ch.on_data do |c, data|
@@ -87,7 +101,7 @@ module SshHax
           ch.on_process do |c|
             if result
               ch.close
-              ssh.exec("killall tail")
+              ssh.exec("killall -u rightscale tail")
             end
           end
         end
@@ -101,8 +115,11 @@ module SshHax
     return {:status => success, :output => output}
   end
 
+
+
   # script is an Executable object with minimally nick or id set
   def run_executable_with_ssh(script, options={}, ssh_key=nil)
+    puts "SshHax::Probe method #{__method__}() entered..."
     raise "FATAL: run_executable called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless self.reachable_ip
     if script.is_a?(Executable)
       script = script.right_script
@@ -122,9 +139,12 @@ module SshHax
     AuditEntry.new(run_and_tail(run_this, tail_command, expect))
   end
 
+
+
   # recipe can be either a String, or an Executable
   # host_dns is optional and will default to objects self.reachable_ip
   def run_recipe_with_ssh(recipe, ssh_key=nil, host_dns=self.reachable_ip)
+    puts "SshHax::Probe method #{__method__}() entered..."
     raise "FATAL: run_script called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless self.reachable_ip
     if recipe.is_a?(Executable)
       recipe = recipe.recipe
@@ -135,23 +155,29 @@ module SshHax
     run_and_tail(run_this, tail_command, expect, ssh_key)
   end
 
+
+
   def spot_check(command, ssh_key=nil, host_dns=self.reachable_ip, &block)
-    connection.logger "SSHing to #{host_dns}"
-    Net::SSH.start(host_dns, 'rightscale', :keys => ssh_key_config(ssh_key)) do |ssh|
-      result = ssh.exec!(command)
-      yield result
-    end
+    puts "SshHax::Probe method #{__method__}() entered..."
+    results = spot_check_command(command, ssh_key, host_dns)
+    yield results[:output]
   end
+
+
 
   # returns true or false based on command success
   def spot_check_command?(command, ssh_key=nil, host_dns=self.reachable_ip)
+    puts "SshHax::Probe method #{__method__}() entered..."
     results = spot_check_command(command, ssh_key, host_dns)
     return results[:status] == 0
   end
 
 
+
   # returns hash of exit_status and output from command
+  # Note that "sudo -i" is prepended to <command> and the 'rightscale' user is used.
   def spot_check_command(command, ssh_key=nil, host_dns=self.reachable_ip, do_not_log_result=false)
+    puts "SshHax::Probe method #{__method__}() entered..."
     raise "FATAL: spot_check_command called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless host_dns
     connection.logger "SSHing to #{host_dns} using key(s) #{ssh_key_config(ssh_key).inspect}"
     status = nil
@@ -173,12 +199,12 @@ module SshHax
             ch1.on_request('exit-status') do |ch, data|
               status = data.read_long
             end
-            # Request a pseudo-tty, this is needed if sudo is used
+            # Request a pseudo-tty, this is needed as all calls use sudo to support RightLink 5.8
             ch1.request_pty do |ch, success|
               raise "Could not obtain a pseudo-tty!" if !success
             end
-            # Now execute the command
-            ch1.exec(command) do |ch2, success|
+            # Now execute the command with "sudo -i" prepended to it
+            ch1.exec("sudo -i #{command}") do |ch2, success|
               unless success
                 status = 1
               end
