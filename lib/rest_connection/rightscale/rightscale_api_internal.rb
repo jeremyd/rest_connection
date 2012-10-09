@@ -27,9 +27,16 @@ module RightScale
       def connection(*opts)
         @@little_brother_connection ||= RestConnection::Connection.new(*opts)
         settings = @@little_brother_connection.settings
-        settings[:common_headers]["X_API_VERSION"] = "0.1"
+
+        # authenticate with 1.0 first and set cookie for future requests
+        # using the @@l.b.c connection object
+        settings[:common_headers]["X_API_VERSION"] = "1.0"
         settings[:api_href] = settings[:api_url]
+        login_response = @@little_brother_connection.get("login")
+        @@little_brother_connection.cookie = login_response['set-cookie']
+
         settings[:extension] = ".js"
+        settings[:common_headers]["X_API_VERSION"] = "0.1"
         @@little_brother_connection
       end
     end

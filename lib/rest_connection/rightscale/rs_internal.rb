@@ -27,23 +27,15 @@
 class RsInternal
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
+  extend ::RightScale::Api::InternalConnection
 
   def connection
-    @@little_brother_connection ||= RestConnection::Connection.new
-    settings = @@little_brother_connection.settings
-    settings[:common_headers]["X_API_VERSION"] = "0.1"
-    settings[:api_href] = settings[:api_url]
-    settings[:extension] = ".js"
-    @@little_brother_connection
+    self.connection
   end
 
   def self.connection
-    @@little_brother_connection ||= RestConnection::Connection.new
-    settings = @@little_brother_connection.settings
-    settings[:common_headers]["X_API_VERSION"] = "0.1"
-    settings[:api_href] = settings[:api_url]
-    settings[:extension] = ".js"
-    @@little_brother_connection
+    # call connection defined in InternalConnection module
+    super
   end
 
   def self.get_server_template_multi_cloud_images(server_template_href)
