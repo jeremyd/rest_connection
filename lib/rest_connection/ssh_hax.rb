@@ -92,8 +92,12 @@ module SshHax
             ch1.request_pty do |ch, success|
               raise "Could not obtain a pseudo-tty!" if !success
             end
-            # Now execute the command with "sudo -i" prepended to it
-            ch1.exec("sudo -i #{command}") do |ch2, success|
+            # Now execute the command with "sudo -i --" prepended to it.
+            # NOTE: The -- option indicates that sudo should stop processing command line arguments
+            # NOTE: The use of single quotes is required to keep Ruby from interpretting the command string passed in and messing up regex's
+            sudo_command = 'sudo -i -- ' + command
+            puts 'SshHax::Probe executing ' + sudo_command + '...'
+            ch1.exec(sudo_command) do |ch2, success|
               unless success
                 status = 1
               end
