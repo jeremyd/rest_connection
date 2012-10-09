@@ -114,6 +114,7 @@ module SshHax
       end
     end
     connection.logger "SSH Run: #{command} on #{host_dns}. Retry was #{retry_count}. Exit status was #{status}. Output below ---\n#{output}\n---" unless do_not_log_result
+    puts "SshHax::Probe method #{__method__}() exiting..."
     return {:status => status, :output => output}
   end
 
