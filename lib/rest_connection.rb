@@ -84,6 +84,7 @@ module RestConnection
       @settings[:azure_hack_on] ||= true
       @settings[:azure_hack_retry_count] ||= 5
       @settings[:azure_hack_sleep_seconds] ||= 60
+      @settings[:api_logging] ||= false
     end
 
     # Main HTTP connection loop. Common settings are set here, then we yield(BASE_URI, OPTIONAL_HEADERS) to other methods for each type of HTTP request: GET, PUT, POST, DELETE
@@ -154,7 +155,7 @@ module RestConnection
     def get(href, additional_parameters = "")
       rest_connect do |base_uri,headers|
         new_href = (href =~ /^\// ? href : "#{base_uri}/#{href}")
-        puts("DEBUG: new_href get : #{new_href.inspect}")
+        puts("DEBUG: new_href get : #{new_href.inspect}") if @settings[:api_logging]
         params = requestify(additional_parameters) || ""
         new_path = URI.escape(new_href + @settings[:extension] + "?") + params
         Net::HTTP::Get.new(new_path, headers)
@@ -169,7 +170,7 @@ module RestConnection
     def post(href, additional_parameters = {})
       rest_connect do |base_uri, headers|
         new_href = (href =~ /^\// ? href : "#{base_uri}/#{href}")
-        puts("DEBUG: new_href post : #{new_href.inspect}")
+        puts("DEBUG: new_href post : #{new_href.inspect}") if @settings[:api_logging]
         res = Net::HTTP::Post.new(new_href , headers)
         unless additional_parameters.empty?
           res.set_content_type('application/json')
@@ -189,9 +190,9 @@ module RestConnection
       rest_connect do |base_uri, headers|
         new_href = (href =~ /^\// ? href : "#{base_uri}/#{href}")
         new_path = URI.escape(new_href)
-        puts("DEBUG: new_href put : #{new_href.inspect}")
+        puts("DEBUG: new_href put : #{new_href.inspect}") if @settings[:api_logging]
         req = Net::HTTP::Put.new(new_path, headers)
-        puts("DEBUG: req  put : #{req.inspect}")
+        puts("DEBUG: req  put : #{req.inspect}") if @settings[:api_logging]
         req.set_content_type('application/json')
         req.body = additional_parameters.to_json
         req
