@@ -132,7 +132,7 @@ class Server
       self.settings
       if self.reachable_ip
         # Got a dns name/ip address so log that and return (note that "reachable_ip" returns a dns name on AWS and an ip address on generic clouds)
-        connection.logger "Got dns: #{self.reachable_ip}."
+        connection.logger "Got dns name/ip address: #{self.reachable_ip}."
         return
       end
       connection.logger "Waiting #{dns_step} seconds before checking for dns name/ip address on #{self.nickname}..."
