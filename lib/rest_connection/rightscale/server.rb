@@ -118,19 +118,29 @@ class Server
   end
 
   # waits until the server is operational and dns_name is available
-  def wait_for_operational_with_dns(state_wait_timeout=1200)
-    timeout = 600
-    wait_for_state("operational", state_wait_timeout)
-    step = 15
-    while(timeout > 0)
+  def wait_for_operational_with_dns(operational_timeout_in_seconds = 1200, dns_timeout_in_seconds = operational_timeout_in_seconds / 2)
+    # First, wait for the server to go operational
+    wait_for_state("operational", operational_timeout_in_seconds)
+
+    # Log that we are switching to waiting for dns
+    connection.logger "#{self.nickname} is operational, now checking for dns name/ip address..."
+
+    # Now poll for valid dns
+    dns_timeout = dns_timeout_in_seconds
+    dns_step = 15
+    while(dns_timeout > 0)
       self.settings
-      break if self.reachable_ip
-      connection.logger "waiting for IP for #{self.nickname}"
-      sleep step
-      timeout -= step
+      if self.reachable_ip
+        # Got a dns name/ip address so log that and return (note that "reachable_ip" returns a dns name on AWS and an ip address on generic clouds)
+        connection.logger "Got dns name/ip address: #{self.reachable_ip}."
+        return
+      end
+      connection.logger "Waiting #{dns_step} seconds before checking for dns name/ip address on #{self.nickname}..."
+      sleep dns_step
+      dns_timeout -= dns_step
     end
-    connection.logger "got IP: #{self.reachable_ip}"
-    raise "FATAL, this server #{self.audit_link} timed out waiting for IP" if timeout <= 0
+
+    raise "FATAL, server #{self.nickname}, #{self.audit_link} timed out waiting for dns name/ip address, waited for #{dns_timeout_in_seconds}."
   end
 
   def audit_link
