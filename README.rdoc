@@ -4,10 +4,11 @@
   "gem install rest_connection"
 
 ==== Installing from source
-  "git clone http://github.com/rightscale/rest_connection.git"
-  "gem install jeweler rspec"
-  "rake check_dependencies" <- Install any gems listed.
-  "rake install"
+  "git clone git@github.com:rightscale/rest_connection.git"
+  "cd rest_connection"
+  "gem install rconf"
+  "rconf" <- follow any further instructions from rconf
+  "bundle install"
 
 == Configuration
 
@@ -47,10 +48,16 @@ Copy the example from GEMHOME/rest_connection/config/rest_api_config.yaml.sample
 
   puts my_array.instances.map { |i| i['ip-address'] }
 
-=== To cut a new gem and push to rubygems.org
+=== To cut a new gem and push to RubyGems.org
 
-  Edit VERSION and bump the number
-  rake gemspec
-  rake install
-  visit www.rubygems.org
-    gem push pkg/rest_connection-0.0.0.gem (use your new version number in this command)
+  Edit lib/rest_connection/version.rb and bump the number according to http://semver.org
+
+  "bundle exec gem build rest_connection.gemspec"
+  "ls *.gem" <- verify that gem was built
+  "cd /tmp"
+  "bundle exec gem install /path/to/local/rest_connection-X.Y.Z.gem" <- replace X.Y.Z with your new version number
+  "bundle exec gem uninstall rest_connection"
+  "cd -"
+  "bundle exec gem push rest_connection-X.Y.Z.gem"
+
+  Check it out: https://rubygems.org/gems/rest_connection
