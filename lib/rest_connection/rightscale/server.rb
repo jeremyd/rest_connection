@@ -97,7 +97,7 @@ class Server
     reload
     connection.logger("#{nickname} is #{self.state}")
     step = 15
-    catch_early_terminated = 60 / step
+    catch_early_terminated = 300 / step
     while(timeout > 0)
       return true if state =~ /#{st}/
       return true if state =~ /terminated|stopped/ && st =~ /terminated|stopped/
