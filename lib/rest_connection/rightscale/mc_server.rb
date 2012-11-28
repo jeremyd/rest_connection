@@ -68,7 +68,7 @@ class McServer < Server
         # FIXES THIS BUG ON THEIR END!
 
         # Retry on 422 conflict exception (ONLY MS AZURE WILL GENERATE THIS EXCEPTION)
-        target_422_conflict_error_message = "Invalid response HTTP code: 422: CloudException: ConflictError:"
+        target_422_conflict_error_message = "Invalid response HTTP code: 422: CloudException: Error code ConflictError:"
         target_504_gateway_timeout_error_message = "504 Gateway Time-out"
         if e.message =~ /#{target_504_gateway_timeout_error_message}/
           exception_matched_message = "McServer.launch(): Caught #{e.message}, treating as a successful launch..."
@@ -98,19 +98,29 @@ class McServer < Server
                   azure_hack_retry_count -= 1
                   if azure_hack_retry_count > 0
                     retry_count += 1
+
+                    # Try launching again
                     next
                   else
+                    # Azure Hack maximum retries exceeded so rethrow the new 422 conflict exception
                     raise
                   end
                 else
+                  # On this re-launch we got some other exception so rethrow it
                   raise
                 end
               end
+
+              # Fell through so launch worked and we need to break out of the retry loop
               break
             end
           else
+            # Azure Hack isn't enabled so rethrow the original exception
             raise
           end
+        else
+          # Didn't match on any target exception so rethrow the original exception
+          raise
         end
       end
     elsif self.state == "inactive"
