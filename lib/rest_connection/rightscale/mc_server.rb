@@ -60,32 +60,32 @@ class McServer < Server
       begin
         connection.post(t.path + '/launch')
       rescue Exception => e
-        puts "************* McServer.launch(): Caught exception #{e.inspect}"
-        puts "************* McServer.launch(): connection.settings[:azure_hack_on] = #{connection.settings[:azure_hack_on]}"
-        puts "************* McServer.launch(): connection.settings[:azure_hack_retry_count] = #{connection.settings[:azure_hack_retry_count]}"
-        puts "************* McServer.launch(): connection.settings[:azure_hack_sleep_seconds] = #{connection.settings[:azure_hack_sleep_seconds]}"
-        # THIS IS A TEMPORARY HACK TO GET AROUND AZURE SERVER LAUNCH PROBLEMS AND SHOULD BE REMOVED ONCE MICROSOFT
-        # FIXES THIS BUG ON THEIR END!
+        if connection.settings[:azure_hack_on]
+          puts "**** [AZURE_HACK is ON] - McServer.launch() caught exception #{e.inspect}"
+          puts "**** connection.settings[:azure_hack_retry_count] = #{connection.settings[:azure_hack_retry_count]}"
+          puts "**** connection.settings[:azure_hack_sleep_seconds] = #{connection.settings[:azure_hack_sleep_seconds]}"
 
-        # Retry on 422 conflict exception (ONLY MS AZURE WILL GENERATE THIS EXCEPTION)
-        target_422_conflict_error_message = "Invalid response HTTP code: 422: CloudException: Error code ConflictError:"
-        target_504_gateway_timeout_error_message = "504 Gateway Time-out"
-        if e.message =~ /#{target_504_gateway_timeout_error_message}/
-          exception_matched_message = "McServer.launch(): Caught #{e.message}, treating as a successful launch..."
-          puts(exception_matched_message)
-          connection.logger(exception_matched_message)
-          true
-        elsif e.message =~ /#{target_422_conflict_error_message}/
-          if connection.settings[:azure_hack_on]
+          # 504 Gateway should always be treated as a successful launch
+          target_504_gateway_timeout_error_message = "504 Gateway Time-out"
+
+          # All 422 exceptions should be retried
+          target_422_error_message = "Invalid response HTTP code: 422:"
+
+          if e.message =~ /#{target_504_gateway_timeout_error_message}/
+            exception_matched_message = "**** McServer.launch(): Caught #{e.message}, treating as a successful launch..."
+            puts(exception_matched_message)
+            connection.logger(exception_matched_message)
+            true
+          elsif e.message =~ /#{target_422_error_message}/
             azure_hack_retry_count = connection.settings[:azure_hack_retry_count]
-            exception_matched_message = "************* McServer.launch(): Matched Azure exception: \"#{target_422_conflict_error_message}\""
+            exception_matched_message = "**** McServer.launch(): Caught #{e.message}, retrying launch..."
             puts(exception_matched_message)
             connection.logger(exception_matched_message)
 
             retry_count = 1
             loop do
               # sleep for azure_hack_sleep_seconds seconds
-              sleep_message = "************* McServer.launch(): Sleeping for #{connection.settings[:azure_hack_sleep_seconds]} seconds and then retrying (#{retry_count}) launch..."
+              sleep_message = "**** McServer.launch(): Sleeping for #{connection.settings[:azure_hack_sleep_seconds]} seconds and then retrying (#{retry_count}) launch..."
               puts(sleep_message)
               connection.logger(sleep_message)
               sleep(connection.settings[:azure_hack_sleep_seconds])
@@ -94,15 +94,15 @@ class McServer < Server
               begin
                 connection.post(t.path + '/launch')
               rescue Exception => e2
-                if e2.message =~ /#{target_422_conflict_error_message}/
+                if e2.message =~ /#{target_422_error_message}/
                   azure_hack_retry_count -= 1
                   if azure_hack_retry_count > 0
                     retry_count += 1
 
-                    # Try launching again
+                    # Try again on next iteration
                     next
                   else
-                    # Azure Hack maximum retries exceeded so rethrow the new 422 conflict exception
+                    # Azure Hack maximum retries exceeded so rethrow the new 422 exception
                     raise
                   end
                 else
@@ -111,15 +111,15 @@ class McServer < Server
                 end
               end
 
-              # Fell through so launch worked and we need to break out of the retry loop
+              # Fell through so launch worked and we need to break out of the retry do loop
               break
             end
           else
-            # Azure Hack isn't enabled so rethrow the original exception
+            # Didn't match on any target exception so rethrow the original exception
             raise
           end
         else
-          # Didn't match on any target exception so rethrow the original exception
+          # Azure Hack isn't enabled so rethrow the original exception
           raise
         end
       end
