@@ -61,7 +61,7 @@ class McServer < Server
         connection.post(t.path + '/launch')
       rescue Exception => e
         if connection.settings[:azure_hack_on]
-          puts "**** [AZURE_HACK is ON] - McServer.launch() caught exception #{e.inspect}"
+          puts "**** [AZURE_HACK is ON] - McServer.launch() nickname: #{nickname}, caught exception #{e.message}"
           puts "**** connection.settings[:azure_hack_retry_count] = #{connection.settings[:azure_hack_retry_count]}"
           puts "**** connection.settings[:azure_hack_sleep_seconds] = #{connection.settings[:azure_hack_sleep_seconds]}"
 
@@ -94,6 +94,10 @@ class McServer < Server
               begin
                 connection.post(t.path + '/launch')
               rescue Exception => e2
+                exception_caught_message = "**** McServer.launch(): Retry caught #{e2.message}..."
+                puts(exception_caught_message)
+                connection.logger(exception_caught_message)
+
                 if e2.message =~ /#{target_422_error_message}/
                   azure_hack_retry_count -= 1
                   if azure_hack_retry_count > 0
