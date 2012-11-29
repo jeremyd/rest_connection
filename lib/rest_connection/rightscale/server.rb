@@ -97,7 +97,7 @@ class Server
     reload
     connection.logger("#{nickname} is #{self.state}")
     step = 15
-    catch_early_terminated = 60 / step
+    catch_early_terminated = 1200 / step
     while(timeout > 0)
       return true if state =~ /#{st}/
       return true if state =~ /terminated|stopped/ && st =~ /terminated|stopped/
@@ -106,7 +106,7 @@ class Server
       connection.logger("waiting for server #{nickname} to go #{st}, state is #{state}")
       if state =~ /terminated|stopped|inactive|error/ and st !~ /terminated|stopped|inactive|error/
         if catch_early_terminated <= 0
-          raise "FATAL error, this server terminated when waiting for #{st}: #{nickname}"
+          raise "FATAL error, this server entered #{state} state waiting for #{st}: #{nickname}"
         end
         catch_early_terminated -= 1
       end
