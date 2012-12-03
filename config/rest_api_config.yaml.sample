@@ -11,3 +11,4 @@
 :azure_hack_on: true
 :azure_hack_retry_count: 5
 :azure_hack_sleep_seconds: 60
+:api_logging: false
