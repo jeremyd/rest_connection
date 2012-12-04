@@ -41,7 +41,7 @@ class Ec2SecurityGroup
       raise ArgumentError.new("add_rule expects one of these valid rule types: #{@@valid_rule_types.to_json}")
     end
 
-    params = {'ec2_security_group' => rule}
+    params = {:ec2_security_group => rule}
     uri = URI.parse(self.href)
     connection.put(uri.path, params)
 
