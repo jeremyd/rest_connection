@@ -25,11 +25,11 @@ class Ec2SecurityGroup
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
 
-  @@valid_rule_types =  [
-                          [:group, :owner],
-                          [:cidr_ips, :from_port, :protocol, :to_port],
-                          [:from_port, :group, :owner, :protocol, :to_port],
-                        ]
+  VALID_RULE_TYPES =  [
+                        [:group, :owner],
+                        [:cidr_ips, :from_port, :protocol, :to_port],
+                        [:from_port, :group, :owner, :protocol, :to_port],
+                      ]
 
   # NOTE - Create, Destroy, and Update require "security_manager" permissions
   # NOTE - Can't remove rules, can only add
@@ -38,7 +38,7 @@ class Ec2SecurityGroup
     opts.each { |k,v| rule["#{k}".to_sym] = v }    
 
     unless validate_rule(rule)
-      raise ArgumentError.new("add_rule expects one of these valid rule types: #{@@valid_rule_types.to_json}")
+      raise ArgumentError.new("add_rule expects one of these valid rule types: #{VALID_RULE_TYPES.to_json}")
     end
 
     params = {:ec2_security_group => rule}
@@ -49,7 +49,7 @@ class Ec2SecurityGroup
   end
 
   def validate_rule(rule)
-    @@valid_rule_types.each do |valid_rule_type|
+    VALID_RULE_TYPES.each do |valid_rule_type|
       if rule.keys.sort_by {|sym| sym.to_s} == valid_rule_type.sort_by {|sym| sym.to_s}
         return true
       end
