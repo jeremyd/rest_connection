@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# Setup $stat_flag based on OS type
+mac_unix_name=Darwin
+uname_returned=`uname -a`
+unix_name=${uname_returned:0:${#mac_unix_name}}  	
+if [ "$unix_name" = "$mac_unix_name" ]; then
+  echo "MAC OS \"$mac_unix_name\" detected..." 	
+  stat_flag=-f	  	
+else	  	
+  echo "non-MAC OS detected..."	  	
+  stat_flag=-c	  	
+fi
+
 echo "Checking for syntax errors..."
 for FILE in `git diff-index --name-only HEAD --` ; do
   if test -f $FILE; then
