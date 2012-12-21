@@ -27,9 +27,16 @@ module RightScale
       def connection(*opts)
         @@little_brother_connection ||= RestConnection::Connection.new(*opts)
         settings = @@little_brother_connection.settings
-        settings[:common_headers]["X_API_VERSION"] = "0.1"
+        settings[:common_headers]["X_API_VERSION"] = "1.0"
         settings[:api_href] = settings[:api_url]
         settings[:extension] = ".js"
+
+        unless @@little_brother_connection.respond_to?(:refresh_cookie)
+          @@little_brother_connection.instance_exec(&(RightScale::Api::BASE_COOKIE_REFRESH))
+        end
+
+        @@little_brother_connection.refresh_cookie unless @@little_brother_connection.cookie
+        settings[:common_headers]["X_API_VERSION"] = "0.1"
         @@little_brother_connection
       end
     end
