@@ -64,7 +64,7 @@ module SshHax
 
 
   # returns hash of exit_status and output from command
-  # Note that "sudo -i" is prepended to <command> and the 'rightscale' user is used.
+  # Note that "sudo" is prepended to <command> and the 'rightscale' user is used.
   def spot_check_command(command, ssh_key=nil, host_dns=self.reachable_ip, do_not_log_result=false)
     puts "SshHax::Probe method #{__method__}() entered..."
     raise "FATAL: spot_check_command called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless host_dns
@@ -92,10 +92,9 @@ module SshHax
             ch1.request_pty do |ch, success|
               raise "Could not obtain a pseudo-tty!" if !success
             end
-            # Now execute the command with "sudo -i --" prepended to it.
-            # NOTE: The -- option indicates that sudo should stop processing command line arguments
+            # Now execute the command with "sudo" prepended to it.
             # NOTE: The use of single quotes is required to keep Ruby from interpretting the command string passed in and messing up regex's
-            sudo_command = 'sudo -i -- ' + command
+            sudo_command = 'sudo ' + command
             puts 'SshHax::Probe executing ' + sudo_command + '...'
             ch1.exec(sudo_command) do |ch2, success|
               unless success
