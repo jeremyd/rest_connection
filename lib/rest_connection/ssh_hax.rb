@@ -44,114 +44,29 @@ module SshHax
     ssh_keys
   end
 
-  def run_and_tail(run_this, tail_command, expect, ssh_key=nil, host_dns=self.reachable_ip)
-    status = nil
-    result = nil
-    output = ""
-    connection.logger("Running: #{run_this}")
-    Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key), :user_known_hosts_file => "/dev/null") do |ssh|
-      cmd_channel = ssh.open_channel do |ch1|
-        ch1.on_request('exit-status') do |ch, data|
-          status = data.read_long
-        end
-        ch1.exec(run_this) do |ch2, success|
-          unless success
-            output = "ERROR: SSH cmd failed to exec"
-            status = 1
-          end
-          ch2.on_data do |ch, data|
-            output += data
-          end
-          ch2.on_extended_data do |ch, type, data|
-            output += data
-          end
 
-        end
-      end
-      log_channel = ssh.open_channel do |ch2|
-        ch2.exec tail_command do |ch, success|
-          raise "could not execute command" unless success
-          # "on_data" is called when the process writes something to stdout
-          ch.on_data do |c, data|
-            output += data
-            if data =~ expect
-              result = $1
-            end
-          end
-          # "on_extended_data" is called when the process writes something to stderr
-          ch.on_extended_data do |c, type, data|
-            #STDERR.print data
-          end
-          ch.on_close do
-          end
-          ch.on_process do |c|
-            if result
-              ch.close
-              ssh.exec("killall tail")
-            end
-          end
-        end
-      end
-      cmd_channel.wait
-      log_channel.wait
-    end
-    connection.logger output
-    success = result.include?('completed')
-    connection.logger "Converge failed. See server audit: #{self.audit_link}" unless success
-    return {:status => success, :output => output}
-  end
-
-  # script is an Executable object with minimally nick or id set
-  def run_executable_with_ssh(script, options={}, ssh_key=nil)
-    raise "FATAL: run_executable called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless self.reachable_ip
-    if script.is_a?(Executable)
-      script = script.right_script
-    end
-
-    raise "FATAL: unrecognized format for script.  Must be an Executable or RightScript with href or name attributes" unless (script.is_a?(RightScript)) && (script.href || script.name)
-    if script.href
-      run_this = "rs_run_right_script -i #{script.href.split(/\//).last}"
-    elsif script.name
-      run_this = "rs_run_right_script -n #{script.name}"
-    end
-    tail_command ="tail -f -n1 /var/log/messages"
-    expect = /RightLink.*RS> ([completed|failed]+:)/
-    options.each do |key, value|
-      run_this += " -p #{key}=#{value}"
-    end
-    AuditEntry.new(run_and_tail(run_this, tail_command, expect))
-  end
-
-  # recipe can be either a String, or an Executable
-  # host_dns is optional and will default to objects self.reachable_ip
-  def run_recipe_with_ssh(recipe, ssh_key=nil, host_dns=self.reachable_ip)
-    raise "FATAL: run_script called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless self.reachable_ip
-    if recipe.is_a?(Executable)
-      recipe = recipe.recipe
-    end
-    tail_command ="tail -f -n1 /var/log/messages"
-    expect = /RightLink.*RS> ([completed|failed]+: < #{recipe} >)/
-    run_this = "rs_run_recipe -n '#{recipe}'"
-    run_and_tail(run_this, tail_command, expect, ssh_key)
-  end
 
   def spot_check(command, ssh_key=nil, host_dns=self.reachable_ip, &block)
-    connection.logger "SSHing to #{host_dns}"
-    Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key)) do |ssh|
-      result = ssh.exec!(command)
-      yield result
-    end
+    puts "SshHax::Probe method #{__method__}() entered..."
+    results = spot_check_command(command, ssh_key, host_dns)
+    yield results[:output]
   end
+
+
 
   # returns true or false based on command success
   def spot_check_command?(command, ssh_key=nil, host_dns=self.reachable_ip)
+    puts "SshHax::Probe method #{__method__}() entered..."
     results = spot_check_command(command, ssh_key, host_dns)
     return results[:status] == 0
   end
 
 
+
   # returns hash of exit_status and output from command
+  # Note that "sudo" is prepended to <command> and the 'rightscale' user is used.
   def spot_check_command(command, ssh_key=nil, host_dns=self.reachable_ip, do_not_log_result=false)
+    puts "SshHax::Probe method #{__method__}() entered..."
     raise "FATAL: spot_check_command called on a server with no reachable_ip. You need to run .settings on the server to populate this attribute." unless host_dns
     connection.logger "SSHing to #{host_dns} using key(s) #{ssh_key_config(ssh_key).inspect}"
     status = nil
@@ -163,17 +78,25 @@ module SshHax
         # Test for ability to connect; Net::SSH.start sometimes hangs under certain server-side sshd configs
         test_ssh = ""
         [5, 15, 60].each { |timeout_max|
-          test_ssh = `ssh -o \"BatchMode=yes\" -o \"StrictHostKeyChecking=no\" -o \"ConnectTimeout #{timeout_max}\" root@#{host_dns} -C \"exit\" 2>&1`.chomp
+          test_ssh = `ssh -o \"BatchMode=yes\" -o \"StrictHostKeyChecking=no\" -o \"ConnectTimeout #{timeout_max}\" rightscale@#{host_dns} -C \"exit\" 2>&1`.chomp
           break if test_ssh =~ /permission denied/i or test_ssh.empty?
         }
         raise test_ssh unless test_ssh =~ /permission denied/i or test_ssh.empty?
 
-        Net::SSH.start(host_dns, 'root', :keys => ssh_key_config(ssh_key), :user_known_hosts_file => "/dev/null") do |ssh|
+        Net::SSH.start(host_dns, 'rightscale', :keys => ssh_key_config(ssh_key), :user_known_hosts_file => "/dev/null") do |ssh|
           cmd_channel = ssh.open_channel do |ch1|
             ch1.on_request('exit-status') do |ch, data|
               status = data.read_long
             end
-            ch1.exec(command) do |ch2, success|
+            # Request a pseudo-tty, this is needed as all calls use sudo to support RightLink 5.8
+            ch1.request_pty do |ch, success|
+              raise "Could not obtain a pseudo-tty!" if !success
+            end
+            # Now execute the command with "sudo" prepended to it.
+            # NOTE: The use of single quotes is required to keep Ruby from interpretting the command string passed in and messing up regex's
+            sudo_command = 'sudo ' + command
+            puts 'SshHax::Probe executing ' + sudo_command + '...'
+            ch1.exec(sudo_command) do |ch2, success|
               unless success
                 status = 1
               end
@@ -194,6 +117,7 @@ module SshHax
       end
     end
     connection.logger "SSH Run: #{command} on #{host_dns}. Retry was #{retry_count}. Exit status was #{status}. Output below ---\n#{output}\n---" unless do_not_log_result
+    puts "SshHax::Probe method #{__method__}() exiting..."
     return {:status => status, :output => output}
   end
 
