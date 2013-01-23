@@ -18,8 +18,8 @@ It currently has support for RightScale API 1.0 and 1.5.
   s.test_files = `git ls-files spec config`.split(' ')
   s.rubygems_version = '1.8.24'
 
-  s.add_runtime_dependency 'activesupport',    '2.3.10'
-  s.add_runtime_dependency 'net-ssh',          '2.1.4'
+  s.add_runtime_dependency 'activesupport'
+  s.add_runtime_dependency 'net-ssh'
   s.add_runtime_dependency 'json'
   s.add_runtime_dependency 'highline'
   s.add_runtime_dependency 'rest-client'
