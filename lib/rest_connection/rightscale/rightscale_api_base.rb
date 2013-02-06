@@ -77,6 +77,8 @@ module RightScale
       @@api0_1 = true
     rescue RestConnection::Errors::Forbidden
       @@api0_1 = false
+    rescue RestConnection::Errors::UnprocessableEntity
+      @@api0_1 = false
     end
 
     # Check for API 1.0 Access
