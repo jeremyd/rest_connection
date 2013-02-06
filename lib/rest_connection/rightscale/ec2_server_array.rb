@@ -50,6 +50,37 @@ class Ec2ServerArray
      connection.post("#{serv_href.path}/run_script_on_all", options)
   end
 
+  #
+  # Run a script on individual instances in a ServerArray
+  #
+  # This was formerly located in Ec2ServerArrayInternal but has 
+  # been moved here to Ec2ServerArray as the call has been ported
+  # from API 0.1 to API 1.0.
+  #
+  # Example: array.run_script_on_instances(right_script, server_href, options_hash)
+  #
+  def run_script_on_instances(script, ec2_instance_hrefs=[], opts={})
+    uri = URI.parse(self.href)
+    case script
+    when Executable then script = script.right_script
+    when String then script = RightScript.new('href' => script)
+    end
+
+    params = {:right_script_href => script.href }
+    unless ec2_instance_hrefs.nil? || ec2_instance_hrefs.empty?
+      params[:ec2_instance_hrefs] = ec2_instance_hrefs
+    end
+    unless opts.nil? || opts.empty?
+      params[:parameters] = opts
+    end
+    params = {:ec2_server_array => params}
+    status_array=[]
+    connection.post(uri.path + "/run_script_on_instances", params).map do |work_unit|
+      status_array.push Status.new('href' => work_unit)
+    end
+    return(status_array)
+  end
+
   def instances
     serv_href = URI.parse(self.href)
     connection.get("#{serv_href.path}/instances")

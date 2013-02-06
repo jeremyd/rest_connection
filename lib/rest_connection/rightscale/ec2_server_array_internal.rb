@@ -29,25 +29,4 @@ class Ec2ServerArrayInternal
   
   deny_methods :index, :show, :create, :update, :destroy
 
-  def run_script_on_instances(script, ec2_instance_hrefs=[], opts={})
-    uri = URI.parse(self.href)
-    case script
-    when Executable then script = script.right_script
-    when String then script = RightScript.new('href' => script)
-    end
-
-    params = {:right_script_href => script.href }
-    unless ec2_instance_hrefs.nil? || ec2_instance_hrefs.empty?
-      params[:ec2_instance_hrefs] = ec2_instance_hrefs
-    end
-    unless opts.nil? || opts.empty?
-      params[:parameters] = opts
-    end
-    params = {:ec2_server_array => params}
-    status_array=[]
-    connection.post(uri.path + "/run_script_on_instances", params).map do |work_unit|
-      status_array.push Status.new('href' => work_unit)
-    end
-    return(status_array)
-  end
 end
