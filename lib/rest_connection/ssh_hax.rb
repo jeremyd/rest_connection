@@ -78,7 +78,7 @@ module SshHax
         # Test for ability to connect; Net::SSH.start sometimes hangs under certain server-side sshd configs
         test_ssh = ""
         [5, 15, 60].each { |timeout_max|
-          test_ssh = `ssh -tt -o \"BatchMode=yes\" -o \"StrictHostKeyChecking=no\" -o \"ConnectTimeout #{timeout_max}\" rightscale@#{host_dns} -C \"exit\" 2>&1`.chomp
+          test_ssh = `ssh -ttq -o \"BatchMode=yes\" -o \"StrictHostKeyChecking=no\" -o \"ConnectTimeout #{timeout_max}\" rightscale@#{host_dns} -C \"exit\" 2>&1`.chomp
           break if test_ssh =~ /permission denied/i or test_ssh.empty?
         }
         raise test_ssh unless test_ssh =~ /permission denied/i or test_ssh.empty?
