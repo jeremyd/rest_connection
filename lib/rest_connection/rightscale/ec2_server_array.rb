@@ -31,9 +31,6 @@ class Ec2ServerArray
 
   def initialize(*args, &block)
     super(*args, &block)
-    if RightScale::Api::api0_1?
-      @internal = Ec2ServerArrayInternal.new(*args, &block)
-    end
   end
 
 #  Example:
