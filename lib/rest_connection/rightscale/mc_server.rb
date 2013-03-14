@@ -161,9 +161,9 @@ class McServer < Server
     raise "You shouldn't be here."
   end
 
-  def run_executable(executable, opts=nil)
+  def run_executable(executable, opts=nil, ignore_lock=false)
     raise "Instance isn't running; Can't run executable" unless @current_instance
-    @current_instance.run_executable(executable, opts)
+    @current_instance.run_executable(executable, opts, ignore_lock)
   end
 
   def transform_inputs(sym, parameters)
