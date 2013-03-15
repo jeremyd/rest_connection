@@ -151,7 +151,7 @@ class McInstance
     return href
   end
 
-  def run_executable(executable, opts=nil)
+  def run_executable(executable, opts=nil, ignore_lock=false)
     run_options = Hash.new
     if executable.is_a?(Executable)
       if executable.recipe?
@@ -165,8 +165,15 @@ class McInstance
       raise "Invalid class passed to run_executable, needs Executable or RightScript, was:#{executable.class}"
     end
 
+    if not opts.nil? and opts.has_key?(:ignore_lock)
+      run_options[:ignore_lock] = "true"
+      opts.delete(:ignore_lock)
+      opts = nil if opts.empty?
+    end
+
     inst_href = URI.parse(self.href)
     run_options[:inputs] = transform_inputs(:to_a, opts) unless opts.nil?
+    run_options[:ignore_lock] = "true" if ignore_lock
     location = connection.post(inst_href.path + '/run_executable', run_options)
     Task.new('href' => location)
   end
