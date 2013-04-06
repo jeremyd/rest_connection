@@ -25,9 +25,7 @@
 # API 1.0
 #
 
-# This is an instance facing api and can only be used with
-# an authentication URL normally found in the instance's userdata called
-# RS_API_URL
+# Requires instance token for authentication
 class Instance
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend

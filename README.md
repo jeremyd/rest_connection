@@ -1,9 +1,16 @@
 # RightScale REST Connection
 
-The rest_connection gem is a Ruby library for RightScale's API 1.0 and API 1.5.
+The rest_connection gem is a Ruby library for RightScale's API 1.0 and API 1.5 on legacy and generic clusters.
+Additionally, it has support for RightScale's internal API 0.1 on legacy clusters.
 
-It should be considered deprecated.
-If you only use API 1.5, you should use the right_api_client gem instead: https://rubygems.org/gems/right_api_client
+This gem also supports RightScale's instance facing API 1.0, which use the instance token to login.
+The instance token is found in the instance's user data as 'RS_rn_auth' or alternatively as part of 'RS_api_url'.
+The user data is available under the 'Info' tab on the server's page in the RightScale Dashboard.
+
+This gem should be considered deprecated!
+
+If you only use API 1.5, you should use the right_api_client gem instead:
+https://rubygems.org/gems/right_api_client
 
 - API 1.0 Documentation: http://support.rightscale.com/12-Guides/03-RightScale_API
 - API 1.0 Reference Docs: http://reference.rightscale.com/api1.0
@@ -30,15 +37,15 @@ Ruby 1.8.7 or higher is required.
 
 ## Versioning
 
-We follow semantic versioning according to http://semver.org
+This gem follows semantic versioning: http://semver.org
 
 ## Usage Instructions
 
-You must setup ~/.rest_connection/rest_api_config.yaml or /etc/rest_connection/rest_api_config.yaml
+You must setup '~/.rest_connection/rest_api_config.yaml' or '/etc/rest_connection/rest_api_config.yaml'
 
-Copy the example from GEMHOME/rest_connection/config/rest_api_config.yaml.sample and fill in your connection info.
+Copy the example from '$GEMHOME/rest_connection/config/rest_api_config.yaml.sample' and fill in your connection info.
 
-Pro Tip: to find a GEMHOME, use gemedit
+Pro Tip: to find a $GEMHOME, use gemedit
 
     "gem install gemedit"
     "gem edit rest_connection"
@@ -48,7 +55,7 @@ The following examples assume an interactive ruby session (irb):
     $ bundle exec irb
     ruby> require 'rubygems'; require 'rest_connection'
 
-### Lookup and run a RightScript
+### Look up and run a RightScript
 
     first_fe = Server.find(:first) { |s| s.nickname =~ /Front End/ }
     st = ServerTemplate.find(first_fe.server_template_href)
@@ -80,7 +87,8 @@ Ruby 1.8.7 or higher is required.
 ## Publishing
 
 To cut a new gem and push to RubyGems:
-Edit lib/rest_connection/version.rb
+
+Edit lib/rest_connection/version.rb with semantic version number.
 
     "bundle exec gem build rest_connection.gemspec"
     "ls *.gem" <- verify that gem was built
