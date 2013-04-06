@@ -92,7 +92,7 @@ module RightScale
       @@api1_0 = false
     end
 
-    # Check for API 1.5 Beta Access
+    # Check for API 1.5 Access
     def self.api1_5?
       if class_variable_defined?("@@api1_5")
         return @@api1_5 unless @@api1_5.nil?
