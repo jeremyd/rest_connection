@@ -1,7 +1,15 @@
 # RightScale REST Connection
 
-The rest_connection gem is a Ruby library for RightScale's API 1.0 and API 1.5 on legacy and generic clusters.
-Additionally, it has support for RightScale's internal API 0.1 on legacy clusters.
+The rest_connection gem is a Ruby library for RightScale's API 0.1, 1.0 and 1.5.
+
+Legacy clusters:
+- API 0.1 AWS clouds
+- API 1.0 AWS clouds
+- API 1.5 non-AWS clouds
+
+Generic clusters:
+- API 1.0 AWS clouds
+- API 1.5 all clouds
 
 This gem also supports RightScale's instance facing API 1.0, which use the instance token to login.
 The instance token is found in the instance's user data as 'RS_rn_auth' or alternatively as part of 'RS_api_url'.
@@ -77,6 +85,37 @@ The following examples assume an interactive ruby session (irb):
     my_array.save
 
     puts my_array.instances.map { |i| i['ip-address'] }
+
+## Design Decisions
+
+Currently, all API resources are represented by classes in 'lib/rest_connection/rightscale'.
+Various helper modules are also located in this directory.
+
+### API 0.1 resources
+
+API 0.1 resources are often named with suffix '_internal'.
+
+They often pull in common internal code:
+
+    include RightScale::Api::Internal
+    extend RightScale::Api::InternalExtend
+
+### API 1.0 resources
+
+API 1.0 resources are often named with prefix 'ec2_' for Amazon Elastic Compute Cloud.
+
+They often pull in common internal code:
+
+    include RightScale::Api::Base
+    extend RightScale::Api::BaseExtend
+
+### API 1.5 resources
+
+API 1.5 resources are often named with prefix 'mc_' for MultiCloud.
+They often talk to the MultiCloud gateway and therefore pull in some common gateway code:
+
+    include RightScale::Api::Gateway
+    extend RightScale::Api::GatewayExtend
 
 ## Troubleshooting
 
