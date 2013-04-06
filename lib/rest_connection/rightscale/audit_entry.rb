@@ -33,6 +33,9 @@
 #  end
 #end
 
+#
+# API 1.0
+#
 class AuditEntry
   include  RightScale::Api::Base
   extend RightScale::Api::BaseExtend

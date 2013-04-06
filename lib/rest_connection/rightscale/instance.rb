@@ -21,6 +21,10 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 
+#
+# API 1.0
+#
+
 # This is an instance facing api and can only be used with
 # an authentication URL normally found in the instance's userdata called
 # RS_API_URL

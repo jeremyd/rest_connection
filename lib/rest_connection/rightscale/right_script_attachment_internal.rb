@@ -24,6 +24,9 @@
 require 'rest-client'
 RestClient.log = ENV["REST_CONNECTION_LOG"] || "stdout"
 
+#
+# API 1.0
+#
 class RightScriptAttachmentInternal
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend

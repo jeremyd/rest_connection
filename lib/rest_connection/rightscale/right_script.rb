@@ -22,6 +22,9 @@
 #++
 
 
+#
+# API 1.0
+#
 class RightScript
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
