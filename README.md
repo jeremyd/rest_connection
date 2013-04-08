@@ -7,7 +7,7 @@ Legacy clusters:
 - API 1.0 AWS clouds
 - API 1.5 non-AWS clouds
 
-Generic clusters:
+Unified clusters:
 - API 1.0 AWS clouds
 - API 1.5 all clouds
 
