@@ -21,9 +21,17 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 
+#
+# API 0.1
+#
 module RightScale
   module Api
     module InternalConnection
+
+      #
+      # Config for API 0.1
+      # Only works for legacy clusters
+      #
       def connection(*opts)
         @@little_brother_connection ||= RestConnection::Connection.new(*opts)
         settings = @@little_brother_connection.settings

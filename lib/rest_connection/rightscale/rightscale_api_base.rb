@@ -23,9 +23,15 @@
 
 require 'active_support/inflector'
 
+
 module RightScale
   module Api
+
+    # TODO: move this to McAuditEntry
     DATETIME_FMT = "%Y/%m/%d %H:%M:%S +0000"
+
+    # Every supported AWS cloud must be hardcoded here.
+    # FIXME: Once this list exceeds 10 entries, must also update cloud_id logic elsewhere!
     AWS_CLOUDS = [
       {"cloud_id" => 1, "name" => "AWS US-East"},
       {"cloud_id" => 2, "name" => "AWS EU"},
@@ -38,6 +44,7 @@ module RightScale
     ]
 
     BASE_COOKIE_REFRESH = proc do
+      # Refresh cookie by logging in again
       def refresh_cookie
         # login
         @cookie = nil
@@ -51,7 +58,7 @@ module RightScale
     end
 
     # Pass no arguments to reset to the default configuration,
-    # pass a hash to update the settings for all API Versions
+    # pass a hash to update the settings for all API versions
     def self.update_connection_settings(*settings)
       if settings.size > 1
         raise ArgumentError.new("wrong number of arguments (#{settings.size} for 1)")
@@ -68,7 +75,12 @@ module RightScale
       true
     end
 
-    # Check for API 0.1 Access
+    # Active API version probing
+    # TODO: probe passively instead
+    # TODO: move this logic to a separate file
+
+    # Checks for API 0.1 access
+    # Requires an account with internal API access on a legacy cluster
     def self.api0_1?
       if class_variable_defined?("@@api0_1")
         return @@api0_1 unless @@api0_1.nil?
@@ -81,7 +93,8 @@ module RightScale
       @@api0_1 = false
     end
 
-    # Check for API 1.0 Access
+    # Checks for API 1.0 access
+    # Should always succeed
     def self.api1_0?
       if class_variable_defined?("@@api1_0")
         return @@api1_0 unless @@api1_0.nil?
@@ -92,7 +105,8 @@ module RightScale
       @@api1_0 = false
     end
 
-    # Check for API 1.5 Beta Access
+    # Check for API 1.5 access
+    # Should always succeed
     def self.api1_5?
       if class_variable_defined?("@@api1_5")
         return @@api1_5 unless @@api1_5.nil?
@@ -104,6 +118,8 @@ module RightScale
     end
 
     module BaseConnection
+
+      # Config for API 1.0
       def connection(*opts)
         @@connection ||= RestConnection::Connection.new(*opts)
         settings = @@connection.settings
@@ -130,6 +146,7 @@ module RightScale
       def resource_singular_name
         self.to_s.underscore
       end
+
       # matches using result of block match expression
       # ex: Server.find_by(:nickname) { |n| n =~ /production/ }
       def find_by(attrib, &block)
@@ -163,10 +180,11 @@ module RightScale
         self.find_by(:nickname) { |n| n == nickname }
       end
 
-      # the argument can be
-      # 1) takes href (URI),
-      # 2) or id (Integer)
-      # 3) or symbol :all, :first, :last
+      # Retrieves one or more resources of the same type.
+      #
+      # @param [Integer|Symbol|String] href should be one of the following: resource id, :all, :first, :last, resource href
+      # @param [Hash] additional_params if href is an integer, will be part of retrieve request
+      # @param [Block] block if href is a symbol, will be used inside select block to refine results
       def find(href, additional_params={}, &block)
         if href.is_a?(Integer)
           return self.new(connection.get(self.resource_plural_name + "/#{href}", additional_params))

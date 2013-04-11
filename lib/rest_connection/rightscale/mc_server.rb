@@ -21,7 +21,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 #
-# You must have Beta v1.5 API access to use these internal API calls.
+# API 1.5
 #
 class McServer < Server
   include RightScale::Api::Gateway

@@ -26,6 +26,9 @@
 
 #This is the v4 image only work status api.
 # was used by Server#run_script (depricating..)
+#
+# API 1.0
+#
 class Status
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend

@@ -21,6 +21,9 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 
+#
+# API 0.1
+#
 class MultiCloudImageInternal
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend

@@ -22,7 +22,7 @@
 #++
 
 #
-# You must have special API access to use these internal API calls.
+# API 0.1
 #
 class ServerInternal
   include RightScale::Api::Base

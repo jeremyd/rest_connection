@@ -32,6 +32,10 @@ require 'logger'
 require 'highline/import'
 require 'nokogiri'
 
+#
+# REST connection config and error definitions.
+#
+
 module RestConnection
   class Connection
     # Settings is a hash of options for customizing the connection.
@@ -250,6 +254,8 @@ module RestConnection
       end
     end
 
+    # Logs a message at info level to stdout or log file
+    # FIXME: don't lazy initialize
     def logger(message)
       init_message = "Initializing Logging using "
       if @@logger.nil?

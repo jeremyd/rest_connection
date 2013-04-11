@@ -21,8 +21,16 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 
+#
+# API 1.5
+#
+
 module RightScale
   module Api
+
+    #
+    # Refresh cookie by logging in again
+    #
     GATEWAY_COOKIE_REFRESH = proc do
       def refresh_cookie
         # login
@@ -48,6 +56,10 @@ module RightScale
     end
 
     module GatewayConnection
+
+      #
+      # Config for API 1.5
+      #
       def connection(*opts)
         @@gateway_connection ||= RestConnection::Connection.new(*opts)
         settings = @@gateway_connection.settings

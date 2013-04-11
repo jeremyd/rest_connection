@@ -22,7 +22,7 @@
 #++
 
 #
-# You must have Beta v1.5 API access to use these internal API calls.
+# API 1.5
 #
 class SecurityGroupRule
   include RightScale::Api::Gateway

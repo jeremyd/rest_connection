@@ -21,6 +21,9 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 
+#
+# API 1.0
+#
 class S3Bucket
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend

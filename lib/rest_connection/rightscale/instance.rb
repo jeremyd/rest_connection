@@ -21,9 +21,11 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #++
 
-# This is an instance facing api and can only be used with
-# an authentication URL normally found in the instance's userdata called
-# RS_API_URL
+#
+# API 1.0
+#
+
+# Requires instance token for authentication
 class Instance
   include RightScale::Api::Base
   extend RightScale::Api::BaseExtend
